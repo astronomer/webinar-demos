@@ -13,3 +13,4 @@ airflow-deving/bin
 airflow-deving/lib
 airflow-deving/pyvenv.cfg
 airflow-deving/share
+upgrade-test* 
