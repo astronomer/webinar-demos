@@ -18,6 +18,8 @@ import pandas as pd
 import logging
 import os
 
+from include.hugging_face_functions import get_sentiment_score
+
 # how to use the Airflow task logger
 task_logger = logging.getLogger("airflow.task")
 
@@ -104,21 +106,20 @@ def good_dag():
             List[float]: The sentiment scores for each feedback.
         """
 
-        from transformers import pipeline  # heavy imports should be inside the function
-
-        sentiment_pipeline = pipeline(
-            "sentiment-analysis",
+        sentiment = get_sentiment_score(
             model="cardiffnlp/twitter-roberta-base-sentiment-latest",
+            text_input=comment,
         )
-
-        result = sentiment_pipeline(comment)
-        sentiment_score = result[0]["score"]
 
         task_logger.info(
-            f"The comment {comment} has a sentiment score of {sentiment_score}"
+            f"The comment {comment} has a sentiment score of {sentiment['sentiment_score']}"
         )
 
-        return {"comment": comment, "sentiment_score": sentiment_score}
+        return {
+            "comment": comment,
+            "sentiment_score": sentiment["sentiment_score"],
+            "sentiment_label": sentiment["sentiment_label"],
+        }
 
     @task
     def report_results(sentiment_scores: List[dict], df: pd.DataFrame) -> None:
@@ -134,6 +135,7 @@ def good_dag():
         for score in sentiment_scores:
             comment = score["comment"]
             sentiment_score = score["sentiment_score"]
+            # breakpoint()
             count = df[df["Comments"] == comment].shape[0]
             task_logger.info(
                 f"The comment {comment} has a sentiment score of {sentiment_score} and was given {count} times."

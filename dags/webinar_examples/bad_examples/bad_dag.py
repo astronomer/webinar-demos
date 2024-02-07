@@ -1,60 +1,78 @@
 from airflow.decorators import dag, task
-from datetime import datetime
+from pendulum import datetime
 import pandas as pd
-from airflow.providers.postgres.hooks.postgres import PostgresHook
-from transformers import pipeline  # heavy imports at the top level
+from transformers import (
+    pipeline,
+)  # heavy imports should be inside the function if not needed at the top level
+import os
 
-# top level DAG code!
-postgres_db = PostgresHook(postgres_conn_id="postgres_default")
 
 @dag(
     start_date=datetime(2024, 1, 1),
-    schedule_interval="@daily",  # deprecated parameter
+    schedule="@daily",
     catchup=False,
-    # no owner or retries specified
+    # default args missing, no retries
+    params={
+        "toy_of_interest": "Carrot Plushy",  # Param but without list of options
+    },
     tags=["webinar"],
-    param={"toy_of_interest": "Carrot Plushy"},
 )
 def bad_dag():
+
     @task
-    def t1(): # non-descriptive task name
-        df = pd.read_csv("include/data_generation/data/customer_feedback3.csv")
+    def task1(**context):
 
-        sentiment_scores = []
+        df1 = pd.read_csv(
+            "include/data_generation/data/ingest/customer_feedback/customer_feedback3.csv"
+        )
+        df2 = pd.read_csv(
+            "include/data_generation/data/ingest/customer_data/customer_data3.csv"
+        )
 
-        for feedback in df["Comments"]:
+        list_of_comments = list(df1["Comments"].unique())
+
+        df2["PurchasesPerDog"] = df2["NumPreviousPurchases"] / df2["NumberOfDogs"]
+        list_of_sentiments = []
+        for comment in list_of_comments:
+
             sentiment_pipeline = pipeline(
                 "sentiment-analysis",
                 model="cardiffnlp/twitter-roberta-base-sentiment-latest",
             )
-            result = sentiment_pipeline(feedback)
-            sentiment_scores.append(result[0]["score"])
 
-        df = pd.read_csv("include/data_generation/data/customer_data3.csv")
-        df["PurchasesPerDog"] = df["NumPreviousPurchases"] / df["NumberOfDogs"]
-        df = df[df["NumberOfDogs"] > 3]
-        average_purchases_per_dog = df["PurchasesPerDog"].mean()
-        print(
-            f"Average purchases per dog for customers with more than 3 dogs: {average_purchases_per_dog}"
+            result = sentiment_pipeline(comment)
+            sentiment_score = result[0]["score"]
+
+            list_of_sentiments.append(
+                {"comment": comment, "sentiment_score": sentiment_score}
+            )
+
+        print(f"The comment {comment} has a sentiment score of {sentiment_score}")
+
+        df3 = pd.read_csv(
+            "include/data_generation/data/ingest/sales_reports/sales_reports3.csv"
         )
 
-        ## hard to read and no comments!
+        for score in list_of_sentiments:
+            comment = score["comment"]
+            sentiment_score = score["sentiment_score"]
+            breakpoint()
+            count = df1[df1["Comments"] == comment].shape[0]
+            print(
+                f"The comment {comment} has a sentiment score of {sentiment_score} and was given {count} times."
+            )
 
-        return sentiment_scores
+        toy_of_interest = context["params"]["toy_of_interest"]
 
-    t1()
+        df = df.groupby("ProductName").agg({"QuantitySold": "sum"})
 
-    @task
-    def t2(**context):
-        today = datetime.now() # not idempotent!
-        print(today)
-        sales_data = pd.read_csv("include/data_generation/data/sales_reports3.csv")
-        sales_data["Date"] = pd.to_datetime(sales_data["Date"]).dt.tz_localize(None)
-        sales_data = sales_data[sales_data["Date"] > today - pd.Timedelta(days=7)]
-        total_sales = sales_data["Revenue"].sum()
-        print(f"Total sales from the last 7 days: {total_sales}")
+        print(f"The average number of purchases per toy is {df['QuantitySold'].mean()}")
 
-    t2()
+        print(
+            f"The average number of purchases for the toy {toy_of_interest} is {df.loc[toy_of_interest, 'QuantitySold']}"
+        )
+
+    task1()
 
 
 bad_dag()
