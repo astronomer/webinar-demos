@@ -72,7 +72,15 @@ def bad_dag():
             f"The average number of purchases for the toy {toy_of_interest} is {df.loc[toy_of_interest, 'QuantitySold']}"
         )
 
-    task1()
+        return list_of_sentiments
+
+    list_of_sentiments = task1()
+
+    @task
+    def print_all_sentiments(list_of_sentiments):
+        print(list_of_sentiments)
+
+    print_all_sentiments(list_of_sentiments)
 
 
 bad_dag()
