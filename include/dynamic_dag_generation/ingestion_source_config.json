@@ -1,0 +1,67 @@
+{
+    "sources": [
+        {
+            "source_name": "sales_reports",
+            "base_path_ingest": "s3://ce-2-8-examples-bucket/ingest/",
+            "conn_id_ingest": "aws_de_team",
+            "base_path_intermediate": "s3://ce-2-8-examples-bucket/process/",
+            "conn_id_intermediate": "aws_de_team",
+            "base_path_load": "s3://ce-2-8-examples-bucket/load/",
+            "conn_id_load": "aws_de_team",
+            "dataset_uri": "s3://ce-2-8-examples-bucket/load/sales_reports",
+            "dag_id": "ingest_sales_reports",
+            "start_date": "2024-01-01T00:00:00Z",
+            "schedule": "@daily",
+            "catchup": false,
+            "tags": [
+                "sales_reports",
+                "ETL"
+            ],
+            "dag_owner": "Avery",
+            "task_retries": 3, 
+            "table_creation_sql": "CREATE TABLE IF NOT EXISTS sales_reports_table (Date TIMESTAMP_NTZ, PurchaseID VARCHAR(36), ProductName VARCHAR(255), QuantitySold INTEGER, Revenue FLOAT);"
+        },
+        {
+            "source_name": "customer_feedback",
+            "base_path_ingest": "s3://ce-2-8-examples-bucket/ingest/",
+            "conn_id_ingest": "aws_de_team",
+            "base_path_intermediate": "s3://ce-2-8-examples-bucket/process/",
+            "conn_id_intermediate": "aws_de_team",
+            "base_path_load": "s3://ce-2-8-examples-bucket/load/",
+            "conn_id_load": "aws_de_team",
+            "dataset_uri": "s3://ce-2-8-examples-bucket/load/customer_feedback",
+            "dag_id": "ingest_customer_feedback",
+            "start_date": "2024-01-01T00:00:00Z",
+            "schedule": "@daily",
+            "catchup": false,
+            "tags": [
+                "customer_feedback",
+                "ETL"
+            ],
+            "dag_owner": "Peanut",
+            "task_retries": 3,
+            "table_creation_sql": "CREATE TABLE IF NOT EXISTS customer_feedback_table (Date TIMESTAMP, CustomerID VARCHAR(36), PurchaseID VARCHAR(36), Rating INTEGER, Comments VARCHAR(255));"
+        },
+        {
+            "source_name": "customer_data",
+            "base_path_ingest": "s3://ce-2-8-examples-bucket/ingest/",
+            "conn_id_ingest": "aws_de_team",
+            "base_path_intermediate": "s3://ce-2-8-examples-bucket/proces/",
+            "conn_id_intermediate": "aws_de_team",
+            "base_path_load": "s3://ce-2-8-examples-bucket/load/",
+            "conn_id_load": "aws_de_team",
+            "dataset_uri": "s3://ce-2-8-examples-bucket/load/customer_data",
+            "dag_id": "ingest_customer_data",
+            "start_date": "2024-01-01T00:00:00Z",
+            "schedule": "@daily",
+            "catchup": false,
+            "tags": [
+                "customer_data",
+                "ETL"
+            ],
+            "dag_owner": "Butter",
+            "task_retries": 3,
+            "table_creation_sql": "CREATE TABLE IF NOT EXISTS customer_data_table (CustomerID VARCHAR(36), Email VARCHAR(255), Address VARCHAR(255), NumberOfDogs INTEGER, NumPreviousPurchases INTEGER);"
+        }
+    ]
+}

@@ -1,0 +1,82 @@
+name: Astronomer CI - Deploy code (Multiple Branches)
+
+on:
+  push:
+    branches:
+      - best-practices-stage
+      - best-practices-prod
+  pull_request:
+    types:
+      - closed
+    branches:
+      - best-practices-prod
+
+jobs:
+  stage-push:
+    if: github.ref == 'refs/heads/best-practices-stage'
+    env:
+      ## Sets DEV Deployment API credential as an environment variable
+      ASTRO_API_TOKEN: ${{ secrets.BEST_PRACTICES_STAGE_ASTRO_API_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout our Repo.
+          uses: actions/checkout@v4
+
+      - name: Install the Astro CLI.
+        run: |
+          curl -sSL install.astronomer.io | sudo bash -s
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and export
+        uses: docker/build-push-action@v3
+        with:
+          context: deployments/${{ matrix.subdir }}
+          tags: astro-image:${{ github.sha }}
+          load: true
+          push: false
+      
+      - name: Run Astro test harness.
+        run: |
+          # Ignore failures during testing
+          astro dev pytest
+
+      - name: Deploy to Astro
+        uses: astronomer/deploy-action@v0.2
+        with:
+          deployment-id: ${{ vars.BEST_PRACTICES_STAGE_ASTRO_DEPLOYMENT_ID }}
+  prod-merge:
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
+    env:
+      ## Sets Prod Deployment API credential as an environment variable
+      ASTRO_API_TOKEN: ${{ secrets.BEST_PRACTICES_PROD_ASTRO_API_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout our Repo.
+          uses: actions/checkout@v4
+
+      - name: Install the Astro CLI.
+        run: |
+          curl -sSL install.astronomer.io | sudo bash -s
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and export
+        uses: docker/build-push-action@v3
+        with:
+          context: deployments/${{ matrix.subdir }}
+          tags: astro-image:${{ github.sha }}
+          load: true
+          push: false
+      
+      - name: Run Astro test harness.
+        run: |
+          # Ignore failures during testing
+          astro dev pytest
+
+      - name: Deploy to Astro
+        uses: astronomer/deploy-action@v0.2
+        with:
+          deployment-id: ${{ vars.BEST_PRACTICES_PROD_ASTRO_DEPLOYMENT_ID }}

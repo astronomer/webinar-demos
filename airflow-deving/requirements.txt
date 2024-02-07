@@ -1,0 +1,8 @@
+apache-airflow==2.8.1
+scikit-learn==1.4.0
+apache-airflow-providers-snowflake==5.3.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+transformers==4.37.1
+pandas==1.5.3
+pyarrow==15.0.0
+torch==2.2.0

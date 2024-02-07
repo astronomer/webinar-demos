@@ -1,0 +1,101 @@
+CustomerID,Email,Address,NumberOfDogs,NumPreviousPurchases
+3e004ef1-8faa-4f01-89e7-c74adad709c4,rjames@example.com,"815 Washington Port Suite 199, West Sergioburgh, ME 08388",1,15
+9530b854-5a48-4b82-a7ae-a4efc263f7a6,tracyball@example.org,"4907 Jennifer Union Suite 980, East Henry, AL 18532",3,18
+5ed75a45-0e73-4385-8f1f-9f15b9a82d25,rileylori@example.net,"PSC 6593, Box 6999, APO AP 28816",4,14
+84a16db7-89f9-4a53-a8e1-7f25b708da33,thomasvirginia@example.net,"638 Jordan Meadow, Lake Hunter, FM 48681",5,1
+cf389e41-ac95-470e-b16f-65062fdaedb9,swilliams@example.org,"172 Miller Orchard, Lake Joshuafort, NM 55627",3,12
+910d5dad-9b3d-4edf-a706-412e6744a39f,brandon17@example.net,"5600 Schmidt Prairie, North Adam, VA 94947",2,13
+30fad97c-ee15-4e35-b40c-73c337106de0,strevino@example.net,"707 Matthew Branch Suite 631, Christieland, MD 28678",4,17
+77abf4ba-10ff-4b4b-81bf-c665f25ff5a7,robinsonrenee@example.org,"672 Lorraine Loaf, Aprilport, AL 17605",5,20
+85e224c7-4c7e-48df-8781-ab1093f0af30,mturner@example.net,"5956 Cruz Viaduct, Michaelfort, IA 32518",2,20
+45c5c938-ddd6-4e04-ba27-bb77eb83a3a4,apeterson@example.org,"930 Christopher Meadows Suite 081, Tiffanyland, UT 20002",4,19
+84987899-cdb0-4e52-915f-aa46c9047ec4,cassidyhoward@example.com,"97397 Ruiz Well, Jordanburgh, IA 93621",4,15
+159161b0-4438-4e9a-b620-9bf4d1c6dda2,garciacourtney@example.net,"330 Jason Ridge Apt. 005, Gomezview, DE 81701",1,3
+8bd52a36-c719-4df6-ad75-66da0769e2ce,tina45@example.com,"464 Martin Well, South Jennifer, TX 40816",1,12
+7938f852-8959-4be6-99a3-2001aa3101f6,vazquezmaria@example.net,"214 Matthew Junction Apt. 427, Jacobfurt, FM 37917",1,17
+94317f04-8fbd-4761-858d-77b5f19f0de6,todd35@example.org,"1231 Oscar Lake Suite 737, East Zachary, VT 12503",3,2
+d7ca434d-4eb9-4211-9ab0-214973d64ab5,leeclaire@example.org,"7454 Amy Lakes, Franklinhaven, MH 55915",3,18
+1440ae27-7da6-4e44-a748-6ad9402fe1be,woodcraig@example.com,"PSC 9689, Box 8667, APO AP 13325",3,19
+782c3ddc-c3bf-4905-b9c3-35c525ca0a47,angelaherman@example.com,"110 Marissa Avenue Suite 749, Port Lisa, ME 06363",1,19
+35d6ad2e-5f7b-4e0c-b150-fb1823e41d59,vmurphy@example.net,"Unit 5214 Box 8747, DPO AE 00753",2,9
+1b84fc9b-5fa4-4146-ae0d-e9e4b48b7359,nicholaswood@example.com,"28506 Ivan Terrace Suite 001, East Heathermouth, TX 44025",1,4
+c55e59d7-e62a-4f79-aed9-24a0beec716e,clarkelauren@example.com,"2071 Lindsey Stravenue Apt. 221, Nicholsstad, AL 24379",3,3
+b59a90d8-c05a-4a5f-85e8-a75ecfcd997f,elizabeth46@example.org,"PSC 1268, Box 4509, APO AA 52847",2,15
+5c95c83c-a50f-4475-8136-4cfb2f816014,jenkinseric@example.net,"7615 Mcgee Plain, Colefurt, PW 18831",5,12
+0ad56657-c066-4c10-b605-02dc4df3116c,lloydashlee@example.com,"38342 Cox Gateway, New Robertfort, TN 60662",3,14
+f164ab33-1a22-4ccd-92de-d6284033c663,edward56@example.com,"031 Antonio Street Suite 148, Brandonchester, MI 42842",4,10
+06f9e8c9-0e2e-4978-9f41-d76de0ccedf9,michelle37@example.com,"37422 Benjamin Port Suite 793, Hallview, TN 02171",3,4
+abd33d77-ba66-486b-b32b-989c65a99879,deborahmatthews@example.org,"USCGC Walker, FPO AE 32583",4,11
+2df75ad9-8860-4f75-8e65-23d57428a5aa,aalvarado@example.org,"77783 Barnes Estates, Harveyburgh, MS 11341",2,3
+9f616c18-c9b9-4824-a753-7705fdff0b57,xlam@example.org,"867 Michael Loop, South Nathanborough, FM 28263",2,19
+fad75995-fbea-46b9-adf2-248bbd6550f9,valdezdonna@example.net,"3786 Caitlin Knoll Suite 610, New Kimberg, SC 52846",3,6
+682305dc-1a85-46c2-b6b9-11c118812ed6,ihenderson@example.org,"2477 Flores Expressway Suite 944, Simpsonland, FM 62607",5,6
+d52d62c8-e6b2-4436-a0e8-07f6cbca6749,eevans@example.org,"1837 Barron Branch, Lake Margaret, SC 50543",2,17
+20daaa99-3647-4779-82a4-a7ee4220c020,hillchristopher@example.net,"PSC 6975, Box 5496, APO AA 71478",2,8
+69987b5a-126d-49f8-a507-7b2d791746bf,shudson@example.net,"811 Acevedo Park, Pamelaborough, AR 98104",4,8
+7618d0f8-f4ad-49bd-b9f9-69d467c1d666,pcohen@example.com,"405 Schroeder Roads, Andreaview, OR 97533",3,13
+37ca98b8-5813-44e6-8207-c7e3ed2333ab,josephharvey@example.net,"250 Ricky Gardens Suite 887, Port Lauren, NC 37931",2,8
+82077cf4-4b4b-4e44-a950-76304a257948,kbarton@example.net,"8497 Dave Ville Apt. 778, Lake Brian, MD 41074",1,18
+3dedf232-5ac4-4c78-b4e7-4a4eac776049,angelapollard@example.net,"399 Mark Circle Apt. 185, Jonesville, MD 71804",5,4
+18f2317a-6e22-482a-8434-7d59ca3f7e08,mnelson@example.net,"02426 Stephanie Meadow, South Paul, HI 52669",4,19
+291ecbea-aad4-4fc9-a246-d5dff841757a,william39@example.net,"84984 Laura Ramp, South Christopherside, NE 83937",1,13
+2e2f11e0-0cce-405a-9d87-795dcdc4757d,morganhayden@example.com,"09641 Greene Mews Apt. 144, Lake Eric, MD 28414",2,6
+e27d12e7-29bc-48a5-89a5-3a8a349cdc46,heather71@example.com,"Unit 1544 Box 0569, DPO AE 29728",4,7
+1cc419c2-3873-4422-9dbb-0aafd2193ee1,burtonlisa@example.net,"717 Ian Crescent Suite 532, Brownberg, DE 08877",1,16
+77fdef06-04ab-4cd2-89a4-86368f88253c,kevin30@example.org,"116 Scott Viaduct, Leefort, MD 72684",1,14
+0922b9b3-21c7-45f3-a214-1db6b407faaf,wberry@example.com,"02758 Gray Ports, East Jessica, VT 08064",3,7
+f2101c65-e9ea-41e7-a14f-040144179ad6,clewis@example.com,"19473 Lowery Lake Suite 284, Padillaland, MA 80113",5,17
+883d83dd-5ded-4441-8c38-62a5224e9550,gsanders@example.net,"52724 Shawna Forge, Brownmouth, DE 08578",3,14
+6b340713-6eed-4b4b-861f-b67e398f7de1,william56@example.net,"888 Jones Views, Tracyberg, MN 60961",1,16
+f0086489-d269-48e8-8956-76fb509796e7,angelarivera@example.com,"78284 Alan Keys, Toddberg, VA 36032",1,4
+cc20bb5a-75d0-4f44-a408-d6d0b5e987bf,thomasdavid@example.com,"1673 Ramirez Plains Suite 117, New James, WI 20672",5,20
+b11a0a47-f369-418c-a03b-833bb1ee54c9,robrien@example.net,"847 Hall Dale Apt. 458, Jessicaview, MP 46265",3,8
+b1d3c3f9-3703-4cb4-bd7e-e751615ab8ad,marksmith@example.org,"71101 Woods Camp, Jessicastad, AR 98581",5,1
+ba6ab6a1-8fdb-47c4-8c9e-6fc2b1ad927a,zachary62@example.net,"1004 Mary Burg, Jenningsside, PR 29624",1,4
+25f37f05-e778-465a-9315-5dd159b6b2f2,davisbethany@example.org,"868 Garcia Bridge Apt. 217, Lake Stephaniestad, MD 29727",5,2
+2fb59b98-d198-4760-b392-28265286e4fd,pwilliamson@example.net,"794 Steven Hollow Suite 179, Bettymouth, LA 69326",1,4
+511e760e-f183-4091-811a-7598ddaba201,joseph17@example.com,"5102 Teresa Neck, New Davidmouth, NJ 21047",4,1
+f5e18a3f-bf6c-44b9-8978-bb9cb22e4ce6,stephenlevine@example.com,"430 Shepherd Highway, North Deborah, FL 56860",5,8
+e8ec86a7-7b3a-4ed3-a24e-d5d2e899db0f,jford@example.com,"98622 Hunter Lake, Lake Jeanetteton, AS 99402",4,7
+7910315e-a62c-48a1-bd10-2f362f954518,mark59@example.net,"193 Kenneth Streets Suite 960, New Carrieburgh, HI 88033",3,13
+1387d5f4-f071-4ba5-848f-c0b52ae4495b,deborahmadden@example.net,"4229 Kristina Underpass Apt. 394, Thompsonburgh, IN 17148",2,15
+c6b0b989-372f-48c0-9ee5-7cc12f9a6647,jade02@example.org,"17452 Jill Gardens Suite 253, West John, SC 03103",4,10
+b6623f8d-87f9-41f8-9b44-a0e2d20b8a44,mullenroy@example.com,"3130 Ryan Island, North Theresafurt, OH 57791",3,5
+5b1dbc55-f6ec-477e-9368-68ee2b81ac1b,kelsey62@example.org,"126 Tran Views Apt. 728, West Michael, VT 81451",3,2
+e4f8bfe0-2ac0-4174-b0bf-e5f8adcec6e3,briannielsen@example.com,"9431 Michael Row, East Michelle, SC 23446",5,1
+289a5ea7-97cd-466a-96c9-85fc558e1e81,ubennett@example.net,"12888 Reilly Brooks, Danielsstad, WY 52559",4,4
+ca4ec074-4b09-4052-9a0f-922c1406eeb4,ralphford@example.net,"404 Howell Springs, Ashleyland, DE 04362",5,15
+fc9676cc-c440-42c2-a9a6-30667caa76ab,igarcia@example.com,"PSC 3142, Box 6737, APO AE 17675",5,8
+d498901f-b271-4653-83f4-14614bea3c8c,ilowe@example.com,"95325 Jack Mountains Suite 458, Stephaniehaven, MI 58491",1,16
+3af32882-ad36-49f9-834b-fc6a72eb1130,flarson@example.org,"965 Dalton Alley, Jacquelineburgh, WY 29255",3,15
+e28d574f-acf0-456a-ad5b-dde9e957b546,jose42@example.org,"83905 Mark Lane Apt. 103, Port Jennifer, VA 66058",2,3
+8a61bf86-b5e1-4259-9e6f-5fd779e279d0,lewissandra@example.net,"4000 Belinda Roads, East Sheilafort, OR 49172",1,9
+5d1276af-ee8a-4545-865b-500a9bfc2c63,thompsonchristopher@example.net,"5105 Ray Pass, West Ronnie, MO 17035",2,6
+24b48901-3362-43aa-8667-dfb86139ac35,evandixon@example.org,"4151 Liu Corners, Smithton, UT 89677",4,18
+55b49287-f6c7-4e66-a664-d51b4e12bc20,jason64@example.net,"4192 Brown Stravenue Apt. 205, Lucasport, CO 38118",2,8
+e665bba1-7f9e-4039-81b8-6f53cdbec211,xsmith@example.net,"710 Danielle Orchard Suite 982, Montesmouth, UT 57258",2,3
+72a3d380-3ce4-455e-aaa4-5a52c2d26aba,lori36@example.com,"053 Branch Glen, Cindyfort, GA 58675",1,1
+8c970e36-4b3c-4517-a4a4-ba3f8c2f4bc4,pray@example.org,"228 Bobby Drive, Jacksontown, RI 37837",1,4
+c6a53d77-8e51-4587-9575-095f6a2dbbe4,jturner@example.net,"6664 Pamela Course Suite 154, Michaelton, IN 96325",3,5
+89d3f3ce-a843-4e0f-8ec1-9ede8754f316,matthewthompson@example.net,"007 Amber Lock Apt. 654, West Don, SC 72901",4,18
+1c484022-b7af-4b09-a0b8-fc0a579576f6,keithbolton@example.org,"0793 Shelly Plains Apt. 001, North Randy, VI 28334",3,11
+5c4f3a60-5d54-4001-b896-9a27a183cd8f,murphykevin@example.org,"7358 Barry Camp Apt. 464, Sherriland, IA 95113",5,6
+90690c66-ea88-4fd3-8ca9-98db987c9aae,blakewilliams@example.net,"65593 Stacy Isle Suite 711, Rossfurt, HI 30718",2,13
+fb38db8d-02fe-4afe-804a-0bd3ec1c7dcc,taylor77@example.org,"105 Stevens Mall Suite 262, West Darrenmouth, FM 37802",2,18
+63772553-168e-4fcd-8cbf-f614842cd9a5,torrescharles@example.org,"69911 Newman Creek Suite 286, South Daniel, VT 51740",2,7
+51ef388b-5e71-4a09-ad1e-7f808f0644da,ygentry@example.com,"12499 Desiree Heights Suite 718, Rogerborough, AK 62903",1,7
+4cf1dbc7-a009-40c0-b733-eaf8b62d8227,matthewwagner@example.org,"570 Cardenas Lock Apt. 095, South Rachel, VI 60800",5,11
+dee91a36-5348-4179-8417-a65dad473662,pstone@example.net,"02477 Brendan Mills Apt. 784, New Courtneyberg, DE 64898",5,8
+573bc2d2-5c70-4e5f-95d8-e8cda60e4967,kempcrystal@example.com,"32625 Anthony Brooks Suite 216, South Shannonfort, AK 46347",5,9
+c2fca4dd-e5db-462b-951e-27708e29e8f7,jill69@example.net,"9438 Kerri Inlet Apt. 626, New Brittney, NM 06884",2,19
+288aec2d-28dd-4a7c-8500-f498f87d5ab4,atkinsjason@example.net,"9796 Matthew Alley, Raymondfurt, WY 39975",3,9
+172b18b0-b66f-436a-bb16-e2ea4cca2b79,finleyzachary@example.net,"65813 April Keys Apt. 240, East Raymondberg, IL 95070",4,12
+0547ba23-45ae-4afb-be8e-b04bc3593ada,amysimpson@example.com,"066 Frank Springs, Brownhaven, MH 16432",3,17
+919caeec-e590-48a9-b417-cfa4b99190d9,yrobinson@example.com,"6394 Allison Path Suite 071, Mccarthyberg, MH 27816",4,17
+8c263a4b-88db-468c-9346-6de3ac8f44ff,hevans@example.org,"67393 Martin Locks Apt. 480, Thompsonville, FL 43428",5,1
+61ed7823-e39c-4878-b0c9-bfee252bb6d4,taylor44@example.com,"258 Cameron Wells Suite 282, Evansbury, AK 03237",2,8
+ee90f423-ffb9-477e-b59c-437f3784e5c0,sallykelley@example.net,"085 Karen Mall Suite 016, Tuckerfort, MA 34599",4,11
+7e715a38-cee9-4e01-89ee-e0ddc6cca3bf,hudsonnathan@example.org,"6039 Charles Prairie, Port Bethanyville, NC 94705",3,8
+66ba4f4c-fa33-49e6-882a-191ce8e0f64e,brianagilbert@example.org,"251 Brittany Meadows, Gonzalezburgh, PW 09073",1,17
+e56cc978-90d4-4c29-a797-6c9ce2c60eff,kaiseramanda@example.org,"549 Alice Path Apt. 646, Wangland, TN 37799",4,4
+a107f142-e10c-479e-8ae5-88c3cc549468,mhebert@example.org,"1996 Ryan Via Suite 306, East Kimberly, OK 58539",3,8
