@@ -24,7 +24,7 @@ SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID", "snowflake_de_team")
     start_date=datetime(2024, 1, 1),
     schedule=[Dataset("snowflake://customer_feedback_table")],
     catchup=False,
-    tags=["ML"],
+    tags=["ML", "HappyWoofs"],
     default_args={"owner": "Pakkun", "retries": 3, "retry_delay": 5},
     description="Analyze customer feedback",
     doc_md=__doc__,
@@ -40,8 +40,19 @@ def analyze_customer_feedback():
 
     @task_group
     def get_sentiment(feedback):
+        """
+        Get the sentiment of the feedback using two tasks.
+        """
+
         @task
-        def process_feedback(feedback):
+        def process_feedback(feedback: dict) -> str:
+            """
+            Process the feedback to remove punctuation.
+            Args:
+                feedback: The feedback to process.
+            Returns:
+                str: The processed feedback.
+            """
             comment = feedback["COMMENTS"].translate(
                 str.maketrans("", "", string.punctuation)
             )
@@ -51,7 +62,14 @@ def analyze_customer_feedback():
         @task(
             queue="ml-queue",
         )
-        def analyze_sentiment(processed_text):
+        def analyze_sentiment(processed_text: str) -> list:
+            """
+            Analyze the sentiment of the feedback.
+            Args:
+                processed_text: The processed feedback.
+            Returns:
+                list: The sentiment of the feedback.
+            """
             from transformers import pipeline
 
             sentiment_pipeline = pipeline(
@@ -66,7 +84,14 @@ def analyze_customer_feedback():
         return analyze_sentiment(process_feedback(feedback))
 
     @task
-    def report_on_results(sentiments):
+    def report_on_results(sentiments: list) -> tuple[int, int, int]:
+        """
+        Report on the results of the sentiment analysis.
+        Args:
+            sentiments: The results of the sentiment analysis.
+        Returns:
+            tuple[int, int, int]: The counts of positive, negative, and neutral sentiments.
+        """
         positive_count = 0
         negative_count = 0
         neutral_count = 0

@@ -1,0 +1,5 @@
+my_aws_conn:
+  conn_type: aws
+  login: <your-AWS-key>
+  password: <your-AWS-secret>
+  conn_id: my_aws_conn

@@ -44,3 +44,12 @@ This repository contains:
 9. Run `astro dev start` to start the Airflow webserver and scheduler.
 10. Navigate to `localhost:8080` in your browser to see the Airflow UI.
 11. Unpause all DAGs. The first run of the `ingest` DAGs will automatically start and trigger downstream DAGs via [Datasets](https://docs.astronomer.io/learn/airflow-datasets).
+
+
+## Using `dag.test()`
+
+Before running `dag.test()` on DAGs that import modules from the `include` folder, you need to add the `include` folder to the `PYTHONPATH` environment variable. You can do this by running the following command in the terminal:
+
+```bash
+export PYTHONPATH="<absolute-path-to-your-astro-project>:$PYTHONPATH"
+```
