@@ -208,6 +208,9 @@ def good_dag():
         )
 
         return df
+    
+
+
 
     # ------------ #
     # Dependencies #
@@ -243,12 +246,12 @@ good_dag_obj = good_dag()
 
 if __name__ == "__main__":
 
-    # conn_path = "connections.yaml"
-    # variables_path = "variables.yaml"
+    # conn_path = "include/connections_and_vars_for_dagtest/connections.yaml"
+    # variables_path = "include/connections_and_vars_for_dagtest/variables.yaml"
     toy_of_interest = "Stack of Artisinal Homework"
 
     good_dag_obj.test(
-        # execution_date=datetime(2024, 1, 30),
+        execution_date=datetime(2024, 5, 30),
         # conn_file_path=conn_path,
         # variable_file_path=variables_path,
         run_conf={"toy_of_interest": toy_of_interest},

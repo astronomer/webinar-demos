@@ -1,6 +1,5 @@
 """
 ## Create features to train a regression model on to predict customer ratings
-
 """
 
 from airflow.datasets import Dataset
@@ -10,12 +9,14 @@ from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from pendulum import datetime
 import json
 import os
+import pandas as pd
 
 with open("include/dynamic_dag_generation/ingestion_source_config.json", "r") as f:
     config = json.load(f)
 
 SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID", "snowflake_de_team")
 FEATURES_TABLE_NAME = os.getenv("FEATURES_TABLE_NAME", "FEATURES_TABLE")
+BASE_FEATURES_TABLE_NAME = os.getenv("BASE_FEATURES_TABLE_NAME", "BASE_FEATURES")
 
 
 @dag(
@@ -25,7 +26,7 @@ FEATURES_TABLE_NAME = os.getenv("FEATURES_TABLE_NAME", "FEATURES_TABLE")
         for source in config["sources"]
     ],
     catchup=False,
-    tags=["ML"],
+    tags=["ML", "HappyWoofs"],
     default_args={"owner": "Haexli", "retries": 3, "retry_delay": 5},
     description="Feature creation for regression model",
     doc_md=__doc__,
@@ -33,8 +34,8 @@ FEATURES_TABLE_NAME = os.getenv("FEATURES_TABLE_NAME", "FEATURES_TABLE")
 def satisfaction_model_train():
     join_tables = SnowflakeOperator(
         task_id="create_file_format",
-        sql="""
-            CREATE OR REPLACE TABLE HAPPYWOOFSDWH.HAPPYWOOFSDEV.BASE_FEATURES AS
+        sql=f"""
+            CREATE OR REPLACE TABLE HAPPYWOOFSDWH.HAPPYWOOFSDEV.{BASE_FEATURES_TABLE_NAME} AS
             SELECT
                 c.CUSTOMERID,
                 c.NUMBEROFDOGS,
@@ -56,11 +57,14 @@ def satisfaction_model_train():
     )
 
     @task
-    def prepare_features():
-        import pandas as pd
+    def prepare_features() -> pd.DataFrame:
+        """
+        Prepare features for training the regression model.
+        Returns:
+            pd.DataFrame: DataFrame containing the features and target variable.
+        """
         from sklearn.preprocessing import OneHotEncoder
         from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
-        from snowflake.connector.pandas_tools import write_pandas
 
         query = """
             SELECT
@@ -105,7 +109,12 @@ def satisfaction_model_train():
         return df
 
     @task
-    def train_model(df):
+    def train_model(df: pd.DataFrame) -> None:
+        """
+        Train a regression model to predict customer ratings.
+        Args:
+            df (pd.DataFrame): DataFrame containing the features and target variable.
+        """
         from sklearn.model_selection import train_test_split
         from sklearn.linear_model import LinearRegression
         from sklearn.metrics import mean_squared_error
@@ -137,7 +146,6 @@ def satisfaction_model_train():
 
         mse = mean_squared_error(y_test, y_pred)
         print(f"Mean Squared Error: {mse}")
-
 
     model_trained = train_model(prepare_features())
 

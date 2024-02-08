@@ -1,6 +1,7 @@
 # Astro Runtime includes the following pre-installed providers packages: https://docs.astronomer.io/astro/runtime-image-architecture#provider-packages
 scikit-learn==1.4.0
 apache-airflow-providers-snowflake==5.3.0
+apache-airflow-providers-common-sql==1.10.0
 --extra-index-url https://download.pytorch.org/whl/cpu
 transformers==4.37.1
 torch==2.2.0

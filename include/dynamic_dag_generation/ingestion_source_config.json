@@ -15,7 +15,8 @@
             "catchup": false,
             "tags": [
                 "sales_reports",
-                "ETL"
+                "ETL",
+                "HappyWoofs"
             ],
             "dag_owner": "Avery",
             "task_retries": 3, 
@@ -36,7 +37,8 @@
             "catchup": false,
             "tags": [
                 "customer_feedback",
-                "ETL"
+                "ETL",
+                "HappyWoofs"
             ],
             "dag_owner": "Peanut",
             "task_retries": 3,
@@ -57,7 +59,8 @@
             "catchup": false,
             "tags": [
                 "customer_data",
-                "ETL"
+                "ETL",
+                "HappyWoofs"
             ],
             "dag_owner": "Butter",
             "task_retries": 3,

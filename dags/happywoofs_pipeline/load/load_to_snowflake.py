@@ -25,7 +25,6 @@ For example for 3 sources you would need to create these 3 stages:
 
 """
 
-
 from airflow.datasets import Dataset
 from airflow.decorators import dag
 from airflow.models.baseoperator import chain
@@ -48,7 +47,7 @@ SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID", "snowflake_de_team")
     start_date=datetime(2024, 1, 1),
     schedule=ingestion_datasets,
     catchup=False,
-    tags=["load"],
+    tags=["load", "HappyWoofs"],
     default_args={"owner": "Piglet", "retries": 3, "retry_delay": 5},
     description="Load data from S3 to Snowflake",
     doc_md=__doc__,

@@ -1,3 +1,5 @@
+"""CAVE: This DAG is intentionally bad!"""
+
 from airflow.decorators import dag, task
 from pendulum import datetime
 import pandas as pd
@@ -5,7 +7,11 @@ from transformers import (
     pipeline,
 )  # heavy imports should be inside the function if not needed at the top level
 import os
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
+# connections to a database at the top level should be avoided -> this is parsed 
+# every 30s!
+snowflake_connection = SnowflakeHook(snowflake_conn_id="snowflake_de_team")
 
 @dag(
     start_date=datetime(2024, 1, 1),
@@ -49,6 +55,8 @@ def bad_dag():
 
         print(f"The comment {comment} has a sentiment score of {sentiment_score}")
 
+        print(df2)
+
         df3 = pd.read_csv(
             "include/data_generation/data/ingest/sales_reports/sales_reports3.csv"
         )
@@ -56,20 +64,25 @@ def bad_dag():
         for score in list_of_sentiments:
             comment = score["comment"]
             sentiment_score = score["sentiment_score"]
-            breakpoint()
             count = df1[df1["Comments"] == comment].shape[0]
             print(
                 f"The comment {comment} has a sentiment score of {sentiment_score} and was given {count} times."
             )
 
+        print(df1)
+
         toy_of_interest = context["params"]["toy_of_interest"]
 
-        df = df.groupby("ProductName").agg({"QuantitySold": "sum"})
-
-        print(f"The average number of purchases per toy is {df['QuantitySold'].mean()}")
+        df3 = df3.groupby("ProductName").agg({"QuantitySold": "sum"})
 
         print(
-            f"The average number of purchases for the toy {toy_of_interest} is {df.loc[toy_of_interest, 'QuantitySold']}"
+            f"The average number of purchases per toy is {df3['QuantitySold'].mean()}"
+        )
+
+        print(df3)
+
+        print(
+            f"The average number of purchases for the toy {toy_of_interest} is {df3.loc[toy_of_interest, 'QuantitySold']}"
         )
 
         return list_of_sentiments

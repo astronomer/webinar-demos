@@ -1,6 +1,3 @@
-"Helper functions for HuggingFace models."
-
-
 def get_sentiment_score(
     model: str,
     text_input: str,

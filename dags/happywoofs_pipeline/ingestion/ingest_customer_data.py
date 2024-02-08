@@ -19,7 +19,7 @@ from include.dynamic_dag_generation.helper_functions import evaluate_new_file, v
     start_date=parse("2024-01-01T00:00:00Z"),
     schedule="@daily",
     catchup=False,
-    tags=["customer_data", "ETL"],
+    tags=["customer_data", "ETL", "HappyWoofs"],
     default_args={
         "owner": "Butter",
         "retries": 3,
