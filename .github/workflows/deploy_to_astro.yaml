@@ -25,21 +25,9 @@ jobs:
       - name: Install the Astro CLI.
         run: |
           curl -sSL install.astronomer.io | sudo bash -s
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and export
-        uses: docker/build-push-action@v3
-        with:
-          context: deployments/${{ matrix.subdir }}
-          tags: astro-image:${{ github.sha }}
-          load: true
-          push: false
       
       - name: Run Astro test harness.
         run: |
-          # Ignore failures during testing
           astro dev pytest
 
       - name: Deploy to Astro
@@ -59,21 +47,9 @@ jobs:
       - name: Install the Astro CLI.
         run: |
           curl -sSL install.astronomer.io | sudo bash -s
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and export
-        uses: docker/build-push-action@v3
-        with:
-          context: deployments/${{ matrix.subdir }}
-          tags: astro-image:${{ github.sha }}
-          load: true
-          push: false
       
       - name: Run Astro test harness.
         run: |
-          # Ignore failures during testing
           astro dev pytest
 
       - name: Deploy to Astro
