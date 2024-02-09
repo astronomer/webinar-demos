@@ -18,7 +18,10 @@ from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
     start_date=datetime(2024, 1, 1),
     schedule_interval="@daily",
     catchup=False,
-    # default args missing, no retries
+    # during the webinar retries were missing which causes a test failure with astro dev pytest!!
+    default_args={
+        "retries": 3,
+    },
     params={
         "toy_of_interest": "Carrot Plushy",  # Param but without list of options
     },
