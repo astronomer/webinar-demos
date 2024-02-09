@@ -11,18 +11,14 @@ from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 # connections to a database at the top level should be avoided -> this is parsed
 # every 30s!
-snowflake_connection = SnowflakeHook(snowflake_conn_id="snowflake_de_team")
+# snowflake_connection = SnowflakeHook(snowflake_conn_id="snowflake_de_team")
 
 
 @dag(
     start_date=datetime(2024, 1, 1),
-    schedule="@daily",
+    schedule_interval="@daily",
     catchup=False,
     # default args missing, no retries
-    default_args={
-        "owner": "Anonymous",
-        "retries": 3,
-    },
     params={
         "toy_of_interest": "Carrot Plushy",  # Param but without list of options
     },

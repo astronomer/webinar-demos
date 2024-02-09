@@ -9,7 +9,7 @@ There are no extra connections required for this DAG.
 
 ![A very good dog](https://place.dog/300/200)
 """
-
+from airflow.providers.common.sql.operators.sql import SQLColumnCheckOperator
 from airflow.decorators import dag, task
 from airflow.models.param import Param
 from pendulum import datetime
@@ -135,7 +135,6 @@ def good_dag():
         for score in sentiment_scores:
             comment = score["comment"]
             sentiment_score = score["sentiment_score"]
-            # breakpoint()
             count = df[df["Comments"] == comment].shape[0]
             task_logger.info(
                 f"The comment {comment} has a sentiment score of {sentiment_score} and was given {count} times."
@@ -208,9 +207,6 @@ def good_dag():
         )
 
         return df
-    
-
-
 
     # ------------ #
     # Dependencies #
@@ -251,7 +247,7 @@ if __name__ == "__main__":
     toy_of_interest = "Stack of Artisinal Homework"
 
     good_dag_obj.test(
-        execution_date=datetime(2024, 5, 30),
+        # execution_date=datetime(2025, 1, 1),
         # conn_file_path=conn_path,
         # variable_file_path=variables_path,
         run_conf={"toy_of_interest": toy_of_interest},
