@@ -14,3 +14,4 @@ airflow-deving/lib
 airflow-deving/pyvenv.cfg
 airflow-deving/share
 upgrade-test* 
+webinar_copy_paste_code.py
