@@ -9,7 +9,7 @@ There are no extra connections required for this DAG.
 
 ![A very good dog](https://place.dog/300/200)
 """
-from airflow.providers.common.sql.operators.sql import SQLColumnCheckOperator
+
 from airflow.decorators import dag, task
 from airflow.models.param import Param
 from pendulum import datetime
