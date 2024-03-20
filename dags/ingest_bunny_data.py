@@ -61,13 +61,7 @@ def ingest_bunny_data():
         azure_data_factory_conn_id="azure_data_factory",
         factory_name="BunnyDF",
         resource_group_name="airflow-adf-webinar",
-    ).expand(
-        pipeline_name=[
-            "BunnyExtractBase",
-            "BunnyExtractMeasurement",
-            "BunnyExtractObserved",
-        ]
-    )
+    ).expand(pipeline_name=get_pipelines_to_run_obj)
 
     check_fav_food = SQLTableCheckOperator(
         task_id="check_fav_food",
@@ -80,22 +74,16 @@ def ingest_bunny_data():
         },
         trigger_rule="none_failed",
         on_failure_callback=lambda context: print("FavFood check failed"),
+        outlets=[Dataset("azuresql://bunny_data")],
     )
-
-    @task(outlets=[Dataset("azuresql://bunny_data")])
-    def update_dataset():
-        pass
-
-    update_dataset_obj = update_dataset()
 
     chain(
         get_pipelines_to_run_obj,
         run_extraction_pipelines,
         check_fav_food,
-        update_dataset_obj,
     )
 
-    chain(skip_adf_update, check_fav_food, update_dataset_obj)
+    chain(skip_adf_update, check_fav_food)
 
 
 ingest_bunny_data()
