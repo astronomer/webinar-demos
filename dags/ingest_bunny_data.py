@@ -50,7 +50,7 @@ def ingest_bunny_data():
         with open(file_path, "r") as file:
             bunny_list = json.load(file)
 
-        print(bunny_list)
+        return bunny_list
 
     get_pipelines_to_run_obj = get_pipelines_to_run()
 
