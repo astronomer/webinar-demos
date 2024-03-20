@@ -1,0 +1,16 @@
+{"Feature":"Cuteness","Coefficient":-3.6416731427}
+{"Feature":"EarLength","Coefficient":-0.6177600215}
+{"Feature":"Breed_Dutch","Coefficient":0.0}
+{"Feature":"Breed_Flemish Giant","Coefficient":0.0}
+{"Feature":"Breed_Lop","Coefficient":0.0}
+{"Feature":"Breed_Netherland Dwarf","Coefficient":0.0}
+{"Feature":"Breed_Rex","Coefficient":0.0}
+{"Feature":"FavFood_apples","Coefficient":0.0}
+{"Feature":"FavFood_carrots","Coefficient":-0.0835996209}
+{"Feature":"FavFood_kale","Coefficient":0.0}
+{"Feature":"FavFood_lettuce","Coefficient":0.0}
+{"Feature":"FurColor_black","Coefficient":0.0}
+{"Feature":"FurColor_brown","Coefficient":0.0}
+{"Feature":"FurColor_grey","Coefficient":0.0}
+{"Feature":"FurColor_spotted","Coefficient":0.0}
+{"Feature":"FurColor_white","Coefficient":0.0}
