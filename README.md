@@ -6,3 +6,4 @@ This repo contains public demos used in [Astronomer webinars](https://www.astron
 
 - Branch: [`connections-management`](https://github.com/astronomer/webinar-demos/tree/connections-management) - [How to manage connections in Airflow](https://www.astronomer.io/events/webinars/how-to-manage-connections-in-airflow-video/)
 - Branch: [`best-practices-prod`](https://github.com/astronomer/webinar-demos/tree/best-practices-prod) - [DAG writing for data engineers and data scientists](https://www.astronomer.io/events/webinars/dag-writing-for-data-engineers-and-data-scientists-video/)
+- Branch: [`how-to-orchestrate-azure-data-factory-jobs-with-airflow`](https://github.com/astronomer/webinar-demos/tree/how-to-orchestrate-azure-data-factory-jobs-with-airflow) - [How to Orchestrate Azure Data Factory Jobs with Airflow](https://www.astronomer.io/events/webinars/how-to-orchestrate-azure-data-factory-jobs-with-airflow-video/)
