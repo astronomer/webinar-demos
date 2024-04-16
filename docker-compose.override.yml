@@ -3,20 +3,6 @@ services:
   scheduler:
     networks:
     - airflow
-  minio:
-    image: quay.io/minio/minio
-    networks:
-      - airflow
-    command: server /data --console-address ":9001"
-    ports:
-      - 9000:9000
-      - 9001:9001
-    volumes:
-       - ${PWD}/include/minio:/data
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  
-    restart: always
-    env_file: .env
   weaviate:
     image: cr.weaviate.io/semitechnologies/weaviate:1.21.0
     # platform: linux/amd64
