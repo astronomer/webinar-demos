@@ -1,0 +1,14 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "features": {
+        "ghcr.io/astronomer/devcontainer-features/astro-cli:1": {
+            "version": "v1.25.0"
+        }
+    },
+    "forwardPorts": [
+        8080,
+        8081,
+        9001,
+        8501
+    ]
+}

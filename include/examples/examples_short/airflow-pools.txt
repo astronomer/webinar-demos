@@ -1,0 +1,3 @@
+## Airflow pools
+
+Airflow pools are a way to assign set of workers to tasks. A common use case is to give two tasks that should never run at the same time a pool with 1 worker slot!

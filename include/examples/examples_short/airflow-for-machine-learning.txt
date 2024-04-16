@@ -1,0 +1,3 @@
+## Airflow for machine learning
+
+Airflow is great for data engineering but even greater when you add generative AI piplines, like the one powering me!

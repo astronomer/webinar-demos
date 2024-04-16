@@ -1,0 +1,18 @@
+## Airflow Datasets
+
+With the Datasets feature, you can schedule any DAG on updates to Datasets from any tasks in an Airflow instance!
+
+
+```python 
+@dag(
+    start_date=datetime(2024, 3, 1),
+    schedule=(
+        Dataset("dataset1")
+        | Dataset("dataset2")
+        | Dataset("dataset3")
+        | Dataset("dataset4")
+    ),  # Use () instead of [] to be able to use conditional dataset scheduling!
+    catchup=False,
+)
+def downstream1_on_any():
+```

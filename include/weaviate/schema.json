@@ -1,0 +1,90 @@
+{
+    "classes": [
+        {
+            "class": "KB",
+            "description": "Knowledge about Airflow",
+            "vectorizer": "text2vec-openai",
+            "moduleConfig": {},
+            "properties": [
+                {
+                    "name": "uri",
+                    "description": "URI of Knowledge Base Source",
+                    "dataType": [
+                        "text"
+                    ],
+                    "moduleConfig": {
+                        "text2vec-openai": {
+                            "skip": "True",
+                            "vectorizePropertyName": "False"
+                        }
+                    }
+                },
+                {
+                    "name": "title",
+                    "description": "Title of the news article",
+                    "dataType": [
+                        "text"
+                    ],
+                    "moduleConfig": {
+                        "text2vec-openai": {
+                            "skip": "False",
+                            "vectorizePropertyName": "False"
+                        }
+                    }
+                },
+                {
+                    "name": "timestamp",
+                    "description": "Timestamp of the file",
+                    "dataType": [
+                        "text"
+                    ],
+                    "moduleConfig": {
+                        "text2vec-openai": {
+                            "skip": "True",
+                            "vectorizePropertyName": "False"
+                        }
+                    }
+                },
+                {
+                    "name": "full_text",
+                    "description": "Full text of the knowledge base article",
+                    "dataType": [
+                        "text"
+                    ],
+                    "moduleConfig": {
+                        "text2vec-openai": {
+                            "skip": "False",
+                            "vectorizePropertyName": "True"
+                        }
+                    }
+                },
+                {
+                    "name": "type",
+                    "description": "Type of the knowledge base source",
+                    "dataType": [
+                        "text"
+                    ],
+                    "moduleConfig": {
+                        "text2vec-openai": {
+                            "skip": "False",
+                            "vectorizePropertyName": "False"
+                        }
+                    }
+                },
+                {
+                    "name": "chunk_index",
+                    "description": "Index of the chunk",
+                    "dataType": [
+                        "number"
+                    ],
+                    "moduleConfig": {
+                        "text2vec-openai": {
+                            "skip": "True",
+                            "vectorizePropertyName": "False"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

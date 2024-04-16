@@ -1,0 +1,3 @@
+## Airflow Bash
+
+Did you know you can create bash statements with Python logic in Airflow? Brand new in Airflow 2.9: the @task.bash decorator!

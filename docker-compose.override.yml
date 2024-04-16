@@ -1,0 +1,54 @@
+version: '3.1'
+services:
+  scheduler:
+    networks:
+    - airflow
+  minio:
+    image: quay.io/minio/minio
+    networks:
+      - airflow
+    command: server /data --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+       - ${PWD}/include/minio:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  
+    restart: always
+    env_file: .env
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.21.0
+    # platform: linux/amd64
+    command: "--host 0.0.0.0 --port '8081' --scheme http"
+    ports:
+    - 8081:8081
+    - "50051:50051"
+    volumes:
+    - ${PWD}/include/weaviate/backup:/var/lib/weaviate/backup
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_APIKEY_ENABLED: 'true'
+      AUTHENTICATION_APIKEY_ALLOWED_KEYS: 'readonlykey,adminkey'
+      AUTHENTICATION_APIKEY_USERS: 'jane@doe.com,john@doe.com'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      ENABLE_MODULES: 'text2vec-openai, backup-filesystem, qna-openai, text2vec'
+      BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backup'
+      CLUSTER_HOSTNAME: 'node1'
+    networks:
+    - airflow
+  streamlit:
+    image: python:3.11
+    command: bash -c "pip install -r /app/include/requirements.txt && streamlit run --server.enableWebsocketCompression=false --server.enableCORS=false --server.enableXsrfProtection=false /app/include/app.py"
+    ports:
+      - "8501:8501"
+    volumes:
+      - ${PWD}/include/streamlit:/app/include
+      - ${PWD}/include/results:/app/include/results
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  
+    env_file:
+      - .env
+    networks:
+      - airflow
