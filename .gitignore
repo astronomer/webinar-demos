@@ -10,3 +10,9 @@ webserver_config.py
 airflow.cfg
 airflow.db
 dev
+include/examples/train_examples/fine_tune_examples
+include/examples/train_examples/formatted_examples
+include/examples/validation_examples/fine_tune_examples
+include/examples/validation_examples/formatted_examples
+include/minio
+include/model_results

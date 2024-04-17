@@ -13,8 +13,8 @@ import os
 @dag(
     start_date=datetime(2024, 4, 1),
     schedule=(
-        Dataset("file://include/examples/examples_long")
-        | Dataset("file://include/examples/examples_short")
+        Dataset("file://include/examples/train_examples/examples_long")
+        | Dataset("file://include/examples/train_examples/examples_short")
     ),
     catchup=False,
     tags=["ingest"],
@@ -23,7 +23,7 @@ import os
         "owner": "Astronomer",
     },
 )
-def ingest_examples():
+def ingest_train_examples():
 
     @task
     def get_example_folders(directory):
@@ -45,7 +45,7 @@ def ingest_examples():
         map_index_template="{{ custom_map_index }}",
     )
     def create_jsonl_from_txt_examples(
-        example_folder, output_path="include/examples/formatted_examples/"
+        example_folder, output_path="include/examples/train_examples/formatted_examples/"
     ):
         """
         Convert text files in a directory to a JSON Lines file.
@@ -59,7 +59,7 @@ def ingest_examples():
 
         jsonl_data = []
 
-        directory = os.path.join("include/examples/", example_folder)
+        directory = os.path.join("include/examples/train_examples/", example_folder)
 
         for filename in os.listdir(directory):
             if directory != "formatted_examples":
@@ -103,19 +103,19 @@ def ingest_examples():
 
         context = get_current_context()
         context["custom_map_index"] = (
-            f"Parsing examples from: include/examples/{directory_name}"
+            f"Parsing examples from: include/examples/train_examples/{directory_name}"
         )
 
-    @task(outlets=[Dataset("include/examples/formatted_examples/")])
+    @task(outlets=[Dataset("file://include/examples/train_examples/formatted_examples/")])
     def examples_ingested():
         print("Examples ingested successfully.")
 
     chain(
         create_jsonl_from_txt_examples.expand(
-            example_folder=get_example_folders("include/examples/")
+            example_folder=get_example_folders("include/examples/train_examples/")
         ),
         examples_ingested(),
     )
 
 
-ingest_examples()
+ingest_train_examples()

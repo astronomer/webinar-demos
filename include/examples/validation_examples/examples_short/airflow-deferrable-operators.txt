@@ -1,0 +1,3 @@
+## Airflow Deferrable operators
+
+Tasks that wait for a long time in Airflow don't need to use up a worker slot! Push them over to the triggerer component by using deferrable operators!

@@ -1,6 +1,6 @@
 import streamlit as st
 import weaviate
-import os
+import json
 from openai import OpenAI
 
 WEAVIATE_CLASS_NAME = "KB"
@@ -49,11 +49,7 @@ def get_response(articles, query):
 
         article_full_text = article["full_text"] if article["full_text"] else "no text"
 
-        article_info = (
-            article_title
-            + " Full text: "
-            + article_full_text
-        )
+        article_info = article_title + " Full text: " + article_full_text
         prompt += " " + article_info + " "
 
     prompt += "Your user asks:"
@@ -65,12 +61,13 @@ def get_response(articles, query):
 
     client = OpenAI()
 
-    with open("/app/include/results/production_model_id.txt", "r") as f:
-        production_model_id = f.read()
+    # get champion model id from app/include/model_results/champion/m.json
+    with open("/app/include/model_results/champion/m.json", "r") as f:
+        champion_model_id = json.read(f)["model_id"]
 
     # TODO: implement streaming https://github.com/openai/openai-python?tab=readme-ov-file#streaming-helpers
     chat_completion = client.chat.completions.create(
-        model=production_model_id, messages=[{"role": "user", "content": prompt}]
+        model=champion_model_id, messages=[{"role": "user", "content": prompt}]
     )
 
     return chat_completion

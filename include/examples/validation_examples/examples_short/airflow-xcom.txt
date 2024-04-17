@@ -1,0 +1,3 @@
+## Airflow XCom
+
+XComs are a way to share data between tasks in Airflow. You can use them to pass data between tasks, or even between different DAGs!

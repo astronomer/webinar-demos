@@ -1,5 +1,5 @@
 """
-## Ingest examples for model fine-tuning
+## 
 
 """
 
@@ -16,11 +16,16 @@ t_log = logging.getLogger("airflow.task")
 
 STOP_TASK_ID = "over_budget_stop"
 CONTINUE_TASK_ID = "in_budget_continue"
+TRAIN_EXAMPLES_DIR = "include/examples/train_examples/formatted_examples/"
+VALIDATION_EXAMPLES_DIR = "include/examples/validation_examples/formatted_examples/"
 
 
 @dag(
     start_date=datetime(2024, 4, 1),
-    schedule=[Dataset("include/examples/formatted_examples/")],
+    schedule=(
+        Dataset(f"file://{TRAIN_EXAMPLES_DIR}")
+        | Dataset(f"file://{VALIDATION_EXAMPLES_DIR}")
+    ),
     catchup=False,
     tags=["data_quality", "cost_control"],
     default_args={
@@ -47,10 +52,26 @@ CONTINUE_TASK_ID = "in_budget_continue"
         ),
     },
 )
-def evaluate_formatting_fine_tuning_examples():
+def eval_and_cost_estimate():
 
     @task
-    def get_example_file_paths(directory):
+    def get_train_examples_file_paths(directory):
+        """
+        Get a list of file paths in a directory.
+
+        Args:
+            directory (str): Path to the directory containing files.
+        """
+
+        file_paths = [
+            os.path.join(directory, f)
+            for f in os.listdir(directory)
+            if os.path.isfile(os.path.join(directory, f))
+        ]
+        return file_paths
+
+    @task
+    def get_validation_examples_file_paths(directory):
         """
         Get a list of file paths in a directory.
 
@@ -152,13 +173,7 @@ def evaluate_formatting_fine_tuning_examples():
     def stop_task():
         t_log.info("Cost exceeds budget. Stopping pipeline.")
 
-    @task(
-        outlets=[
-            Dataset(
-                "include/examples/fine_tune_examples/", extra={"ts": "{{ ts_nodash }}"}
-            )
-        ]
-    )
+    @task
     def create_fine_tuning_example_file(example_file_paths, **context):
         """
         Combines all example files into a single file for fine-tuning.
@@ -170,9 +185,9 @@ def evaluate_formatting_fine_tuning_examples():
 
         ts = context["ts_nodash"]
 
-        combined_fine_tune_examples_file_path = (
-            f"include/examples/fine_tune_examples/{ts}_combined_examples.jsonl"
-        )
+        example_type = example_file_paths[0].split("/")[-3]
+
+        combined_fine_tune_examples_file_path = f"include/examples/{example_type}/fine_tune_examples/{ts}_combined_examples.jsonl"
 
         os.makedirs(
             os.path.dirname(combined_fine_tune_examples_file_path), exist_ok=True
@@ -186,15 +201,32 @@ def evaluate_formatting_fine_tuning_examples():
 
         return combined_fine_tune_examples_file_path
 
-    get_example_file_paths_obj = get_example_file_paths(
-        "include/examples/formatted_examples/"
+    # ---------------------------------- #
+    # Call tasks and define Dependencies #
+    # ---------------------------------- #
+
+    get_train_examples_file_paths_obj = get_train_examples_file_paths(
+        TRAIN_EXAMPLES_DIR
+    )
+    get_validation_examples_file_paths_obj = get_validation_examples_file_paths(
+        VALIDATION_EXAMPLES_DIR
     )
 
-    check_examples_valid_formatting_obj = check_examples_valid_formatting.expand(
-        example_file_path=get_example_file_paths_obj
+    check_train_examples_valid_formatting_obj = (
+        check_examples_valid_formatting.override(
+            task_display_name="Check formatting train examples"
+        ).expand(example_file_path=get_train_examples_file_paths_obj)
     )
 
-    count_tokens_obj = count_tokens.expand(example_file_path=get_example_file_paths_obj)
+    check_validation_examples_valid_formatting_obj = (
+        check_examples_valid_formatting.override(
+            task_display_name="Check formatting validation examples",
+        ).expand(example_file_path=get_validation_examples_file_paths_obj)
+    )
+
+    count_tokens_obj = count_tokens.expand(
+        example_file_path=get_train_examples_file_paths_obj
+    )
 
     calculate_expected_cost_obj = calculate_expected_cost(count_tokens_obj)
 
@@ -205,13 +237,34 @@ def evaluate_formatting_fine_tuning_examples():
     )
 
     continue_task_obj = continue_task()
-    create_fine_tuning_example_file_obj = create_fine_tuning_example_file(
-        get_example_file_paths_obj
+    create_fine_tuning_train_example_file_obj = (
+        create_fine_tuning_example_file.override(
+            task_id="create_fine_tuning_train_example_file",
+            outlets=[
+                Dataset(
+                    "file://include/examples/train_examples/fine_tune_examples/",
+                )
+            ],
+        )(example_file_paths=get_train_examples_file_paths_obj)
+    )
+    create_fine_tuning_validation_example_file_obj = (
+        create_fine_tuning_example_file.override(
+            task_id="create_fine_tuning_validation_example_file",
+            outlets=[
+                Dataset(
+                    "file://include/examples/validation_examples/fine_tune_examples/",
+                )
+            ],
+        )(example_file_paths=get_validation_examples_file_paths_obj)
     )
 
-    chain(check_examples_valid_formatting_obj, count_tokens_obj)
+    chain(check_train_examples_valid_formatting_obj, count_tokens_obj)
     chain(decide_if_cost_within_budget_obj, [stop_task(), continue_task_obj])
-    chain(continue_task_obj, create_fine_tuning_example_file_obj)
+    chain(continue_task_obj, create_fine_tuning_train_example_file_obj)
+    chain(
+        check_validation_examples_valid_formatting_obj,
+        create_fine_tuning_validation_example_file_obj,
+    )
 
 
-evaluate_formatting_fine_tuning_examples()
+eval_and_cost_estimate()

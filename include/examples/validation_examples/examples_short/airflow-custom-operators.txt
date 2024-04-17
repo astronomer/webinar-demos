@@ -1,0 +1,3 @@
+## Airflow Custom operators
+
+It is very easy in Airflow to create your own operators! Just inherit from the BaseOperator class and define your own .execute() method!

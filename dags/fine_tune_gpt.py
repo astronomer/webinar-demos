@@ -16,7 +16,10 @@ t_log = logging.getLogger("airflow.task")
 
 @dag(
     start_date=datetime(2024, 4, 1),
-    schedule=[Dataset("include/examples/fine_tune_examples/")],
+    schedule=(
+        Dataset("file://include/examples/train_examples/fine_tune_examples/")
+        & Dataset("file://include/examples/validation_examples/fine_tune_examples/")
+    ),
     catchup=False,
     tags=["ml_team"],
     default_args={
@@ -24,15 +27,25 @@ t_log = logging.getLogger("airflow.task")
         "owner": "Astronomer",
     },
     params={
-        "manual_choice_examples_file": Param(
+        "manual_choice_train_examples_file": Param(
             False,
             type="boolean",
-            description="Switch to True if you want to manually choose examples for fine-tuning. Provide the path to the file in the 'manual_choice_examples_file_path' parameter.",
+            description="Switch to True if you want to manually choose examples for fine-tuning. Provide the path to the file in the 'manual_choice_train_examples_file_path' parameter.",
         ),
-        "manual_choice_examples_file_path": Param(
-            "include/examples/fine_tune_examples/20240416T113231_combined_examples.json",
+        "manual_choice_train_examples_file_path": Param(
+            None,
             type=["null", "string"],
-            description="Path to the file containing examples for fine-tuning.",
+            description="Path to the file containing examples for fine-tuning. Example: `include/examples/train_examples/fine_tune_examples/20240417T125742_combined_examples.json`",
+        ),
+        "manual_choice_validation_examples_file": Param(
+            False,
+            type="boolean",
+            description="Switch to True if you want to manually choose examples for fine-tuning. Provide the path to the file in the 'manual_choice_validation_examples_file_path' parameter.",
+        ),
+        "manual_choice_validation_examples_file_path": Param(
+            None,
+            type=["null", "string"],
+            description="Path to the file containing examples for fine-tuning. Example: `include/examples/validation_examples/fine_tune_examples/20240417T125742_combined_examples.json`",
         ),
         "manual_model_fine_tuning_suffix": Param(
             None,
@@ -45,15 +58,34 @@ t_log = logging.getLogger("airflow.task")
 def fine_tune_gpt():
 
     @task
-    def choose_examples_file(**context):
+    def choose_train_examples_file(**context):
 
-        if context["params"]["manual_choice_examples_file"]:
-            examples_file_path = context["params"]["manual_choice_examples_file_path"]
+        if context["params"]["manual_choice_train_examples_file"]:
+            examples_file_path = context["params"][
+                "manual_choice_train_examples_file_path"
+            ]
 
         else:
             examples_file_path = context["ti"].xcom_pull(
-                task_ids="create_fine_tuning_example_file",
-                dag_id="evaluate_formatting_fine_tuning_examples",
+                task_ids="create_fine_tuning_train_example_file",
+                dag_id="eval_and_cost_estimate",
+                include_prior_dates=True,
+            )
+
+        return examples_file_path
+
+    @task
+    def choose_validation_examples_file(**context):
+
+        if context["params"]["manual_choice_train_examples_file"]:
+            examples_file_path = context["params"][
+                "manual_choice_train_examples_file_path"
+            ]
+
+        else:
+            examples_file_path = context["ti"].xcom_pull(
+                task_ids="create_fine_tuning_validation_example_file",
+                dag_id="eval_and_cost_estimate",
                 include_prior_dates=True,
             )
 
@@ -162,16 +194,22 @@ def fine_tune_gpt():
 
         return PokeReturnValue(is_done=is_done, xcom_value=fine_tune_info.result_files)
 
-    @task
-    def get_model_results(result_files, model_info, **context):
+    @task(
+        outlets=[
+            Dataset("file://include/model_results/plots/"),
+            Dataset("file://include/model_results/challenger/challenger_accuracy.json"),
+        ]
+    )
+    def get_model_model_results(result_files, model_info, **context):
         from openai import OpenAI
         import pandas as pd
         import matplotlib.pyplot as plt
         import os
+        import json
 
         client = OpenAI()
 
-        os.makedirs("include/results/plots", exist_ok=True)
+        os.makedirs("include/model_results/plots", exist_ok=True)
         ts = context["ts_nodash"]
 
         validation_mean_token_acc_list = []
@@ -189,7 +227,7 @@ def fine_tune_gpt():
             # TODO: prettify
             plt.figure(figsize=(12, 10))
 
-            plt.suptitle(f"Fine-tuning Results: {fine_tuned_model}", fontsize=16)
+            plt.suptitle(f"Fine-tuning model_results: {fine_tuned_model}", fontsize=16)
 
             plt.subplot(2, 2, 1)
             plt.plot(df["step"], df["train_loss"], label="Training Loss", color="blue")
@@ -230,35 +268,46 @@ def fine_tune_gpt():
             plt.legend()
 
             plt.tight_layout()
-            plt.savefig(f"include/results/plots/{ts}_fine_tuning_results.png")
+            plt.savefig(
+                f"include/model_results/plots/{ts}_fine_tuning_model_results.png"
+            )
             last_validation_mean_token_acc = df["valid_mean_token_accuracy"].iloc[-1]
             validation_mean_token_acc_list.append(last_validation_mean_token_acc)
 
+            os.makedirs("include/model_results/challenger", exist_ok=True)
+
+            with open(
+                "include/model_results/challenger/challenger_accuracy.json", "w"
+            ) as f:
+                f.write(
+                    json.dumps(
+                        {
+                            "challenger_model_id": fine_tuned_model,
+                            "accuracy": last_validation_mean_token_acc,
+                        }
+                    )
+                )
         return validation_mean_token_acc_list
 
-    @task
-    def save_fine_tuned_model_id(**context):
+    upload_train_examples_file_to_openai_obj = upload_examples_file_to_openai.override(
+        task_display_name="Upload train file to OpenAI"
+    )(examples_file_path=choose_train_examples_file())
 
-        fine_tuned_model = context["ti"].xcom_pull(
-            task_ids="wait_for_model_fine_tuning_to_complete", key="fine_tuned_model"
-        )
-
-        with open("include/results/production_model_id.txt", "w") as f:
-            f.write(fine_tuned_model)
-
-    fine_tune_gpt_model_obj = fine_tune_gpt_model(
-        fine_tuning_file_id=upload_examples_file_to_openai(
-            examples_file_path=choose_examples_file()
-        ),
-        validation_file_id="file-L6AANC8C08nIfrUlN9JyQl3Y",  # TODO: make this part of the DAG
+    upload_validation_examples_file_to_openai_obj = (
+        upload_examples_file_to_openai.override(
+            task_display_name="Upload validation file to OpenAI"
+        )(examples_file_path=choose_validation_examples_file())
     )
 
-    get_model_results_obj = get_model_results(
+    fine_tune_gpt_model_obj = fine_tune_gpt_model(
+        fine_tuning_file_id=upload_train_examples_file_to_openai_obj,
+        validation_file_id=upload_validation_examples_file_to_openai_obj,
+    )
+
+    get_model_model_results(
         wait_for_model_fine_tuning_to_complete(fine_tune_gpt_model_obj),
         model_info=fine_tune_gpt_model_obj,
     )
-
-    chain(get_model_results_obj, save_fine_tuned_model_id())
 
 
 fine_tune_gpt()

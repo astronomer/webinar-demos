@@ -1,0 +1,3 @@
+## Airflow Custom sensors
+
+You can easily create a custom sensor in Airflow with @task.sensor!

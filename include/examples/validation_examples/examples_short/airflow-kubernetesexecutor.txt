@@ -1,0 +1,3 @@
+## Airflow KubernetesExecutor
+
+The KubernetesExecutor runs each of your Airflow tasks in their own little K8s pod. A great way to isolate tasks and have control over resources!
