@@ -1,110 +1,127 @@
 """
-## 
+## Evaluate the training and validation examples and estimate the cost of fine-tuning
 
+This DAG makes sure the training and validation examples are correctly formatted 
+for fine-tuning. If the format passes, the final train and validation files to be 
+used for fine-tuning are created.
+It then calculates the expected cost of fine-tuning based on the number of tokens
+in the training examples and the cost per million tokens.
+The DAG will not create the files for fine-tuning if the cost exceeds the budget,
+which stops the dataset dependent pipeline from continuing.
 """
 
 from airflow.decorators import dag, task
 from airflow.models.dataset import Dataset
 from airflow.models.param import Param
 from airflow.models.baseoperator import chain
-from pendulum import datetime
+from airflow.operators.python import get_current_context
+from airflow.operators.empty import EmptyOperator
+from pendulum import datetime, duration
 import logging
+import json
 import os
 
-TOKEN_ENCODING = "cl100k_base"
+from include.task_functions.examples_validation import validate_example_format
+from include.task_functions.token_counting import dataset_token_analysis
+
+# Airflow task logger
 t_log = logging.getLogger("airflow.task")
 
-STOP_TASK_ID = "over_budget_stop"
-CONTINUE_TASK_ID = "in_budget_continue"
-TRAIN_EXAMPLES_DIR = "include/examples/train_examples/formatted_examples/"
-VALIDATION_EXAMPLES_DIR = "include/examples/validation_examples/formatted_examples/"
+# Variables used in the DAG
+_DEFAULT_TOKEN_ENCODING = os.getenv("DEFAULT_TOKEN_ENCODING")
+_DEFAULT_MAX_FINE_TUNING_COST_ALLOWED = os.getenv("MAX_FINE_TUNING_COST_ALLOWED")
+_DEFAULT_FINE_TUNE_PRICE_PER_M = os.getenv("FINE_TUNE_PRICE_PER_M")
+_DEFAULT_NUM_FINE_TUNE_EPOCHS = os.getenv("NUM_FINE_TUNE_EPOCHS")
+_FORMATTED_TRAIN_EXAMPLES_URI = os.getenv("FORMATTED_TRAIN_EXAMPLES_URI")
+_FORMATTED_VALIDATION_EXAMPLES_URI = os.getenv("FORMATTED_VALIDATION_EXAMPLES_URI")
+_COMBINED_TRAIN_EXAMPLES_URI = os.getenv("COMBINED_TRAIN_EXAMPLES_URI")
+_COMBINED_VALIDATION_EXAMPLES_URI = os.getenv("COMBINED_VALIDATION_EXAMPLES_URI")
+_STOP_TASK_ID = "over_budget_stop"
+_CONTINUE_TASK_ID = "in_budget_continue"
 
 
 @dag(
+    dag_display_name="🔍 Evaluate examples and 💸 estimate fine-tuning costs",
     start_date=datetime(2024, 4, 1),
     schedule=(
-        Dataset(f"file://{TRAIN_EXAMPLES_DIR}")
-        | Dataset(f"file://{VALIDATION_EXAMPLES_DIR}")
+        Dataset(_FORMATTED_TRAIN_EXAMPLES_URI)
+        | Dataset(_FORMATTED_VALIDATION_EXAMPLES_URI)
     ),
     catchup=False,
+    max_consecutive_failed_dag_runs=5,
     tags=["data_quality", "cost_control"],
     default_args={
-        "retries": 0,
-        "owner": "Astronomer",
+        "retries": 2,
+        "retry_delay": duration(minutes=5),
+        "owner": "MLE team",
     },
     params={
         "max_cost_allowed": Param(
-            20,
+            _DEFAULT_MAX_FINE_TUNING_COST_ALLOWED,
             type="integer",
             description="The maximum cost allowed for fine-tuning.",
         ),
         "token_encoding": Param(
-            "cl100k_base",
+            _DEFAULT_TOKEN_ENCODING,
             type="string",
         ),
         "fine_tune_per_m_price": Param(
-            8,
+            _DEFAULT_FINE_TUNE_PRICE_PER_M,
             type="integer",
         ),
         "num_epochs": Param(
-            10,
+            _DEFAULT_NUM_FINE_TUNE_EPOCHS,
             type="integer",
         ),
     },
+    doc_md=__doc__,
+    description="Evaluate fine-tuning examples format and cost.",
 )
 def eval_and_cost_estimate():
 
     @task
-    def get_train_examples_file_paths(directory):
+    def get_file_paths_from_uri(examples_folder_uri: str) -> list[str]:
         """
-        Get a list of file paths in a directory.
+        Get a list of file paths for the training examples.
 
         Args:
-            directory (str): Path to the directory containing files.
+            train_examples_uri (str): URI of the training example files folder.
+        Returns:
+            list[str]: List of file paths in the directory.
         """
+
+        examples_folder_file_path = examples_folder_uri.split("://")[1]
 
         file_paths = [
-            os.path.join(directory, f)
-            for f in os.listdir(directory)
-            if os.path.isfile(os.path.join(directory, f))
-        ]
-        return file_paths
-
-    @task
-    def get_validation_examples_file_paths(directory):
-        """
-        Get a list of file paths in a directory.
-
-        Args:
-            directory (str): Path to the directory containing files.
-        """
-
-        file_paths = [
-            os.path.join(directory, f)
-            for f in os.listdir(directory)
-            if os.path.isfile(os.path.join(directory, f))
+            os.path.join(examples_folder_file_path, f)
+            for f in os.listdir(examples_folder_file_path)
+            if os.path.isfile(os.path.join(examples_folder_file_path, f))
         ]
         return file_paths
 
     @task(
         map_index_template="{{ custom_map_index }}",
     )
-    def check_examples_valid_formatting(example_file_path):
-        from airflow.operators.python import get_current_context
-        import json
-        from include.task_functions.examples_validation import validate_example_format
+    def check_examples_valid_formatting(example_file_path: str) -> list[str]:
+        """
+        Check the formatting of the examples in the file match fine-tuning requirements for GPT.
+        Args:
+            example_file_path (str): Path to the example file.
+        Returns:
+            list[str]: List of errors found in the example file if any.
+        """
 
         with open(example_file_path, "r", encoding="utf-8") as f:
             dataset = [json.loads(line) for line in f]
 
         num_examples = len(dataset)
-
         format_errors = validate_example_format(dataset)
 
-        print("First example, content:")
+        t_log.info("First example, content:")
         for message in dataset[0]["messages"]:
-            print(message)
+            t_log.info(message)
 
+        # set custom map index
         context = get_current_context()
         context["custom_map_index"] = (
             f"Parsing {num_examples} examples from: {example_file_path}"
@@ -115,12 +132,14 @@ def eval_and_cost_estimate():
     @task(
         map_index_template="{{ custom_map_index }}",
     )
-    def count_tokens(example_file_path):
-        import json
-        from airflow.operators.python import get_current_context
-        from include.task_functions.token_counting import dataset_token_analysis
-
-        context = get_current_context()
+    def count_tokens(example_file_path: str) -> int:
+        """
+        Count the number of billing tokens in a train examples file.
+        Args:
+            example_file_path (str): Path to the example file.
+        Returns:
+            int: Number of billing tokens in the dataset.
+        """
 
         with open(example_file_path, "r", encoding="utf-8") as f:
             dataset = [json.loads(line) for line in f]
@@ -128,6 +147,8 @@ def eval_and_cost_estimate():
         encoding = context["params"]["token_encoding"]
         n_billing_tokens_in_dataset = dataset_token_analysis(dataset, encoding)
 
+        # set custom map index
+        context = get_current_context()
         context["custom_map_index"] = (
             f"{example_file_path} has {n_billing_tokens_in_dataset} billing tokens."
         )
@@ -135,7 +156,18 @@ def eval_and_cost_estimate():
         return n_billing_tokens_in_dataset
 
     @task
-    def calculate_expected_cost(list_of_num_billing_tokens, **context):
+    def calculate_expected_cost(
+        list_of_num_billing_tokens: list[int], **context
+    ) -> float:
+        """
+        Calculate the expected cost of fine-tuning based on the number of tokens
+        in the training examples, cost per million and epochs.
+
+        Args:
+            list_of_num_billing_tokens (list[int]): List of number of billing tokens in each dataset.
+        Returns:
+            float: Expected cost of fine-tuning.
+        """
         fine_tune_per_m_price = context["params"]["fine_tune_per_m_price"]
         num_epochs = context["params"]["num_epochs"]
         n_billing_tokens = sum(list_of_num_billing_tokens)
@@ -150,31 +182,32 @@ def eval_and_cost_estimate():
 
     @task.branch
     def decide_if_cost_within_budget(
-        total_cost, stop_task_id, continue_task_id, **context
-    ):
+        total_cost: float, stop_task_id: str, continue_task_id: str, **context
+    ) -> str:
+        """
+        Check if the total cost is within the budget.
+        Args:
+            total_cost (float): Total cost of fine-tuning.
+            stop_task_id (str): Task ID to execute if the cost exceeds the budget.
+            continue_task_id (str): Task ID to execute if the cost is within the budget.
+        Returns:
+            str: Task ID of the next task to execute.
+        """
         max_cost_allowed = context["params"]["max_cost_allowed"]
         if total_cost <= max_cost_allowed:
             return continue_task_id
         else:
             return stop_task_id
 
-    @task(
-        task_id=CONTINUE_TASK_ID,
-    )
-    def continue_task():
-        t_log.info("Cost within budget. Starting fine-tuning DAG.")
-
-    @task(
-        task_id=STOP_TASK_ID,
-        on_success_callback=lambda x: x.log.info(
-            "Task stopped."
-        ),  # TODO: Add Slack notification
-    )
-    def stop_task():
-        t_log.info("Cost exceeds budget. Stopping pipeline.")
+    continue_task = EmptyOperator(task_id=_CONTINUE_TASK_ID)
+    stop_task = EmptyOperator(
+        task_id=_STOP_TASK_ID, on_success_callback=lambda x: x.log.info("Task stopped.")
+    )  # TODO: Add a callback to send an alert to slack
 
     @task
-    def create_fine_tuning_example_file(example_file_paths, **context):
+    def create_fine_tuning_example_file(
+        example_file_paths: list[str], **context
+    ) -> str:
         """
         Combines all example files into a single file for fine-tuning.
         Args:
@@ -184,9 +217,7 @@ def eval_and_cost_estimate():
         """
 
         ts = context["ts_nodash"]
-
         example_type = example_file_paths[0].split("/")[-3]
-
         combined_fine_tune_examples_file_path = f"include/examples/{example_type}/fine_tune_examples/{ts}_combined_examples.jsonl"
 
         os.makedirs(
@@ -202,25 +233,25 @@ def eval_and_cost_estimate():
         return combined_fine_tune_examples_file_path
 
     # ---------------------------------- #
-    # Call tasks and define Dependencies #
+    # Call tasks and define dependencies #
     # ---------------------------------- #
 
-    get_train_examples_file_paths_obj = get_train_examples_file_paths(
-        TRAIN_EXAMPLES_DIR
-    )
-    get_validation_examples_file_paths_obj = get_validation_examples_file_paths(
-        VALIDATION_EXAMPLES_DIR
-    )
+    get_train_examples_file_paths_obj = get_file_paths_from_uri.override(
+        task_id="get_train_examples_file_paths"
+    )(examples_folder_uri=_FORMATTED_TRAIN_EXAMPLES_URI)
+    get_validation_examples_file_paths_obj = get_file_paths_from_uri.override(
+        task_id="get_validation_examples_file_paths"
+    )(examples_folder_uri=_FORMATTED_VALIDATION_EXAMPLES_URI)
 
     check_train_examples_valid_formatting_obj = (
         check_examples_valid_formatting.override(
-            task_display_name="Check formatting train examples"
+            task_display_name="check_train_examples_valid_formatting",
         ).expand(example_file_path=get_train_examples_file_paths_obj)
     )
 
     check_validation_examples_valid_formatting_obj = (
         check_examples_valid_formatting.override(
-            task_display_name="Check formatting validation examples",
+            task_id="check_validation_examples_valid_formatting",
         ).expand(example_file_path=get_validation_examples_file_paths_obj)
     )
 
@@ -232,35 +263,26 @@ def eval_and_cost_estimate():
 
     decide_if_cost_within_budget_obj = decide_if_cost_within_budget(
         total_cost=calculate_expected_cost_obj,
-        stop_task_id=STOP_TASK_ID,
-        continue_task_id=CONTINUE_TASK_ID,
+        stop_task_id=_STOP_TASK_ID,
+        continue_task_id=_CONTINUE_TASK_ID,
     )
 
-    continue_task_obj = continue_task()
     create_fine_tuning_train_example_file_obj = (
         create_fine_tuning_example_file.override(
             task_id="create_fine_tuning_train_example_file",
-            outlets=[
-                Dataset(
-                    "file://include/examples/train_examples/fine_tune_examples/",
-                )
-            ],
+            outlets=[Dataset(_COMBINED_TRAIN_EXAMPLES_URI)],
         )(example_file_paths=get_train_examples_file_paths_obj)
     )
     create_fine_tuning_validation_example_file_obj = (
         create_fine_tuning_example_file.override(
             task_id="create_fine_tuning_validation_example_file",
-            outlets=[
-                Dataset(
-                    "file://include/examples/validation_examples/fine_tune_examples/",
-                )
-            ],
+            outlets=[Dataset(_COMBINED_VALIDATION_EXAMPLES_URI)],
         )(example_file_paths=get_validation_examples_file_paths_obj)
     )
 
     chain(check_train_examples_valid_formatting_obj, count_tokens_obj)
-    chain(decide_if_cost_within_budget_obj, [stop_task(), continue_task_obj])
-    chain(continue_task_obj, create_fine_tuning_train_example_file_obj)
+    chain(decide_if_cost_within_budget_obj, [stop_task, continue_task])
+    chain(continue_task, create_fine_tuning_train_example_file_obj)
     chain(
         check_validation_examples_valid_formatting_obj,
         create_fine_tuning_validation_example_file_obj,
