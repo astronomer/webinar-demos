@@ -3,7 +3,15 @@ from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
-def split_text(records):
+def split_text(records: list[dict]) -> list[dict]:
+    """
+    Split text into chunks.
+    Args:
+        records (list[dict]): A list of dictionaries containing text records.
+    Returns:
+        list[dict]: A list of dictionaries containing the split text records.
+    """
+
     df = pd.DataFrame(records)
 
     splitter = RecursiveCharacterTextSplitter()

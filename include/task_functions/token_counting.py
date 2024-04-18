@@ -1,12 +1,8 @@
-"""
-Helper functions for counting tokens in a dataset
-"""
-
 import tiktoken
 import numpy as np
 
 
-def _get_encoding(encoding="cl100k_base"):
+def _get_encoding(encoding: str = "cl100k_base") -> tiktoken.Encoding:
     return tiktoken.get_encoding(encoding)
 
 

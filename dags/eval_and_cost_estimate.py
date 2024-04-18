@@ -29,19 +29,23 @@ t_log = logging.getLogger("airflow.task")
 
 # Variables used in the DAG
 _DEFAULT_TOKEN_ENCODING = os.getenv("DEFAULT_TOKEN_ENCODING")
-_DEFAULT_MAX_FINE_TUNING_COST_ALLOWED = os.getenv("MAX_FINE_TUNING_COST_ALLOWED")
-_DEFAULT_FINE_TUNE_PRICE_PER_M = os.getenv("FINE_TUNE_PRICE_PER_M")
-_DEFAULT_NUM_FINE_TUNE_EPOCHS = os.getenv("NUM_FINE_TUNE_EPOCHS")
+_DEFAULT_MAX_FINE_TUNING_COST = int(os.getenv("DEFAULT_MAX_FINE_TUNING_COST"))
+_DEFAULT_FINE_TUNE_PRICE_PER_M = int(os.getenv("DEFAULT_FINE_TUNE_PRICE_PER_M"))
+_DEFAULT_NUM_FINE_TUNE_EPOCHS = int(os.getenv("DEFAULT_NUM_FINE_TUNE_EPOCHS"))
 _FORMATTED_TRAIN_EXAMPLES_URI = os.getenv("FORMATTED_TRAIN_EXAMPLES_URI")
 _FORMATTED_VALIDATION_EXAMPLES_URI = os.getenv("FORMATTED_VALIDATION_EXAMPLES_URI")
 _COMBINED_TRAIN_EXAMPLES_URI = os.getenv("COMBINED_TRAIN_EXAMPLES_URI")
 _COMBINED_VALIDATION_EXAMPLES_URI = os.getenv("COMBINED_VALIDATION_EXAMPLES_URI")
-_STOP_TASK_ID = "over_budget_stop"
+_STOP_BUDGET_TASK_ID = "over_budget_stop"
 _CONTINUE_TASK_ID = "in_budget_continue"
+_STOP_NO_TRAIN_EXAMPLES_TASK_ID = "no_train_examples_stop"
+_STOP_NO_VALIDATION_EXAMPLES_TASK_ID = "no_validation_examples_stop"
+_GET_TRAIN_EXAMPLES_FILE_PATHS_TASK_ID = "get_train_examples_file_paths"
+_GET_VALIDATION_EXAMPLES_FILE_PATHS_TASK_ID = "get_validation_examples_file_paths"
 
 
 @dag(
-    dag_display_name="🔍 Evaluate examples and 💸 estimate fine-tuning costs",
+    dag_display_name="🔍 Evaluate formatting and cost",
     start_date=datetime(2024, 4, 1),
     schedule=(
         Dataset(_FORMATTED_TRAIN_EXAMPLES_URI)
@@ -57,7 +61,7 @@ _CONTINUE_TASK_ID = "in_budget_continue"
     },
     params={
         "max_cost_allowed": Param(
-            _DEFAULT_MAX_FINE_TUNING_COST_ALLOWED,
+            _DEFAULT_MAX_FINE_TUNING_COST,
             type="integer",
             description="The maximum cost allowed for fine-tuning.",
         ),
@@ -78,6 +82,50 @@ _CONTINUE_TASK_ID = "in_budget_continue"
     description="Evaluate fine-tuning examples format and cost.",
 )
 def eval_and_cost_estimate():
+
+    # TODO: check that both train and validation examples exist for first run
+
+    @task.branch
+    def check_if_examples_exist(
+        train_examples_folder_uri: str,
+        validation_examples_folder_uri: str,
+        stop_no_train_examples_task_id: str,
+        stop_no_validation_examples_task_id: str,
+        get_examples_task_ids: list[str],
+    ) -> str:
+        """
+        Check if the training and validation examples exist.
+        Args:
+            train_examples_folder_uri (str): URI of the training example files folder.
+            validation_examples_folder_uri (str): URI of the validation example files folder.
+            stop_no_train_examples_task_id (str): Task ID to execute if no training examples exist.
+            stop_no_validation_examples_task_id (str): Task ID to execute if no validation examples exist.
+            get_examples_task_ids (list[str]): Task IDs to execute if examples exist.
+        Returns:
+            str/list: Task ID(s) of the next task(s) to execute.
+        """
+        train_examples_folder_path = train_examples_folder_uri.split("://")[1]
+        validation_examples_folder_path = validation_examples_folder_uri.split("://")[1]
+
+        if os.path.exists(train_examples_folder_path):
+            if os.path.exists(validation_examples_folder_path):
+                return get_examples_task_ids
+            else:
+                return stop_no_validation_examples_task_id
+        elif os.path.exists(validation_examples_folder_path):
+            return stop_no_train_examples_task_id
+        else:
+            return [stop_no_train_examples_task_id, stop_no_validation_examples_task_id]
+
+    # TODO: Add a callback to send an alert to slack
+    stop_no_train_examples = EmptyOperator(
+        task_id=_STOP_NO_TRAIN_EXAMPLES_TASK_ID,
+        on_success_callback=lambda x: x.log.info("Task stopped."),
+    )
+    stop_no_validation_examples = EmptyOperator(
+        task_id=_STOP_NO_VALIDATION_EXAMPLES_TASK_ID,
+        on_success_callback=lambda x: x.log.info("Task stopped."),
+    )
 
     @task
     def get_file_paths_from_uri(examples_folder_uri: str) -> list[str]:
@@ -140,6 +188,7 @@ def eval_and_cost_estimate():
         Returns:
             int: Number of billing tokens in the dataset.
         """
+        context = get_current_context()
 
         with open(example_file_path, "r", encoding="utf-8") as f:
             dataset = [json.loads(line) for line in f]
@@ -148,7 +197,6 @@ def eval_and_cost_estimate():
         n_billing_tokens_in_dataset = dataset_token_analysis(dataset, encoding)
 
         # set custom map index
-        context = get_current_context()
         context["custom_map_index"] = (
             f"{example_file_path} has {n_billing_tokens_in_dataset} billing tokens."
         )
@@ -200,8 +248,9 @@ def eval_and_cost_estimate():
             return stop_task_id
 
     continue_task = EmptyOperator(task_id=_CONTINUE_TASK_ID)
-    stop_task = EmptyOperator(
-        task_id=_STOP_TASK_ID, on_success_callback=lambda x: x.log.info("Task stopped.")
+    stop_budget_task = EmptyOperator(
+        task_id=_STOP_BUDGET_TASK_ID,
+        on_success_callback=lambda x: x.log.info("Task stopped."),
     )  # TODO: Add a callback to send an alert to slack
 
     @task
@@ -236,11 +285,22 @@ def eval_and_cost_estimate():
     # Call tasks and define dependencies #
     # ---------------------------------- #
 
+    check_if_examples_exist_obj = check_if_examples_exist(
+        train_examples_folder_uri=_FORMATTED_TRAIN_EXAMPLES_URI,
+        validation_examples_folder_uri=_FORMATTED_VALIDATION_EXAMPLES_URI,
+        stop_no_train_examples_task_id=_STOP_NO_TRAIN_EXAMPLES_TASK_ID,
+        stop_no_validation_examples_task_id=_STOP_NO_VALIDATION_EXAMPLES_TASK_ID,
+        get_examples_task_ids=[
+            _GET_TRAIN_EXAMPLES_FILE_PATHS_TASK_ID,
+            _GET_VALIDATION_EXAMPLES_FILE_PATHS_TASK_ID,
+        ],
+    )
+
     get_train_examples_file_paths_obj = get_file_paths_from_uri.override(
-        task_id="get_train_examples_file_paths"
+        task_id=_GET_TRAIN_EXAMPLES_FILE_PATHS_TASK_ID
     )(examples_folder_uri=_FORMATTED_TRAIN_EXAMPLES_URI)
     get_validation_examples_file_paths_obj = get_file_paths_from_uri.override(
-        task_id="get_validation_examples_file_paths"
+        task_id=_GET_VALIDATION_EXAMPLES_FILE_PATHS_TASK_ID
     )(examples_folder_uri=_FORMATTED_VALIDATION_EXAMPLES_URI)
 
     check_train_examples_valid_formatting_obj = (
@@ -263,7 +323,7 @@ def eval_and_cost_estimate():
 
     decide_if_cost_within_budget_obj = decide_if_cost_within_budget(
         total_cost=calculate_expected_cost_obj,
-        stop_task_id=_STOP_TASK_ID,
+        stop_task_id=_STOP_BUDGET_TASK_ID,
         continue_task_id=_CONTINUE_TASK_ID,
     )
 
@@ -280,8 +340,17 @@ def eval_and_cost_estimate():
         )(example_file_paths=get_validation_examples_file_paths_obj)
     )
 
+    chain(
+        check_if_examples_exist_obj,
+        [
+            get_train_examples_file_paths_obj,
+            get_validation_examples_file_paths_obj,
+            stop_no_train_examples,
+            stop_no_validation_examples,
+        ],
+    )
     chain(check_train_examples_valid_formatting_obj, count_tokens_obj)
-    chain(decide_if_cost_within_budget_obj, [stop_task, continue_task])
+    chain(decide_if_cost_within_budget_obj, [stop_budget_task, continue_task])
     chain(continue_task, create_fine_tuning_train_example_file_obj)
     chain(
         check_validation_examples_valid_formatting_obj,

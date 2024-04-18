@@ -1,6 +1,14 @@
 from collections import defaultdict
 
-def validate_example_format(dataset):
+
+def validate_example_format(dataset: list[dict]) -> dict:
+    """
+    Validate the format of the example dataset.
+    Args:
+        dataset (list[dict]): A list of dictionaries containing example data.
+    Returns:
+        dict: A dictionary containing the counts of each type of error found.
+    """
     format_errors = defaultdict(int)
 
     for ex in dataset:
@@ -37,9 +45,7 @@ def validate_example_format(dataset):
             if (not content and not function_call) or not isinstance(content, str):
                 format_errors["missing_content"] += 1
 
-        if not any(
-            message.get("role", None) == "assistant" for message in messages
-        ):
+        if not any(message.get("role", None) == "assistant" for message in messages):
             format_errors["example_missing_assistant_message"] += 1
 
     if format_errors:

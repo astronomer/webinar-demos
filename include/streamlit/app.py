@@ -61,9 +61,8 @@ def get_response(articles, query):
 
     client = OpenAI()
 
-    # get champion model id from app/include/model_results/champion/m.json
-    with open("/app/include/model_results/champion/m.json", "r") as f:
-        champion_model_id = json.read(f)["model_id"]
+    with open("/app/include/model_results/champion/champion_accuracy.json", "r") as f:
+        champion_model_id = json.load(f)["challenger_model_id"]
 
     # TODO: implement streaming https://github.com/openai/openai-python?tab=readme-ov-file#streaming-helpers
     chat_completion = client.chat.completions.create(

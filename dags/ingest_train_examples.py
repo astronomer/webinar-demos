@@ -1,43 +1,54 @@
 """
-## Ingest examples for model fine-tuning
+## Ingest train examples for fine-tuning
 
+This DAG ingests and transforms text examples for fine-tuning GPT-3.5-turbo.
 """
 
 from airflow.decorators import dag, task
 from airflow.models.dataset import Dataset
 from airflow.models.baseoperator import chain
-from pendulum import datetime
+from pendulum import datetime, duration
 import os
+
+_TRAIN_EXAMPLES_LONG_URI = os.getenv("TRAIN_EXAMPLES_LONG_URI")
+_TRAIN_EXAMPLES_SHORT_URI = os.getenv("TRAIN_EXAMPLES_SHORT_URI")
+_TRAIN_EXAMPLES_FOLDER_URI = os.getenv("TRAIN_EXAMPLES_FOLDER_URI")
+_FORMATTED_TRAIN_EXAMPLES_URI = os.getenv("FORMATTED_TRAIN_EXAMPLES_URI")
 
 
 @dag(
+    dag_display_name="🚂 Ingest Train Examples",
     start_date=datetime(2024, 4, 1),
-    schedule=(
-        Dataset("file://include/examples/train_examples/examples_long")
-        | Dataset("file://include/examples/train_examples/examples_short")
-    ),
+    schedule=(Dataset(_TRAIN_EXAMPLES_LONG_URI) | Dataset(_TRAIN_EXAMPLES_SHORT_URI)),
     catchup=False,
+    max_consecutive_failed_dag_runs=5,
     tags=["ingest"],
     default_args={
-        "retries": 0,
-        "owner": "Astronomer",
+        "retries": 3,
+        "retry_delay": duration(minutes=5),
+        "owner": "DE Team",
     },
+    doc_md=__doc__,
+    description="Ingest and transform training examples.",
 )
 def ingest_train_examples():
 
     @task
-    def get_example_folders(directory):
+    def get_example_folders(train_examples_folder_uri: str) -> list[str]:
         """
         Get a list of folders in a directory.
 
         Args:
-            directory (str): Path to the directory containing folders.
+            train_examples_folder_uri (str): Path to the directory containing
+            training folders with training examples.
         """
+
+        train_examples_file_path = train_examples_folder_uri.split("://")[1]
 
         folders = [
             f
-            for f in os.listdir(directory)
-            if os.path.isdir(os.path.join(directory, f))
+            for f in os.listdir(train_examples_file_path)
+            if os.path.isdir(os.path.join(train_examples_file_path, f))
         ]
         return folders
 
@@ -45,21 +56,27 @@ def ingest_train_examples():
         map_index_template="{{ custom_map_index }}",
     )
     def create_jsonl_from_txt_examples(
-        example_folder, output_path="include/examples/train_examples/formatted_examples/"
+        example_folder: str,
+        input_path_uri: str,
+        output_path_uri: str,
     ):
         """
         Convert text files in a directory to a JSON Lines file.
 
         Args:
-            directory (str): Path to the directory containing text files.
-            output_file (str): Path to the output JSONL file.
+            example_folder (str): Name of the directory containing text files.
+            input_path_uri (str): Path to the input directory.
+            output_path_uri (str): Path to the output JSONL file.
         """
         import json
         from airflow.operators.python import get_current_context
 
         jsonl_data = []
 
-        directory = os.path.join("include/examples/train_examples/", example_folder)
+        output_path = output_path_uri.split("://")[1]
+        input_path = input_path_uri.split("://")[1]
+
+        directory = os.path.join(input_path, example_folder)
 
         for filename in os.listdir(directory):
             if directory != "formatted_examples":
@@ -106,13 +123,18 @@ def ingest_train_examples():
             f"Parsing examples from: include/examples/train_examples/{directory_name}"
         )
 
-    @task(outlets=[Dataset("file://include/examples/train_examples/formatted_examples/")])
+    @task(outlets=[Dataset(_FORMATTED_TRAIN_EXAMPLES_URI)])
     def examples_ingested():
         print("Examples ingested successfully.")
 
     chain(
-        create_jsonl_from_txt_examples.expand(
-            example_folder=get_example_folders("include/examples/train_examples/")
+        create_jsonl_from_txt_examples.partial(
+            input_path_uri=_TRAIN_EXAMPLES_FOLDER_URI,
+            output_path_uri=_FORMATTED_TRAIN_EXAMPLES_URI
+        ).expand(
+            example_folder=get_example_folders(
+                train_examples_folder_uri=_TRAIN_EXAMPLES_FOLDER_URI
+            ),
         ),
         examples_ingested(),
     )

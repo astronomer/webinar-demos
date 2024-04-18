@@ -98,6 +98,8 @@ def champion_challenger():
     challenger_exists = EmptyOperator(task_id=_CHALLENGER_EXISTS_TASK_ID)
     no_challenger = EmptyOperator(task_id=_NO_CHALLENGER_TASK_ID)
 
+    start_the_battle = EmptyOperator(task_id="start_the_battle")
+
     # --------------------------------------- #
     # Get accuracy of champion and challenger #
     # --------------------------------------- #
@@ -213,6 +215,7 @@ def champion_challenger():
     chain(challenger_exists, get_challenger_accuracy_obj)
     chain_linear(
         [champion_exists, challenger_exists],
+        start_the_battle,
         [get_champion_accuracy_obj, get_challenger_accuracy_obj],
     )
     chain(comparison, [keep_champion, switch_champion_obj])

@@ -2,7 +2,14 @@ import os
 import pandas as pd
 
 
-def extract_guides(folder_path, **context):
+def extract_guides(folder_path: str) -> list[dict]:
+    """
+    Extract information from markdown files in a folder.
+    Args:
+        folder_path (str): Path to the folder containing markdown files.
+    Returns:
+        list[dict]: A list of dictionaries containing the extracted information.
+    """
     files = [f for f in os.listdir(folder_path) if f.endswith(".md")]
 
     uris = []
@@ -29,12 +36,20 @@ def extract_guides(folder_path, **context):
         }
     )
 
-    document_df['timestamp'] = document_df['timestamp'].astype(str)
+    document_df["timestamp"] = document_df["timestamp"].astype(str)
 
     return document_df.to_dict(orient="records")
 
 
-def extract_text_files(folder_path, **context):
+def extract_text_files(folder_path: str) -> list[dict]:
+    """
+    Extract information from text files in a folder.
+    Args:
+        folder_path (str): Path to the folder containing text files.
+    Returns:
+        list[dict]: A list of dictionaries containing the extracted information.
+    """
+
     files = [f for f in os.listdir(folder_path) if f.endswith(".txt")]
 
     uris = []

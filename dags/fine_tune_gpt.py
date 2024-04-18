@@ -1,30 +1,40 @@
 """
-## Fine-tune GPT-3
+## Fine-tune GPT-3-turbo using custom examples
 
+Fine-tunes GPT-3 turbo on the latest train and validation examples. 
+Manual runs offer the option to choose the specific example files.
 """
 
 from airflow.decorators import dag, task
 from airflow.models.dataset import Dataset
 from airflow.models.param import Param
 from airflow.sensors.base import PokeReturnValue
-from airflow.models.baseoperator import chain
-from pendulum import datetime
+from pendulum import datetime, duration
 import logging
+import os
 
 t_log = logging.getLogger("airflow.task")
 
+_COMBINED_TRAIN_EXAMPLES_URI = os.getenv("COMBINED_TRAIN_EXAMPLES_URI")
+_COMBINED_VALIDATION_EXAMPLES_URI = os.getenv("COMBINED_VALIDATION_EXAMPLES_URI")
+_PLOTS_URI = os.getenv("PLOTS_URI")
+_CHALLENGER_MODEL_INFO_URI = os.getenv("CHALLENGER_MODEL_INFO_URI")
+
 
 @dag(
+    dag_display_name="🤖 Fine-tune GPT-3.5-turbo",
     start_date=datetime(2024, 4, 1),
     schedule=(
-        Dataset("file://include/examples/train_examples/fine_tune_examples/")
-        & Dataset("file://include/examples/validation_examples/fine_tune_examples/")
+        Dataset(_COMBINED_TRAIN_EXAMPLES_URI)
+        & Dataset(_COMBINED_VALIDATION_EXAMPLES_URI)
     ),
     catchup=False,
-    tags=["ml_team"],
+    max_consecutive_failed_dag_runs=5,
+    tags=["GPT-3.5-turbo"],
     default_args={
-        "retries": 0,
-        "owner": "Astronomer",
+        "retries": 3,
+        "retry_delay": duration(minutes=5),
+        "owner": "MLE team",
     },
     params={
         "manual_choice_train_examples_file": Param(
@@ -54,20 +64,27 @@ t_log = logging.getLogger("airflow.task")
             maxLength=18,
         ),
     },
+    doc_md=__doc__,
+    description="Fine tune GPT-3.5-turbo.",
 )
 def fine_tune_gpt():
 
     @task
-    def choose_train_examples_file(**context):
+    def choose_examples_file(type: str, **context) -> str:
+        """
+        Determine which examples file to use.
+        Returns:
+            str: Path to the chosen examples file.
+        """
 
-        if context["params"]["manual_choice_train_examples_file"]:
+        if context["params"][f"manual_choice_{type}_examples_file"]:
             examples_file_path = context["params"][
-                "manual_choice_train_examples_file_path"
+                f"manual_choice_{type}_examples_file_path"
             ]
 
         else:
             examples_file_path = context["ti"].xcom_pull(
-                task_ids="create_fine_tuning_train_example_file",
+                task_ids=f"create_fine_tuning_{type}_example_file",
                 dag_id="eval_and_cost_estimate",
                 include_prior_dates=True,
             )
@@ -75,25 +92,14 @@ def fine_tune_gpt():
         return examples_file_path
 
     @task
-    def choose_validation_examples_file(**context):
-
-        if context["params"]["manual_choice_train_examples_file"]:
-            examples_file_path = context["params"][
-                "manual_choice_train_examples_file_path"
-            ]
-
-        else:
-            examples_file_path = context["ti"].xcom_pull(
-                task_ids="create_fine_tuning_validation_example_file",
-                dag_id="eval_and_cost_estimate",
-                include_prior_dates=True,
-            )
-
-        return examples_file_path
-
-    @task
-    def upload_examples_file_to_openai(examples_file_path):
-        pass
+    def upload_examples_file_to_openai(examples_file_path: str) -> str:
+        """
+        Uploads an examples file to OpenAI.
+        Args:
+            examples_file_path (str): Path to the examples file.
+        Returns:
+            str: File ID of the uploaded examples file.
+        """
 
         from openai import OpenAI
 
@@ -102,15 +108,25 @@ def fine_tune_gpt():
             file=open(examples_file_path, "rb"), purpose="fine-tune"
         )
 
-        print(r)
-
         t_log.info(f"Uploaded examples file to OpenAI. File ID: {r.id}")
+        t_log.info(f"File name: {r.filename}")
+        t_log.info(f"File size: {round(r.bytes / 1000, 2)} KB")
 
         return r.id
 
     # TODO: Create a deferrable operator for this
     @task
-    def fine_tune_gpt_model(fine_tuning_file_id, validation_file_id, **context):
+    def fine_tune_gpt_model(
+        fine_tuning_file_id: str, validation_file_id: str, **context
+    ) -> str:
+        """
+        Fine-tunes GPT-3.5-turbo on the provided examples.
+        Args:
+            fine_tuning_file_id (str): File ID of the examples to fine-tune on.
+            validation_file_id (str): File ID of the examples to validate on.
+        Returns:
+            str: ID of the fine-tuning job.
+        """
 
         from openai import OpenAI
 
@@ -130,12 +146,19 @@ def fine_tune_gpt():
 
         t_log.info(f"Fine-tuning job created. Job ID: {fine_tune_info.id}")
 
-        print(fine_tune_info)
-
         return fine_tune_info.id
 
     @task.sensor
-    def wait_for_model_fine_tuning_to_complete(fine_tune_id, **context):
+    def wait_for_model_fine_tuning_to_complete(
+        fine_tune_id: str, **context
+    ) -> PokeReturnValue:
+        """
+        Waits for the fine-tuning job to complete.
+        Args:
+            fine_tune_id (str): ID of the fine-tuning job.
+        Returns:
+            PokeReturnValue: Whether the fine-tuning job is done + XCom value.
+        """
         from openai import OpenAI
         from pendulum import from_timestamp
 
@@ -144,6 +167,7 @@ def fine_tune_gpt():
 
         if fine_tune_info.status == "succeeded":
 
+            # compute duration
             fine_tuning_duration_seconds = (
                 fine_tune_info.finished_at - fine_tune_info.created_at
             )
@@ -151,6 +175,7 @@ def fine_tune_gpt():
             fine_tuning_duration_min = (fine_tuning_duration_seconds % 3600) // 60
             fine_tuning_duration_s = (fine_tuning_duration_seconds % 3600) % 60
 
+            # log fine tuning info
             t_log.info("Fine-tuning job completed successfully.")
             t_log.info("--- Fine-tuning Job Info ---")
             t_log.info(f"Fine-tuned model: {fine_tune_info.fine_tuned_model}")
@@ -196,16 +221,24 @@ def fine_tune_gpt():
 
     @task(
         outlets=[
-            Dataset("file://include/model_results/plots/"),
-            Dataset("file://include/model_results/challenger/challenger_accuracy.json"),
+            Dataset(_PLOTS_URI),
+            Dataset(_CHALLENGER_MODEL_INFO_URI),
         ]
     )
-    def get_model_model_results(result_files, model_info, **context):
+    def get_model_model_results(result_files: list[str], **context) -> list[float]:
+        """
+        Get the results of the fine-tuning job. Plot them and save them to a file.
+        Args:
+            result_files (List[str]): List of file IDs containing the fine-tuning results.
+        Returns:
+            List[float]: List of the last validation mean token accuracy for each result file.
+        """
         from openai import OpenAI
         import pandas as pd
-        import matplotlib.pyplot as plt
         import os
         import json
+
+        from include.task_functions.plotting import plot_model_train_val_graph
 
         client = OpenAI()
 
@@ -224,53 +257,8 @@ def fine_tune_gpt():
 
             df = pd.read_csv(StringIO(result_file_info))
 
-            # TODO: prettify
-            plt.figure(figsize=(12, 10))
+            plot_model_train_val_graph(fine_tuned_model, df, ts)
 
-            plt.suptitle(f"Fine-tuning model_results: {fine_tuned_model}", fontsize=16)
-
-            plt.subplot(2, 2, 1)
-            plt.plot(df["step"], df["train_loss"], label="Training Loss", color="blue")
-            plt.xlabel("Training Step")
-            plt.ylabel("Loss")
-            plt.title("Training Loss Over Time")
-            plt.legend()
-
-            plt.subplot(2, 2, 2)
-            plt.plot(
-                df["step"],
-                df["train_accuracy"],
-                label="Training Accuracy",
-                color="green",
-            )
-            plt.xlabel("Training Step")
-            plt.ylabel("Accuracy")
-            plt.title("Training Accuracy Over Time")
-            plt.legend()
-
-            plt.subplot(2, 2, 3)
-            plt.plot(df["step"], df["valid_loss"], label="Validation Loss", color="red")
-            plt.xlabel("Training Step")
-            plt.ylabel("Loss")
-            plt.title("Validation Loss Over Time")
-            plt.legend()
-
-            plt.subplot(2, 2, 4)
-            plt.plot(
-                df["step"],
-                df["valid_mean_token_accuracy"],
-                label="Validation Mean Token Accuracy",
-                color="purple",
-            )
-            plt.xlabel("Training Step")
-            plt.ylabel("Accuracy")
-            plt.title("Validation Mean Token Accuracy Over Time")
-            plt.legend()
-
-            plt.tight_layout()
-            plt.savefig(
-                f"include/model_results/plots/{ts}_fine_tuning_model_results.png"
-            )
             last_validation_mean_token_acc = df["valid_mean_token_accuracy"].iloc[-1]
             validation_mean_token_acc_list.append(last_validation_mean_token_acc)
 
@@ -289,14 +277,26 @@ def fine_tune_gpt():
                 )
         return validation_mean_token_acc_list
 
+    # ---------------------------------- #
+    # Call tasks and define dependencies #
+    # ---------------------------------- #
+
     upload_train_examples_file_to_openai_obj = upload_examples_file_to_openai.override(
-        task_display_name="Upload train file to OpenAI"
-    )(examples_file_path=choose_train_examples_file())
+        task_id="upload_train_examples_file_to_openai"
+    )(
+        examples_file_path=choose_examples_file.override(
+            task_id="choose_train_examples_file"
+        )(type="train")
+    )
 
     upload_validation_examples_file_to_openai_obj = (
         upload_examples_file_to_openai.override(
-            task_display_name="Upload validation file to OpenAI"
-        )(examples_file_path=choose_validation_examples_file())
+            task_id="upload_validation_examples_file_to_openai"
+        )(
+            examples_file_path=choose_examples_file.override(
+                task_id="choose_validation_examples_file"
+            )(type="validation")
+        )
     )
 
     fine_tune_gpt_model_obj = fine_tune_gpt_model(

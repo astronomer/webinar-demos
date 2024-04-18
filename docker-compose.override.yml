@@ -31,7 +31,7 @@ services:
       - "8501:8501"
     volumes:
       - ${PWD}/include/streamlit:/app/include
-      - ${PWD}/include/results:/app/include/results
+      - ${PWD}/include/model_results:/app/include/model_results
     extra_hosts:
       - "host.docker.internal:host-gateway"  
     env_file:
