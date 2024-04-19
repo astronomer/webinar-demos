@@ -149,6 +149,7 @@ def eval_and_cost_estimate():
 
     @task(
         map_index_template="{{ custom_map_index }}",
+        max_active_tis_per_dag=1,  # protect against rate limiting of the tiktoken API
     )
     def check_examples_valid_formatting(example_file_path: str) -> list[str]:
         """
