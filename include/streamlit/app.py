@@ -84,6 +84,7 @@ user_input = st.text_input(
 limit = st.slider("Retrieve X most relevant chunks:", 1, 20, 5)
 certainty = st.slider("Certainty threshold for relevancy", 0.0, 1.0, 0.75)
 
+
 if st.button("Search"):
     st.header("Answer")
     with st.spinner(text="Thinking... :thinking_face:"):
