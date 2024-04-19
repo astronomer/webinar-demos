@@ -83,8 +83,6 @@ _GET_VALIDATION_EXAMPLES_FILE_PATHS_TASK_ID = "get_validation_examples_file_path
 )
 def eval_and_cost_estimate():
 
-    # TODO: check that both train and validation examples exist for first run
-
     @task.branch
     def check_if_examples_exist(
         train_examples_folder_uri: str,
