@@ -38,7 +38,7 @@ def start_pipeline():
 
     @task(outlets=[Dataset(_VALIDATION_EXAMPLES_URI)])
     def update_validation_examples():
-        time.sleep(20)
+        time.sleep(5)
         return "Validation examples dataset updated."
 
     update_train_examples()

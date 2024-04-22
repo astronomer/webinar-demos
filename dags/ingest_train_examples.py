@@ -130,7 +130,7 @@ def ingest_train_examples():
     chain(
         create_jsonl_from_txt_examples.partial(
             input_path_uri=_TRAIN_EXAMPLES_FOLDER_URI,
-            output_path_uri=_FORMATTED_TRAIN_EXAMPLES_URI
+            output_path_uri=_FORMATTED_TRAIN_EXAMPLES_URI,
         ).expand(
             example_folder=get_example_folders(
                 train_examples_folder_uri=_TRAIN_EXAMPLES_FOLDER_URI
