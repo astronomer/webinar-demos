@@ -37,6 +37,7 @@ from include.custom_operators.gpt_fine_tune import OpenAIFineTuneOperator
     default_args={
         "retries": 3,
         "retry_delay": duration(minutes=5),
+        "retry_exponential_backoff": True,
         "owner": "MLE team",
     },
     params={
