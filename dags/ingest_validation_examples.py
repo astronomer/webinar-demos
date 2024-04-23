@@ -24,7 +24,7 @@ _FORMATTED_VALIDATION_EXAMPLES_URI = os.getenv("FORMATTED_VALIDATION_EXAMPLES_UR
     ),
     catchup=False,
     max_consecutive_failed_dag_runs=5,
-    tags=["ingest"],
+    tags=["ingest", "use-case"],
     default_args={
         "retries": 3,
         "retry_delay": duration(minutes=5),

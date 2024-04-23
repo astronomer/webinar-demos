@@ -23,7 +23,7 @@ _VALIDATION_EXAMPLES_URI = os.getenv("VALIDATION_EXAMPLES_SHORT_URI")
     start_date=datetime(2024, 4, 1),
     schedule=None,
     catchup=False,
-    tags=["helper"],
+    tags=["helper", "use-case"],
     default_args={
         "retries": 0,
         "owner": "Astronomer",

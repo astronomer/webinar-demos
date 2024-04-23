@@ -27,7 +27,7 @@ default_args = {
     start_date=datetime(2023, 10, 18),
     catchup=False,
     default_args=default_args,
-    tags=["helper"],
+    tags=["helper", "use-case"],
 )
 def clear_weaviate():
 

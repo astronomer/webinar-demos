@@ -22,7 +22,7 @@ _FORMATTED_TRAIN_EXAMPLES_URI = os.getenv("FORMATTED_TRAIN_EXAMPLES_URI")
     schedule=(Dataset(_TRAIN_EXAMPLES_LONG_URI) | Dataset(_TRAIN_EXAMPLES_SHORT_URI)),
     catchup=False,
     max_consecutive_failed_dag_runs=5,
-    tags=["ingest"],
+    tags=["ingest", "use-case"],
     default_args={
         "retries": 3,
         "retry_delay": duration(minutes=5),

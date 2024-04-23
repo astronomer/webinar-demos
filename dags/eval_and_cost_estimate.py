@@ -53,7 +53,7 @@ _GET_VALIDATION_EXAMPLES_FILE_PATHS_TASK_ID = "get_validation_examples_file_path
     ),
     catchup=False,
     max_consecutive_failed_dag_runs=5,
-    tags=["data_quality", "cost_control"],
+    tags=["data_quality", "cost_control", "use-case"],
     default_args={
         "retries": 2,
         "retry_delay": duration(minutes=5),
