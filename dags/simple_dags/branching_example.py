@@ -10,7 +10,7 @@ import random
     tags=["Simple DAGs", "branching"],
     catchup=False,
 )
-def screenshot_examples():
+def branching_example():
 
     @task.branch
     def is_champion() -> str:
@@ -37,4 +37,4 @@ def screenshot_examples():
     chain(is_champion(), [champion_exists(), no_champion()], always_run_downstream())
 
 
-screenshot_examples()
+branching_example()

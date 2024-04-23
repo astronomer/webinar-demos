@@ -18,7 +18,7 @@ from pendulum import datetime, duration
     # counts for all tasks in the DAG
     catchup=False,
 )
-def screenshot_examples():
+def retries_examples():
 
     @task(
         retries=2, retry_delay=duration(minutes=3), retry_exponential_backoff=False
@@ -30,4 +30,4 @@ def screenshot_examples():
     say_hi_obj = say_hi_1("Astra")
 
 
-screenshot_examples()
+retries_examples()
