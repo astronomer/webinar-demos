@@ -69,7 +69,6 @@ def ingest_train_examples():
             output_path_uri (str): Path to the output JSONL file.
         """
         import json
-        from airflow.operators.python import get_current_context
 
         jsonl_data = []
 
@@ -118,6 +117,8 @@ def ingest_train_examples():
 
         print(f"JSON Lines file '{output_file}' created successfully.")
 
+        from airflow.operators.python import get_current_context
+
         context = get_current_context()
         context["custom_map_index"] = (
             f"Parsing examples from: include/examples/train_examples/{directory_name}"
@@ -125,6 +126,9 @@ def ingest_train_examples():
 
     @task(outlets=[Dataset(_FORMATTED_TRAIN_EXAMPLES_URI)])
     def examples_ingested():
+        import time
+
+        time.sleep(15)
         print("Examples ingested successfully.")
 
     get_example_folders_obj = get_example_folders(
