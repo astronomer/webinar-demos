@@ -1,48 +1,48 @@
-Overview
-========
+GenAI with Airflow - RAG + Fine-tuning GPT-3.5 pipeline for content generation
+==============================================================================
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+Welcome! This project is a simple but functional blueprint for a RAG + fine-tuning pipeline with [Apache Airflow](https://airflow.apache.org/). Fork this project to create your own content generation pipelines! 
 
-Project Contents
-================
+Tools used:
 
-Your Astro project contains the following files and folders:
+- [Apache Airflow](https://airflow.apache.org/) run with the [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli) to create a local instance in Docker
+- [OpenAI](https://platform.openai.com/overview)
+- [Weaviate](https://weaviate.io/) - running as a local instance in Docker
+- [Streamlit](https://streamlit.io/) - running as a local instance in Docker
+- [LangChain](https://www.langchain.com/) for chunking 
+- [tiktoken](https://github.com/openai/tiktoken) for token counting
+- [Matplotlib](https://matplotlib.org/) for plotting
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://docs.astronomer.io/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+How to use this repository
+==========================
 
-Deploy Your Project Locally
-===========================
+## Setting up
 
-1. Start Airflow on your local machine by running 'astro dev start'.
+### Option 1: Use GitHub Codespaces
 
-This command will spin up 4 Docker containers on your machine, each for a different Airflow component:
+Run this Airflow project without installing anything locally.
 
-- Postgres: Airflow's Metadata Database
-- Webserver: The Airflow component responsible for rendering the Airflow UI
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+1. Fork this repository.
+2. Create a new GitHub codespaces project on your fork. Make sure it uses at least 4 cores!
+3. Inside of Codespaces, copy the `.env_example` file contents into a new `.env` file and provide your OpenAI API key in _both_ the `OPENAI_API_KEY` and `AIRFLOW_CONN_WEAVIATE_DEFAULT` fields.
+4. Run `astro dev start` to start up all necessary Airflow components as well the Streamlit and Weaviate containers. This can take a few minutes. 
+5. Once the Airflow project has started access the Airflow UI by clicking on the **Ports** tab and opening the forward URL for port `8080`. The Streamlit app will be available on port `8501`.
 
-2. Verify that all 4 Docker containers were created by running 'docker ps'.
+### Option 2: Use the Astro CLI
 
-Note: Running 'astro dev start' will start your project with the Airflow Webserver exposed at port 8080 and Postgres exposed at port 5432. If you already have either of those ports allocated, you can either [stop your existing Docker containers or change the port](https://docs.astronomer.io/astro/test-and-troubleshoot-locally#ports-are-not-available).
+Download the [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli) to run Airflow locally in Docker. `astro` is the only package you will need to install.
 
-3. Access the Airflow UI for your local Airflow project. To do so, go to http://localhost:8080/ and log in with 'admin' for both your Username and Password.
+1. Run `git clone https://github.com/astronomer/gen-ai-fine-tune-rag-use-case.git` on your computer to create a local clone of this repository.
+2. Install the Astro CLI by following the steps in the [Astro CLI documentation](https://docs.astronomer.io/astro/cli/install-cli). The main prerequisite is Docker Desktop/Docker Engine but no Docker knowledge is needed to run Airflow with the Astro CLI.
+3. Copy the `.env_example` file contents into a new `.env` file and provide your OpenAI API key in _both_ the `OPENAI_API_KEY` and `AIRFLOW_CONN_WEAVIATE_DEFAULT` fields.
+4. Run `astro dev start` in your cloned repository.
+5. After your Astro project has started. View the Airflow UI at `localhost:8080`. The Streamlit app will be available on `localhost:8501`.
 
-You should also be able to access your Postgres Database at 'localhost:5432/postgres'.
+## Run the project
 
-Deploy Your Project to Astronomer
-=================================
-
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://docs.astronomer.io/cloud/deploy-code/
-
-Contact
-=======
-
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+1. Unpause all DAGs, starting top to bottom, by clicking on the toggle on their left hand side. Once the `📚 Ingest Knowledge Base` DAG is unpaused it will run once, starting the RAG part of the pipeline. 
+2. Kick off the fine-tuning part of the pipeline by running the `🚀 0 - Start Fine-Tuning Pipeline` DAG manually.
+3. Watch the DAGs run according to their dependencies which have been set using [Datasets](https://docs.astronomer.io/learn/airflow-datasets). The `🤖 Fine-tune` DAG will take approximately 15min to run.
+4. After the last DAG in the pipeline `✨ Champion vs Challenger` has completed, open the Streamlit app at `localhost:8501` / port forward `8501` in Codespaces.
+5. In the streamlit app click `Generate post!` to generate new content using the fine-tuned model.
+6. Click `Generate picture!` to get an image generated by DALLE about the new content.
