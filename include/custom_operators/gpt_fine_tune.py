@@ -33,7 +33,7 @@ from pendulum import from_timestamp
 from openai import OpenAI
 
 XCOM_FINE_TUNE_JOB_ID = "fine_tune_job_id"
-XCOM_FINE_TUNE_MODEL_NAME = "fine_tune_model_name"
+XCOM_FINE_TUNE_MODEL_NAME = "fine_tune_model"
 
 if TYPE_CHECKING:
 
@@ -210,7 +210,6 @@ class OpenAIFineTuneOperator(BaseOperator):
         # Store the fine-tune job ID in XCom
         ti = context["task_instance"]
         ti.xcom_push(key=XCOM_FINE_TUNE_JOB_ID, value=self.fine_tune_job_id)
-        ti.xcom_push(key=XCOM_FINE_TUNE_MODEL_NAME, value=self.fine_tune_model_name)
 
         if self.wait_for_completion:
             # Kick off the deferral process
@@ -324,4 +323,6 @@ class OpenAIFineTuneOperator(BaseOperator):
             f"Fine-tuning Duration: {fine_tuning_duration_hr} hr {fine_tuning_duration_min} min {fine_tuning_duration_s} s"
         )
 
-        context["ti"].xcom_push("fine_tuned_model", fine_tune_info.fine_tuned_model)
+        print(fine_tune_info.fine_tuned_model)
+
+        context["ti"].xcom_push(XCOM_FINE_TUNE_MODEL_NAME, fine_tune_info.fine_tuned_model)

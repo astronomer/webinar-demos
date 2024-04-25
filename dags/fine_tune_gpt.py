@@ -168,7 +168,7 @@ def fine_tune_gpt():
         validation_mean_token_acc_list = []
 
         fine_tuned_model = context["ti"].xcom_pull(
-            task_ids="fine_tune", key="fine_tuned_model_name"
+            task_ids="fine_tune", key="fine_tune_model"
         )
 
         for file in result_files:
