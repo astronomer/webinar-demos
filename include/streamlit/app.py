@@ -128,7 +128,7 @@ if st.button("Generate post!"):
 if st.session_state["response_text"]:
     st.write(st.session_state["response_text"])
 
-    if st.button("Generate picture"):
+    if st.button("Generate picture!"):
         with st.spinner(text="Generating... :camera:"):
             st.session_state["picture"] = get_image(st.session_state["response_text"])
 
