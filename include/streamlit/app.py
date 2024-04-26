@@ -58,7 +58,7 @@ def get_response(articles, query):
     prompt += " " + query
 
     prompt += """ 
-    Remember to keep the post short and sweet! Add a little space fact if you can!"""
+    Remember to keep the post short and sweet! At the end of the post add another sentence that is a space fact!"""
 
     client = OpenAI()
 

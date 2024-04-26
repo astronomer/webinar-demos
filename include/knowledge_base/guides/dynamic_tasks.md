@@ -5,6 +5,13 @@ description: "How to dynamically create tasks at runtime in your Airflow DAGs."
 id: dynamic-tasks
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+import CodeBlock from '@theme/CodeBlock';
+import mapping_elt_taskflow from '!!raw-loader!../code-samples/dags/dynamic-tasks/mapping_elt_taskflow.py';
+import mapping_elt_traditional from '!!raw-loader!../code-samples/dags/dynamic-tasks/mapping_elt_traditional.py';
+
 With **dynamic task mapping**, you can write DAGs that dynamically generate parallel tasks at runtime. This feature is a paradigm shift for DAG design in Airflow, since it allows you to create tasks based on the current runtime environment without having to change your DAG code.
 
 In this guide, you'll learn about dynamic task mapping and complete an example implementation for a common use case.
@@ -18,6 +25,13 @@ There are multiple resources for learning about this topic. See also:
 
 :::
 
+## Assumed knowledge
+
+To get the most out of this guide, you should have an understanding of:
+
+- Airflow Operators. See [Operators 101](what-is-an-operator.md).
+- How to use Airflow decorators to define tasks. See [Introduction to Airflow Decorators](airflow-decorators.md).
+- XComs in Airflow. See [Passing Data Between Airflow Tasks](airflow-passing-data-between-tasks.md).
 
 ## Dynamic task concepts
 
@@ -31,6 +45,195 @@ Airflow tasks have two functions available to implement the map portion of dynam
 When mapping over multiple keyword argument sets, you need to use the function `expand_kwargs()` instead of `expand()`.
 
 In the following example, the task uses both, `.partial()` and `.expand()`, to dynamically generate three task runs.
+
+<Tabs
+    defaultValue="taskflow"
+    groupId="dynamic-task-concepts"
+    values={[
+        {label: 'TaskFlow API', value: 'taskflow'},
+        {label: 'Traditional syntax', value: 'traditional'},
+    ]}>
+
+<TabItem value="taskflow">
+
+```python
+@task(
+    # optionally, you can set a custom index to display in the UI (Airflow 2.9+)
+    map_index_template="{{ my_custom_map_index }}"
+)
+def add(x: int, y: int):
+
+    # get the current context and define the custom map index variable
+    from airflow.operators.python import get_current_context
+
+    context = get_current_context()
+    context["my_custom_map_index"] = "Input x=" + str(x)
+
+    return x + y
+
+added_values = add.partial(y=10).expand(x=[1, 2, 3])
+```
+
+</TabItem>
+<TabItem value="traditional">
+
+```python
+def add_function(x: int, y: int):
+    return x + y
+
+added_values = PythonOperator.partial(
+    task_id="add",
+    python_callable=add_function,
+    op_kwargs={"y": 10},
+    # optionally, you can set a custom index to display in the UI (Airflow 2.9+)
+    map_index_template="Input x={{ task.op_args[0] }}",
+).expand(op_args=[[1], [2], [3]])
+```
+
+</TabItem>
+</Tabs>
+
+![Screenshot of the Airflow UI showing three dynamically mapped task instances created with the code snippets above.](/img/guides/dynamic-tasks_simple_example.png)
+
+:::note
+
+Defining the `map_index_template` parameter (Airflow 2.9+) is optional. If you don't set it, the default map index is used, which is an integer index starting from 0. It is a best practice to set a custom index to make it easier to identify the mapped task instances in the Airflow UI. For example, if you are mapping over a list of files, you can display the name of the file as the `map_index` in the Airflow UI.
+
+:::
+
+This `expand` function creates three mapped `add` tasks, one for each entry in the `x` input list. The `partial` function specifies a value for `y` that remains constant in each task.
+
+When you work with mapped tasks, keep the following in mind:
+
+- You can use the results of an upstream task as the input to a mapped task. The upstream task must return a value in a `dict` or `list` form. If you're using traditional operators and not [decorated tasks](airflow-decorators.md), the mapping values must be stored in XComs.
+- You can map over multiple parameters.
+- You can use the results of a mapped task as input to a downstream mapped task.
+- You can have a mapped task that results in no task instances. For example, when your upstream task that generates the mapping values returns an empty list. In this case, the mapped task is marked skipped, and downstream tasks are run according to the trigger rules you set. By default, downstream tasks are also skipped.
+- Some parameters can't be mapped. For example, `task_id`, `pool`, and many `BaseOperator` arguments.
+- `expand()` only accepts keyword arguments.
+- The maximum amount of mapped task instances is determined by the `max_map_length` parameter in the [Airflow configuration](https://airflow.apache.org/docs/apache-airflow/stable/configurations-ref.html#max-map-length). By default it is set to 1024.
+- You can limit the number of mapped task instances for a particular task that run in parallel by setting the following parameters in your dynamically mapped task:
+    - Set a limit across all DAG runs with the `max_active_tis_per_dag` parameter.
+    - Set a limit for parallel runs within a single DAG with the `max_active_tis_per_dagrun` parameter.
+- XComs created by mapped task instances are stored in a list and can be accessed by using the map index of a specific mapped task instance. For example, to access the XComs created by the third mapped task instance (map index of 2) of `my_mapped_task`, use `ti.xcom_pull(task_ids=['my_mapped_task'])[2]`. The `map_indexes` parameter in the `.xcom_pull()` method allows you to specify a list of map indexes of interest (`ti.xcom_pull(task_ids=['my_mapped_task'], map_indexes=[2])`).
+
+For additional examples of how to apply dynamic task mapping functions, see [Dynamic Task Mapping](https://airflow.apache.org/docs/apache-airflow/stable/concepts/dynamic-task-mapping.html) in the official Airflow documentation.
+
+The Airflow UI provides observability for mapped tasks in the **Grid View**.
+
+Mapped tasks are identified with a set of brackets `[ ]` followed by the task ID. All mapped task instances are combined into one row on the grid.
+
+The number in the brackets show in the DAG run graph, is updated for each DAG run to reflect how many mapped instances were created. The following screenshot shows a DAG run graph with two tasks, the latter having 49 dynamically mapped task instances.
+
+<img src={require("../static/img/guides/dynamic-tasks-graph_tab_simple.png").default} alt="Screenshot of the Graph tab in the Airflow UI Grid view showing a DAG run graph with two tasks, the latter having been mapped 49 times." style={{ width: "75%", maxWidth: "500px", height: "auto", display: "block", margin: "auto" }} />
+
+
+To see the logs and XCom pushed by each dynamically mapped task instance, click on the dynamically mapped task, either in the DAG run graph or in the grid. Then click on **[] Mapped Tasks** and select the mapped task instance you want to inspect.
+
+![Gif showing how to navigate to the logs of an individual mapped task instance in the Airflow UI.](/img/guides/dynamic-tasks_mapped_task_logs.gif)
+
+## Mapping over the result of another operator
+
+You can use the output of an upstream operator as the input data for a dynamically mapped downstream task.
+
+In this section you'll learn how to pass mapping information to a downstream task for each of the following scenarios:
+
+- **TaskFlow over TaskFlow**: Both tasks are defined using the TaskFlow API.
+- **TaskFlow over traditional operator**: The upstream task is defined using a traditional operator and the downstream task is defined using the TaskFlow API.
+- **Traditional operator over TaskFlow**: The upstream task is defined using the TaskFlow API and the downstream task is defined using a traditional operator.
+- **Traditional operator over traditional operator**: Both tasks are defined using traditional operators.
+
+<Tabs
+    defaultValue="two-flow"
+    groupId="mapping-over-the-result-of-another-operator"
+    values={[
+        {label: 'TaskFlow over TaskFlow', value: 'two-flow'},
+        {label: 'TaskFlow over Traditional operator', value: 'flow-traditional'},
+        {label: 'Traditional operator over TaskFlow', value: 'traditional-flow'},
+        {label: 'Traditional operator over Traditional operator', value: 'two-traditional'},
+    ]}>
+
+<TabItem value="two-flow">
+
+If both tasks are defined using the TaskFlow API, you can provide a function call to the upstream task as the argument for the `expand()` function.
+
+```python
+@task
+def one_two_three_TF():
+    return [1, 2, 3]
+
+@task
+def plus_10_TF(x):
+    return x + 10
+
+plus_10_TF.partial().expand(x=one_two_three_TF())
+```
+</TabItem>
+<TabItem value="flow-traditional">
+
+If you are mapping over the results of a traditional operator, you need to provide the argument for `expand()` using the `.output` attribute of the task object.
+
+```python
+def one_two_three_traditional():
+    return [1, 2, 3]
+
+@task
+def plus_10_TF(x):
+    return x + 10
+
+one_two_three_task = PythonOperator(
+    task_id="one_two_three_task", python_callable=one_two_three_traditional
+)
+
+plus_10_TF.partial().expand(x=one_two_three_task.output)
+```
+
+</TabItem>
+<TabItem value="traditional-flow">
+
+When mapping a traditional PythonOperator over results from an upstream TaskFlow task you need to modify the format of the output to be accepted by the `op_args` argument of the traditional PythonOperator.
+
+```python
+@task
+def one_two_three_TF():
+    # this adjustment is due to op_args expecting each argument as a list
+    return [[1], [2], [3]]
+
+def plus_10_traditional(x):
+    return x + 10
+
+plus_10_task = PythonOperator.partial(
+    task_id="plus_10_task", python_callable=plus_10_traditional
+).expand(op_args=one_two_three_TF())
+```
+
+</TabItem>
+<TabItem value="two-traditional">
+
+When mapping a traditional PythonOperator over the result of another PythonOperator use the `.output` attribute on the task object and make sure the format returned by the upstream task matches the format expected by the `op_args` parameter.
+
+```python
+def one_two_three_traditional():
+    # this adjustment is due to op_args expecting each argument as a list
+    return [[1], [2], [3]]
+
+def plus_10_traditional(x):
+    return x + 10
+
+one_two_three_task = PythonOperator(
+    task_id="one_two_three_task", python_callable=one_two_three_traditional
+)
+
+plus_10_task = PythonOperator.partial(
+    task_id="plus_10_task", python_callable=plus_10_traditional
+).expand(op_args=one_two_three_task.output)
+
+# when only using traditional operators, define dependencies explicitly
+one_two_three_task >> plus_10_task
+```
+
+</TabItem>
+</Tabs>
 
 ## Mapping over multiple parameters
 
@@ -64,3 +267,441 @@ cross_product_example = BashOperator.partial(
 ```
 
 The nine mapped task instances of the task `cross_product_example` run all possible combinations of the bash command with the env variable:
+
+- Map index 0: `hello`
+- Map index 1: `tea`
+- Map index 2: `goodbye`
+- Map index 3: `5`
+- Map index 4: `3`
+- Map index 5: `7`
+- Map index 6: `hXllo`
+- Map index 7: `tXa`
+- Map index 8: `goodbyX`
+
+### Sets of keyword arguments
+
+To map over sets of inputs to two or more keyword arguments (kwargs), you can use the `expand_kwargs()` function. You can provide sets of parameters as a list containing a dictionary or as an `XComArg`. The operator gets 3 sets of commands, resulting in 3 mapped task instances.
+
+```python
+# input sets of kwargs provided directly as a list[dict]
+t1 = BashOperator.partial(task_id="t1").expand_kwargs(
+    [
+        {"bash_command": "echo $WORD", "env" : {"WORD": "hello"}},
+        {"bash_command": "echo `expr length $WORD`", "env" : {"WORD": "tea"}},
+        {"bash_command": "echo ${WORD//e/X}", "env" : {"WORD": "goodbye"}}
+    ]
+)
+```
+
+The task `t1` will have three mapped task instances printing their results into the logs:
+
+- Map index 0: `hello`
+- Map index 1: `3`
+- Map index 2: `goodbyX`
+
+### Zip
+
+In dynamic task mapping, you can provide sets of positional arguments to the same keyword argument. For example, the `op_args` argument of the PythonOperator. You can use the built-in [`zip()`](https://docs.python.org/3/library/functions.html#zip) Python function if your inputs are in the form of iterables such as tuples, dictionaries, or lists. If your inputs come from XCom objects, you can use the `.zip()` method of the `XComArg` object.
+
+#### Provide positional arguments with the built-in Python `zip()`
+
+The `zip()` function takes in an arbitrary number of iterables and uses their elements to create a zip-object containing tuples. There will be as many tuples as there are elements in the shortest iterable. Each tuple contains one element from every iterable provided. For example:
+
+- `zip(["a", "b", "c"], [1, 2, 3], ["hi", "bye", "tea"])` results in a zip object containing: `("a", 1, "hi"), ("b", 2, "bye"), ("c", 3, "tea")`.
+- `zip(["a", "b"], [1], ["hi", "bye"], [19, 23], ["x", "y", "z"])` results in a zip object containing only one tuple: `("a", 1, "hi", 19, "x")`. This is because the shortest list provided only contains one element.
+- It is also possible to zip together different types of iterables. `zip(["a", "b"], {"hi", "bye"}, (19, 23))` results in a zip object containing: `('a', 'hi', 19), ('b', 'bye', 23)`.
+
+The following code snippet shows how a list of zipped arguments can be provided to the `expand()` function in order to create mapped tasks over sets of positional arguments. In the TaskFlow API version of the DAG, each set of positional arguments is passed to the argument `zipped_x_y_z`. In the DAG using a traditional PythonOperator each set of positional arguments is unpacked due to `op_args` expecting an iterable and passed to the arguments `x`, `y` and `z`.
+
+<Tabs
+    defaultValue="taskflow"
+    groupId="provide-positional-arguments-with-the-built-in-python-zip"
+    values={[
+        {label: 'TaskFlow API', value: 'taskflow'},
+        {label: 'Traditional syntax', value: 'traditional'},
+    ]}>
+
+<TabItem value="taskflow">
+
+```python
+# use the zip function to create three-tuples out of three lists
+zipped_arguments = list(zip([1, 2, 3], [10, 20, 30], [100, 200, 300]))
+# zipped_arguments contains: [(1,10,100), (2,20,200), (3,30,300)]
+
+# creating the mapped task instances using the TaskFlow API
+@task
+def add_numbers(zipped_x_y_z):
+    return zipped_x_y_z[0] + zipped_x_y_z[1] + zipped_x_y_z[2]
+
+add_numbers.expand(zipped_x_y_z=zipped_arguments)
+```
+
+</TabItem>
+
+<TabItem value="traditional">
+
+```python
+# use the zip function to create three-tuples out of three lists
+zipped_arguments = list(zip([1, 2, 3], [10, 20, 30], [100, 200, 300]))
+# zipped_arguments contains: [(1,10,100), (2,20,200), (3,30,300)]
+
+# function for the PythonOperator
+def add_numbers_function(x, y, z):
+    return x + y + z
+
+# dynamically mapped PythonOperator
+add_numbers = PythonOperator.partial(
+    task_id="add_numbers",
+    python_callable=add_numbers_function,
+).expand(op_args=zipped_arguments)
+```
+
+</TabItem>
+</Tabs>
+
+The task `add_numbers` will have three mapped task instances one for each tuple of positional arguments:
+
+- Map index 0: `111`
+- Map index 1: `222`
+- Map index 2: `333`
+
+#### Provide positional arguments with XComArg.zip()
+
+It is also possible to zip `XComArg` objects. If the upstream task has been defined using the TaskFlow API, provide the function call. If the upstream task uses a traditional operator, provide `task_object.output` or `XcomArg(task_object)`. In the following example, you can see the results of three tasks being zipped together to form the `zipped_arguments` (`[(1, 10, 100), (2, 1000, 200), (1000, 1000, 300)]`).
+
+To mimic the behavior of the [`zip_longest()`](https://docs.python.org/3/library/itertools.html#itertools.zip_longest) function, you can add the optional `fillvalue` keyword argument to the `.zip()` method. If you specify a default value with `fillvalue`, the method produces as many tuples as the longest input has elements and fills in missing elements with the default value. If `fillvalue` was not specified in the example below, `zipped_arguments` would only contain one tuple `[(1, 10, 100)]` since the shortest list provided to the `.zip()` method is only one element long.
+
+<Tabs
+    defaultValue="taskflow"
+    groupId="provide-positional-arguments-with-xcomargzip"
+    values={[
+        {label: 'TaskFlow API', value: 'taskflow'},
+        {label: 'Traditional syntax', value: 'traditional'},
+    ]}>
+
+<TabItem value="taskflow">
+
+```python
+@task
+def one_two_three():
+    return [1, 2]
+
+@task
+def ten_twenty_thirty():
+    return [10]
+
+@task
+def one_two_three_hundred():
+    return [100, 200, 300]
+
+zipped_arguments = one_two_three().zip(
+    ten_twenty_thirty(), one_two_three_hundred(), fillvalue=1000
+)
+# zipped_arguments contains [(1, 10, 100), (2, 1000, 200), (1000, 1000, 300)]
+
+# creating the mapped task instances using the TaskFlow API
+@task
+def add_nums(zipped_x_y_z):
+    return zipped_x_y_z[0] + zipped_x_y_z[1] + zipped_x_y_z[2]
+
+add_nums.expand(zipped_x_y_z=zipped_arguments)
+```
+
+</TabItem>
+
+<TabItem value="traditional">
+
+```python
+def one_two_three_function():
+    return [1, 2]
+
+def ten_twenty_thirty_function():
+    return [10]
+
+def one_two_three_hundred_function():
+    return [100, 200, 300]
+
+one_two_three = PythonOperator(
+    task_id="one_two_three", python_callable=one_two_three_function
+)
+
+ten_twenty_thirty = PythonOperator(
+    task_id="ten_twenty_thirty", python_callable=ten_twenty_thirty_function
+)
+
+one_two_three_hundred = PythonOperator(
+    task_id="one_two_three_hundred", python_callable=one_two_three_hundred_function
+)
+
+zipped_arguments = one_two_three.output.zip(
+    ten_twenty_thirty.output, one_two_three_hundred.output, fillvalue=1000
+)
+# zipped_arguments contains [(1, 10, 100), (2, 1000, 200), (1000, 1000, 300)]
+
+# function that will be used in the dynamically mapped PythonOperator
+def add_nums_function(x, y, z):
+    return x + y + z
+
+add_nums = PythonOperator.partial(
+    task_id="add_nums", python_callable=add_nums_function
+).expand(op_args=zipped_arguments)
+```
+
+</TabItem>
+</Tabs>
+
+The add_nums task will have three mapped instances with the following results:
+
+- Map index 0: `111` (1+10+100)
+- Map index 1: `1202` (2+1000+200)
+- Map index 2: `2300` (1000+1000+300)
+
+## Repeated mapping
+
+You can dynamically map an Airflow task over the output of another dynamically mapped task. This results in one mapped task instance for every mapped task instance of the upstream task.
+
+The following example shows three dynamically mapped tasks.
+
+<Tabs
+    defaultValue="taskflow"
+    groupId="repeated-mapping"
+    values={[
+        {label: 'TaskFlow API', value: 'taskflow'},
+        {label: 'Traditional syntax', value: 'traditional'},
+    ]}>
+
+<TabItem value="taskflow">
+
+```python
+@task
+def multiply_by_2(num):
+    return num * 2
+
+@task
+def add_10(num):
+    return num + 10
+
+@task
+def multiply_by_100(num):
+    return num * 100
+
+multiplied_value_1 = multiply_by_2.expand(num=[1, 2, 3])
+summed_value = add_10.expand(num=multiplied_value_1)
+multiply_by_100.expand(num=summed_value)
+```
+</TabItem>
+<TabItem value="traditional">
+
+```python
+def multiply_by_2_func(num):
+    return [num * 2]
+
+def add_10_func(num):
+    return [num + 10]
+
+def multiply_by_100_func(num):
+    return num * 100
+
+multiply_by_2 = PythonOperator.partial(
+    task_id="multiply_by_2",
+    python_callable=multiply_by_2_func
+).expand(op_args=[[1], [2], [3]])
+
+add_10 = PythonOperator.partial(
+    task_id="add_10",
+    python_callable=add_10_func
+).expand(op_args=multiply_by_2.output)
+
+multiply_by_100 = PythonOperator.partial(
+    task_id="multiply_by_100",
+    python_callable=multiply_by_100_func
+).expand(op_args=add_10.output)
+
+multiply_by_2 >> add_10 >> multiply_by_100
+```
+</TabItem>
+</Tabs>
+
+In the example above, the `multiply_by_2` task is dynamically mapped over a list of three elements (`[1, 2, 3]`). The task has three mapped task instances containing the following values:
+
+- Map index 0: `2` (1*2)
+- Map index 1: `4` (2*2)
+- Map index 2: `6` (3*2)
+
+The `add_10` task is dynamically mapped over the output of the `multiply_by_2` task. It has 3 mapped task instances (one for each mapped instance of the previous task) which contain the following values:
+
+- Map index 0: `12` (2+10)
+- Map index 1: `14` (4+10)
+- Map index 2: `16` (6+10)
+
+The `multiply_by_100` task is dynamically mapped over the output of the `add_10` task, which results in three mapped task instances with the following outputs:
+
+- Map index 0: `1200` (12*100)
+- Map index 1: `1400` (14*100)
+- Map index 2: `1600` (16*100)
+
+You can chain an arbitrary number of dynamically mapped tasks in this manner. It is currently not possible to exponentially increase the number of mapped task instances.
+
+## Mapping over task groups
+
+[Task groups](task-groups.md) defined with the `@task_group` decorator can be dynamically mapped as well. The syntax for dynamically mapping over a task group is the same as dynamically mapping over a single task.
+
+```python
+# creating a task group using the decorator with the dynamic input my_num
+@task_group(group_id="group1")
+def tg1(my_num):
+    @task
+    def print_num(num):
+        return num
+
+    @task
+    def add_42(num):
+        return num + 42
+
+    print_num(my_num) >> add_42(my_num)
+
+# creating 6 mapped task group instances of the task group group1
+tg1_object = tg1.expand(my_num=[19, 23, 42, 8, 7, 108])
+```
+
+You can also dynamically map over multiple task group input parameters as you would for regular tasks using a cross-product, `zip` function, or sets of keyword arguments. For more on this, see [Mapping over multiple parameters](#mapping-over-multiple-parameters).
+
+## Transform outputs with .map
+
+There are use cases where you want to transform the output of an upstream task before another task dynamically maps over it. For example, if the upstream traditional operator returns its output in a fixed format or if you want to skip certain mapped task instances based on a logical condition.
+
+The `.map()` method accepts a Python function and uses it to transform an iterable input before a task dynamically maps over it.
+
+You can call `.map()` directly on a task using the TaskFlow API (`my_upstream_task_flow_task().map(mapping_function)`) or on the output object of a traditional operator (`my_upstream_traditional_operator.output.map(mapping_function)`).
+
+The downstream task is dynamically mapped over the object created by the `.map()` method using either `.expand()` for a single keyword argument or `.expand_kwargs()` for list of dictionaries containing sets of keyword arguments.
+
+The code snippet below shows how to use `.map()` to skip specific mapped tasks based on a logical condition.
+
+- `list_strings` is the upstream task returning a list of strings.
+-`skip_strings_starting_with_skip` transforms a list of strings into a list of modified strings and `AirflowSkipExceptions`. In this DAG, the function transforms `list_strings` into a new list called `transformed_list`. This function will not appear as an Airflow task.
+- `mapped_printing_task` dynamically maps over the `transformed_list` object.
+
+<Tabs
+    defaultValue="taskflow"
+    groupId="transform-outputs-with-map"
+    values={[
+        {label: 'TaskFlow API', value: 'taskflow'},
+        {label: 'Traditional syntax', value: 'traditional'},
+    ]}>
+
+<TabItem value="taskflow">
+
+```python
+# an upstream task returns a list of outputs in a fixed format
+@task
+def list_strings():
+    return ["skip_hello", "hi", "skip_hallo", "hola", "hey"]
+
+# the function used to transform the upstream output before
+# a downstream task is dynamically mapped over it
+def skip_strings_starting_with_skip(string):
+    if len(string) < 4:
+        return string + "!"
+    elif string[:4] == "skip":
+        raise AirflowSkipException(f"Skipping {string}; as I was told!")
+    else:
+        return string + "!"
+
+# transforming the output of the first task with the map function.
+transformed_list = list_strings().map(skip_strings_starting_with_skip)
+
+# the task using dynamic task mapping on the transformed list of strings
+@task
+def mapped_printing_task(string):
+    return "Say " + string
+
+mapped_printing_task.partial().expand(string=transformed_list)
+```
+
+</TabItem>
+
+<TabItem value="traditional">
+
+```python
+# an upstream task returns a list of outputs in a fixed format
+def list_strings():
+    return ["skip_hello", "hi", "skip_hallo", "hola", "hey"]
+
+listed_strings = PythonOperator(
+    task_id="list_strings",
+    python_callable=list_strings,
+)
+
+# the function used to transform the upstream output before
+# a downstream task is dynamically mapped over it
+def skip_strings_starting_with_skip(string):
+    if len(string) < 4:
+        return [string + "!"]
+    elif string[:4] == "skip":
+        raise AirflowSkipException(f"Skipping {string}; as I was told!")
+    else:
+        return [string + "!"]
+
+# transforming the output of the first task with the map function.
+# since `op_args` expects a list of lists it is important
+# each element of the list is wrapped in a list in the map function.
+transformed_list = listed_strings.output.map(skip_strings_starting_with_skip)
+
+# function to use in the dynamically mapped PythonOperator
+def mapped_printing_function(string):
+    return "Say " + string
+
+mapped_printing = PythonOperator.partial(
+    task_id="mapped_printing",
+    python_callable=mapped_printing_function,
+).expand(op_args=transformed_list)
+```
+
+</TabItem>
+</Tabs>
+
+In the **[] Mapped Tasks** tab, you can see how the mapped task instances 0 and 2 have been skipped.
+
+![Skipped Mapped Tasks](/img/guides/skip_mapped_tasks.png)
+
+## Example implementation
+
+For this example, you'll implement one of the most common use cases for dynamic tasks: processing files in Amazon S3. In this scenario, you'll use an ELT framework to extract data from files in Amazon S3, load the data into Snowflake, and transform the data using Snowflake's built-in compute. It's assumed that the files will be dropped daily, but it's unknown how many will arrive each day. You'll leverage dynamic task mapping to create a unique task for each file at runtime. This gives you the benefit of atomicity, better observability, and easier recovery from failures.
+
+All code used in this example is located in the [dynamic-task-mapping-tutorial repository](https://github.com/astronomer/dynamic-task-mapping-tutorial).
+
+The example DAG completes the following steps:
+
+- Use a decorated Python operator to get the current list of files from Amazon S3. The Amazon S3 prefix passed to this function is parameterized with `ds_nodash` so it pulls files only for the execution date of the DAG run. For example, for a DAG run on April 12th, you assume the files landed in a folder named `20220412/`.
+- Use the results of the first task, map an `S3ToSnowflakeOperator` for each file.
+- Move the daily folder of processed files into a `processed/` folder while,
+- Simultaneously runs a Snowflake query that transforms the data. The query is located in a separate SQL file in our `include/` directory.
+- Deletes the folder of daily files now that it has been moved to `processed/` for record keeping.
+
+<Tabs
+    defaultValue="taskflow"
+    groupId="example-implementation"
+    values={[
+        {label: 'TaskFlow API', value: 'taskflow'},
+        {label: 'Traditional syntax', value: 'traditional'},
+    ]}>
+
+<TabItem value="taskflow">
+
+<CodeBlock language="python">{mapping_elt_taskflow}</CodeBlock>
+
+</TabItem>
+
+<TabItem value="traditional">
+
+<CodeBlock language="python">{mapping_elt_traditional}</CodeBlock>
+
+</TabItem>
+</Tabs>
+
+The graph of this DAG looks similar to this image:
+
+![ELT Graph](/img/guides/mapping_elt_graph.png)
+
+When dynamically mapping tasks, make note of the format needed for the parameter you are mapping. In the previous example, you wrote your own Python function to get the Amazon S3 keys because the `S3toSnowflakeOperator` requires each `s3_key` parameter to be in a list format, and the `s3_hook.list_keys` function returns a single list with all keys. By writing your own simple function, you can turn the hook results into a list of lists that can be used by the downstream operator.
