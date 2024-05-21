@@ -32,7 +32,7 @@ import requests
     schedule="@daily",
     catchup=False,
     doc_md=__doc__,
-    default_args={"owner": "Astro", "retries": 2},
+    default_args={"owner": "Astro", "retries": 3},
     tags=["example"],
 )
 def example_astronauts():
