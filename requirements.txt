@@ -1,0 +1,4 @@
+# Astro Runtime includes the following pre-installed providers packages: https://docs.astronomer.io/astro/runtime-image-architecture#provider-packages
+openai==1.17.1
+langchain==0.2.6
+tiktoken==0.7.0
