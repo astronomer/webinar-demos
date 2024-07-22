@@ -1,0 +1,203 @@
+"""
+### Run notebooks in databricks as a Databricks Workflow using the Astro Databricks provider
+
+This DAG runs two Databricks notebooks as a Databricks workflow.
+"""
+
+from airflow.decorators import dag, task_group, task
+from airflow.datasets import Dataset
+from airflow.providers.databricks.operators.databricks import DatabricksNotebookOperator
+from airflow.providers.databricks.operators.databricks_workflow import (
+    DatabricksWorkflowTaskGroup,
+)
+from airflow.models.baseoperator import chain
+from airflow.io.path import ObjectStoragePath
+from pendulum import datetime
+import os
+
+from include.custom_operators import SnowflakeOperator
+from include.sql_statements import ex_sql
+
+_DATABRICKS_FOLDER = os.getenv("DATABRICKS_FOLDER")
+
+_DATABRICKS_NOTEBOOK_PATH_EX_GREEN = (
+    f"/Users/{_DATABRICKS_FOLDER}/extract_green_manufacturing"
+)
+_DATABRICKS_NOTEBOOK_PATH_EX_NOT_GREEN = (
+    f"/Users/{_DATABRICKS_FOLDER}/extract_notgreen_manufacturing"
+)
+_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_GREEN = (
+    f"/Users/{_DATABRICKS_FOLDER}/transform_green_manufacturing"
+)
+_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_NOT_GREEN = (
+    f"/Users/{_DATABRICKS_FOLDER}/transform_notgreen_manufacturing"
+)
+_DATABRICKS_NOTEBOOK_PATH_ANALYTICS = f"/Users/{_DATABRICKS_FOLDER}/analytics"
+
+
+DATABRICKS_JOB_CLUSTER_KEY = "test-cluster"
+
+_DBX_CONN_ID = os.getenv("DBX_CONN_ID")
+_AWS_CONN_ID = os.getenv("AWS_CONN_ID")
+_SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID")
+_SNOWFLAKE_SQL = os.getenv("SNOWFLAKE_SQL")
+_S3_BUCKET = os.getenv("S3_BUCKET")
+_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME")
+OBJECT_STORAGE_DST = "s3"
+KEY_DST = _S3_BUCKET + "/" + _INGEST_FOLDER_NAME
+
+base_s3 = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=_AWS_CONN_ID)
+
+
+job_cluster_spec = [
+    {
+        "job_cluster_key": DATABRICKS_JOB_CLUSTER_KEY,
+        "new_cluster": {
+            "cluster_name": "",
+            "spark_version": "15.3.x-cpu-ml-scala2.12",
+            "aws_attributes": {
+                "first_on_demand": 1,
+                "availability": "SPOT_WITH_FALLBACK",
+                "zone_id": "eu-central-1",
+                "spot_bid_price_percent": 100,
+                "ebs_volume_count": 0,
+            },
+            "node_type_id": "i3.xlarge",
+            "spark_env_vars": {"PYSPARK_PYTHON": "/databricks/python3/bin/python3"},
+            "enable_elastic_disk": False,
+            "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
+            "runtime_engine": "STANDARD",
+            "num_workers": 1,
+        },
+    }
+]
+
+
+@dag(
+    dag_display_name="Run DBX Workflow - Fun version",
+    start_date=datetime(2024, 7, 1),
+    schedule=[Dataset(base_s3.as_uri())],
+    catchup=False,
+    doc_md=__doc__,
+    tags=["DBX"],
+)
+def run_notebooks_complex():
+
+    dbx_workflow_task_group = DatabricksWorkflowTaskGroup(
+        group_id="databricks_workflow",
+        databricks_conn_id=_DBX_CONN_ID,
+        job_clusters=job_cluster_spec,
+    )
+
+    with dbx_workflow_task_group:
+
+        @task_group
+        def green_manufacturing():
+            extract_green_manufacturing = DatabricksNotebookOperator(
+                task_id="extract_green_manufacturing",
+                databricks_conn_id=_DBX_CONN_ID,
+                notebook_path=_DATABRICKS_NOTEBOOK_PATH_EX_GREEN,
+                source="WORKSPACE",
+                job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
+            )
+
+            transform_green_manufacturing = DatabricksNotebookOperator(
+                task_id="transform_green_manufacturing",
+                databricks_conn_id=_DBX_CONN_ID,
+                notebook_path=_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_GREEN,
+                source="WORKSPACE",
+                job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
+            )
+
+            chain(extract_green_manufacturing, transform_green_manufacturing)
+
+            return extract_green_manufacturing, transform_green_manufacturing
+
+        green_manufacturing_obj = green_manufacturing()
+
+        @task_group
+        def notgreen_manufacturing():
+
+            extract_notgreen_manufacturing = DatabricksNotebookOperator(
+                task_id="extract_notgreen_manufacturing",
+                databricks_conn_id=_DBX_CONN_ID,
+                notebook_path=_DATABRICKS_NOTEBOOK_PATH_EX_NOT_GREEN,
+                source="WORKSPACE",
+                job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
+                outlets=[Dataset("dbx://notgreenmanufacturing")],
+            )
+
+            transform_notgreen_manufacturing = DatabricksNotebookOperator(
+                task_id="transform_notgreen_manufacturing",
+                databricks_conn_id=_DBX_CONN_ID,
+                notebook_path=_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_NOT_GREEN,
+                source="WORKSPACE",
+                job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
+            )
+            chain(extract_notgreen_manufacturing, transform_notgreen_manufacturing)
+
+            return extract_notgreen_manufacturing, transform_notgreen_manufacturing
+
+        notgreen_manufacturing_obj = notgreen_manufacturing()
+
+        analytics = DatabricksNotebookOperator(
+            task_id="analytics",
+            databricks_conn_id=_DBX_CONN_ID,
+            notebook_path=_DATABRICKS_NOTEBOOK_PATH_ANALYTICS,
+            source="WORKSPACE",
+            job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
+            outlets=[Dataset("dbx://analytics")],
+        )
+
+        chain([green_manufacturing_obj[1], notgreen_manufacturing_obj[1]], analytics)
+
+    @task
+    def jdbc_to_snowflake_green(data_uri):
+        from include.custom_func import run_jdbc_conn_dbx_snowflake
+
+        run_jdbc_conn_dbx_snowflake(data_uri)
+
+    stage_in_snowflake_green = SnowflakeOperator(
+        task_id="stage_in_snowflake_green",
+        snowflake_conn_id=_SNOWFLAKE_CONN_ID,
+        sql=_SNOWFLAKE_SQL,
+    )
+
+    @task
+    def jdbc_to_snowflake_notgreen(data_uri):
+        from include.custom_func import run_jdbc_conn_dbx_snowflake
+
+        run_jdbc_conn_dbx_snowflake(data_uri)
+
+    stage_in_snowflake_notgreen = SnowflakeOperator(
+        task_id="stage_in_snowflake_notgreen",
+        snowflake_conn_id=_SNOWFLAKE_CONN_ID,
+        sql=_SNOWFLAKE_SQL,
+    )
+
+    prep_report_snowflake = SnowflakeOperator(
+        task_id="prep_report_snowflake",
+        snowflake_conn_id=_SNOWFLAKE_CONN_ID,
+        sql=ex_sql,
+    )
+
+    chain(
+        green_manufacturing_obj[0],
+        jdbc_to_snowflake_green(data_uri=_DATABRICKS_NOTEBOOK_PATH_EX_GREEN),
+        stage_in_snowflake_green,
+    )
+
+    chain(
+        notgreen_manufacturing_obj[1],
+        jdbc_to_snowflake_notgreen(
+            data_uri=_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_NOT_GREEN
+        ),
+        stage_in_snowflake_notgreen,
+    )
+
+    chain(
+        [stage_in_snowflake_green, stage_in_snowflake_notgreen], prep_report_snowflake
+    )
+
+
+run_notebooks_complex()

@@ -1,0 +1,1 @@
+ex_sql = "SELECT * FROM TABLE;"
