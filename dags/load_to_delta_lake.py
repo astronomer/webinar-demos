@@ -156,7 +156,7 @@ def load_to_delta_lake():
                 "AWS_SESSION_TOKEN": Variable.get("AWSSESSIONTOKEN", "Notset"),
             },
             copy_options={"mergeSchema": "true"},
-            outlets=Dataset(base_s3.as_uri())
+            outlets=[Dataset("dbx://hive_metastore.default.facilityefficiency")]
         )
 
         chain(

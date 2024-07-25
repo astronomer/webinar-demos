@@ -11,7 +11,6 @@ from airflow.providers.databricks.operators.databricks_workflow import (
     DatabricksWorkflowTaskGroup,
 )
 from airflow.models.baseoperator import chain
-from airflow.io.path import ObjectStoragePath
 from airflow.models.param import Param
 from pendulum import datetime
 import os
@@ -39,15 +38,8 @@ _DATABRICKS_NOTEBOOK_PATH_ANALYTICS = f"/Users/{_DATABRICKS_FOLDER}/analytics"
 DATABRICKS_JOB_CLUSTER_KEY = "test-cluster-3"
 
 _DBX_CONN_ID = os.getenv("DBX_CONN_ID")
-_AWS_CONN_ID = os.getenv("AWS_CONN_ID")
 _SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID")
 _SNOWFLAKE_SQL = os.getenv("SNOWFLAKE_SQL")
-_S3_BUCKET = os.getenv("S3_BUCKET")
-_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME")
-OBJECT_STORAGE_DST = "s3"
-KEY_DST = _S3_BUCKET + "/" + _INGEST_FOLDER_NAME
-
-base_s3 = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=_AWS_CONN_ID)
 
 
 job_cluster_spec = [
@@ -77,7 +69,7 @@ job_cluster_spec = [
 @dag(
     dag_display_name="Run DBX Workflow - Fun version",
     start_date=datetime(2024, 7, 1),
-    schedule=[Dataset(base_s3.as_uri())],
+    schedule=[Dataset("dbx://hive_metastore.default.facilityefficiency")],
     catchup=False,
     doc_md=__doc__,
     tags=["DBX"],
