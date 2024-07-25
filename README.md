@@ -1,48 +1,34 @@
-Overview
-========
+# How to Orchestrate Databricks (DBX) Jobs Using Airflow - webinar demo
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+This repository contains the code for the webinar demo shown in: How to Orchestrate Databricks Jobs Using Airflow.
 
-Project Contents
-================
+[Watch the webinar here for free!](https://www.astronomer.io/events/webinars/%20orchestrate-databricks-jobs-using-airflow-video/)
 
-Your Astro project contains the following files and folders:
+## Content
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://docs.astronomer.io/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+This repository contains:
 
-Deploy Your Project Locally
-===========================
+- `load_to_delta_lake`: A DAG that uses the DatabricksSqlOperator and DatabricksCopyIntoOperator to load data from S3 into a DBX SQL warehouse.
+- `run_notebooks_simple_example`: A DAG that runs a set of notebooks (examples available in `/databricks_notebooks` in DBX) using the DatabricksWorkflowTaskGroup and DatabricksNotebookOperators.
+- `run_notebooks_complex`: A DAG running the same set of notebooks in a more complex DAG structure and injecting notebook params.
+- `setup_sample_data`: A helper DAG to copy data from the include folder into S3.
+- `tutorial_dag`: A simple DAG from the [Orchestrate Databricks jobs with Airflow](https://www.astronomer.io/docs/learn/airflow-databricks) tutorial using the  DatabricksWorkflowTaskGroup and DatabricksNotebookOperators.
 
-1. Start Airflow on your local machine by running 'astro dev start'.
+## How to run the demo
 
-This command will spin up 4 Docker containers on your machine, each for a different Airflow component:
+1. Clone this branch of the repository.
+2. Make sure you have the [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli) installed and that [Docker](https://www.docker.com/products/docker-desktop) is running.
+3. Copy the `.env.example` file to a new file called `.env` and fill in your own values and credentials into the `<>` placeholders. Note that you do not need a working Snowflake connection since the operator is mocked in the `run_notebooks_complex` DAG.
+You will need a DBX and AWS account.
+4. Run `astro dev start` to start the Airflow instance. The webserver with the Airflow UI will be available at `localhost:8080`. Log in with the credentials `admin:admin`.
+5. Copy the DBX notebooks from `/databricks_notebooks` into your DBX environment.
+6. Run the `setup_sample_data` DAG to copy the example data from the include folder to S3. 
+7. Run the `load_to_delta_lake` DAG (`Load data S3 to Delta Lake 🐟`) to copy the data into DBX. 
+8. Run either of the run_notebooks DAGs to run your notebooks.
 
-- Postgres: Airflow's Metadata Database
-- Webserver: The Airflow component responsible for rendering the Airflow UI
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- Triggerer: The Airflow component responsible for triggering deferred tasks
 
-2. Verify that all 4 Docker containers were created by running 'docker ps'.
+## Resources
 
-Note: Running 'astro dev start' will start your project with the Airflow Webserver exposed at port 8080 and Postgres exposed at port 5432. If you already have either of those ports allocated, you can either [stop your existing Docker containers or change the port](https://docs.astronomer.io/astro/test-and-troubleshoot-locally#ports-are-not-available).
-
-3. Access the Airflow UI for your local Airflow project. To do so, go to http://localhost:8080/ and log in with 'admin' for both your Username and Password.
-
-You should also be able to access your Postgres Database at 'localhost:5432/postgres'.
-
-Deploy Your Project to Astronomer
-=================================
-
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://docs.astronomer.io/cloud/deploy-code/
-
-Contact
-=======
-
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+- [Orchestrate Databricks jobs with Airflow tutorial](https://www.astronomer.io/docs/learn/airflow-databricks)
+- [Airflow DBX provider docs](https://airflow.apache.org/docs/apache-airflow-providers-databricks/stable/index.html)
+- [Databricks Docs](https://docs.databricks.com/en/index.html)

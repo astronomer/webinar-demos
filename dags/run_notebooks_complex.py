@@ -12,6 +12,7 @@ from airflow.providers.databricks.operators.databricks_workflow import (
 )
 from airflow.models.baseoperator import chain
 from airflow.io.path import ObjectStoragePath
+from airflow.models.param import Param
 from pendulum import datetime
 import os
 
@@ -35,7 +36,7 @@ _DATABRICKS_NOTEBOOK_PATH_TRANSFORM_NOT_GREEN = (
 _DATABRICKS_NOTEBOOK_PATH_ANALYTICS = f"/Users/{_DATABRICKS_FOLDER}/analytics"
 
 
-DATABRICKS_JOB_CLUSTER_KEY = "test-cluster"
+DATABRICKS_JOB_CLUSTER_KEY = "test-cluster-3"
 
 _DBX_CONN_ID = os.getenv("DBX_CONN_ID")
 _AWS_CONN_ID = os.getenv("AWS_CONN_ID")
@@ -80,6 +81,18 @@ job_cluster_spec = [
     catchup=False,
     doc_md=__doc__,
     tags=["DBX"],
+    params={
+        "extraction_department": Param(
+            "Manufacturing",
+            type="string",
+            enum=[
+                "Manufacturing",
+                "Quality Control",
+                "Research & Development",
+                "Logistics",
+            ],
+        ),
+    },
 )
 def run_notebooks_complex():
 
@@ -87,58 +100,60 @@ def run_notebooks_complex():
         group_id="databricks_workflow",
         databricks_conn_id=_DBX_CONN_ID,
         job_clusters=job_cluster_spec,
+        notebook_params={
+            "extraction_department": "{{ params.extraction_department }}"
+        },
     )
 
     with dbx_workflow_task_group:
 
         @task_group
-        def green_manufacturing():
-            extract_green_manufacturing = DatabricksNotebookOperator(
-                task_id="extract_green_manufacturing",
+        def green():
+            extract_green = DatabricksNotebookOperator(
+                task_id="extract_green",
                 databricks_conn_id=_DBX_CONN_ID,
                 notebook_path=_DATABRICKS_NOTEBOOK_PATH_EX_GREEN,
                 source="WORKSPACE",
                 job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
             )
 
-            transform_green_manufacturing = DatabricksNotebookOperator(
-                task_id="transform_green_manufacturing",
+            transform_green = DatabricksNotebookOperator(
+                task_id="transform_green",
                 databricks_conn_id=_DBX_CONN_ID,
                 notebook_path=_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_GREEN,
                 source="WORKSPACE",
                 job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
             )
 
-            chain(extract_green_manufacturing, transform_green_manufacturing)
+            chain(extract_green, transform_green)
 
-            return extract_green_manufacturing, transform_green_manufacturing
+            return extract_green, transform_green
 
-        green_manufacturing_obj = green_manufacturing()
+        green_obj = green()
 
         @task_group
-        def notgreen_manufacturing():
+        def notgreen():
 
-            extract_notgreen_manufacturing = DatabricksNotebookOperator(
-                task_id="extract_notgreen_manufacturing",
+            extract_notgreen = DatabricksNotebookOperator(
+                task_id="extract_notgreen",
                 databricks_conn_id=_DBX_CONN_ID,
                 notebook_path=_DATABRICKS_NOTEBOOK_PATH_EX_NOT_GREEN,
                 source="WORKSPACE",
                 job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
-                outlets=[Dataset("dbx://notgreenmanufacturing")],
             )
 
-            transform_notgreen_manufacturing = DatabricksNotebookOperator(
-                task_id="transform_notgreen_manufacturing",
+            transform_notgreen = DatabricksNotebookOperator(
+                task_id="transform_notgreen",
                 databricks_conn_id=_DBX_CONN_ID,
                 notebook_path=_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_NOT_GREEN,
                 source="WORKSPACE",
                 job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
             )
-            chain(extract_notgreen_manufacturing, transform_notgreen_manufacturing)
+            chain(extract_notgreen, transform_notgreen)
 
-            return extract_notgreen_manufacturing, transform_notgreen_manufacturing
+            return extract_notgreen, transform_notgreen
 
-        notgreen_manufacturing_obj = notgreen_manufacturing()
+        notgreen_obj = notgreen()
 
         analytics = DatabricksNotebookOperator(
             task_id="analytics",
@@ -149,7 +164,7 @@ def run_notebooks_complex():
             outlets=[Dataset("dbx://analytics")],
         )
 
-        chain([green_manufacturing_obj[1], notgreen_manufacturing_obj[1]], analytics)
+        chain([green_obj[1], notgreen_obj[1]], analytics)
 
     @task
     def jdbc_to_snowflake_green(data_uri):
@@ -182,13 +197,13 @@ def run_notebooks_complex():
     )
 
     chain(
-        green_manufacturing_obj[0],
+        green_obj[0],
         jdbc_to_snowflake_green(data_uri=_DATABRICKS_NOTEBOOK_PATH_EX_GREEN),
         stage_in_snowflake_green,
     )
 
     chain(
-        notgreen_manufacturing_obj[1],
+        notgreen_obj[1],
         jdbc_to_snowflake_notgreen(
             data_uri=_DATABRICKS_NOTEBOOK_PATH_TRANSFORM_NOT_GREEN
         ),
