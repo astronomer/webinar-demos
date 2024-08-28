@@ -1,0 +1,11 @@
+title,description,price,category,file_path,uuid
+Oolong Tea,"A traditional Oolong tea known for its rich and complex flavors.",19.0,tea,images/oolong-tea.jpg,511a984b-1d15-4f77-b141-18ddc14a8941
+Masala Chai,"A spicy Masala Chai with a perfect blend of Indian spices.",13.0,tea,images/masala-chai.jpg,edbed62b-b66e-4dd6-8e52-5b6ed3d0e339
+Pu-erh Tea,"An earthy Pu-erh tea, aged for a unique flavor profile.",15.0,tea,images/pu-erh-tea.jpg,facbea66-29a6-42b0-a15f-326741d54f1a
+Mint Tea,"A refreshing Mint tea ideal for cooling down.",9.0,tea,images/mint-tea.jpg,c483189f-08d7-46d6-9cfe-1d7859c24f4f
+Matcha Tea,"A ceremonial Matcha tea ground to a fine green powder.",22.0,tea,images/matcha-tea.jpg,010302b4-7731-442a-9a78-f408e935da21
+Peppermint Tea,"A soothing Peppermint tea perfect for digestion.",10.0,tea,images/peppermint-tea.jpg,3c7c981c-61e1-41d4-b3ff-ed61d530e098
+Chamomile Tea,"A calming Chamomile tea great for relaxation.",8.0,tea,images/chamomile-tea.jpg,519b7063-99a3-4263-891d-ba7c3edcf495
+Rooibos Tea,"A naturally sweet Rooibos tea caffeine-free and rich in antioxidants.",13.0,tea,images/rooibos-tea.jpg,9d5b1099-bc0f-45fd-98c3-26d16ef43986
+Lavender Tea,"A fragrant Lavender tea ideal for winding down before bed.",14.0,tea,images/lavender-tea.jpg,12963ab9-9e22-47e4-b9e9-3b5fa0e82c89
+Rosehip Tea,"A tangy Rosehip tea packed with Vitamin C.",16.0,tea,images/rosehip-tea.jpg,0700e83b-0f22-4fa7-9435-cb6540046b30

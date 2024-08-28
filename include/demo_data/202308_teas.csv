@@ -1,0 +1,11 @@
+title,description,price,category,file_path,uuid
+Darjeeling Tea,"A fine Darjeeling tea known for its light and floral flavor.",18.0,tea,images/darjeeling-tea.jpg,1ac86648-34c1-4911-b091-024c924f69ed
+English Breakfast Tea,"A classic English Breakfast tea perfect for a robust start to the day.",14.0,tea,images/english-breakfast-tea.jpg,b9aa0e48-b0cd-46c4-a0eb-5d18fd32da4c
+Sencha Green Tea,A Japanese Sencha green tea with a fresh and grassy taste.,16.0,tea,images/sencha-green-tea.jpg,47d91325-6da2-4b91-b2ca-77cb31dc671a
+Assam Tea,"A strong Assam tea ideal for a bold morning brew.",13.0,tea,images/assam-tea.jpg,cd0deced-fbaa-4d90-af1d-7ccde0a509b4
+Chai Tea,"A spiced Chai tea with cinnamon cardamom and cloves.",12.0,tea,images/chai-tea.jpg,054b49a1-8141-4619-8c45-86b0010dcb3a
+Lemon Balm Tea,"A soothing Lemon Balm tea great for relaxing.",11.0,tea,images/lemon-balm-tea.jpg,2287f18c-0613-4c7c-87c7-641a60d54cb7
+Yerba Mate Tea,"A stimulating Yerba Mate tea popular in South America.",15.0,tea,images/yerba-mate-tea.jpg,24b23940-e71a-490f-817c-f1956443fea8
+Ginger Tea,"A spicy Ginger tea with a warming effect perfect for cold days.",10.0,tea,images/ginger-tea.jpg,97b6631c-94f6-44de-9804-988d687df0bc
+White Tea,A delicate White tea with a mild and sweet flavor.,20.0,tea,images/white-tea.jpg,1531d36b-d8d1-4177-84e2-e1e10c592fa4
+Hibiscus Tea,"A tart Hibiscus tea refreshing when served cold or hot.",17.0,tea,images/hibiscus-tea.jpg,2f9d8251-9fe0-4edc-9026-92afc71b88c3

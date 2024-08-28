@@ -1,0 +1,11 @@
+title,description,price,category,file_path,uuid
+Jasmine Tea,"A fragrant Jasmine tea, with a delicate floral aroma.",20.0,tea,images/jasmine-tea.jpg,9c30e7da-6bd9-43da-9dfd-6f05d18b1a24
+Ceylon Tea,"A bold Ceylon tea, known for its strong and brisk flavor.",18.0,tea,images/ceylon-tea.jpg,b3924f04-cf38-4c30-9f24-b68526c27093
+Gunpowder Green Tea,"A Chinese Gunpowder green tea with a smoky, robust taste.",17.0,tea,images/gunpowder-green-tea.jpg,192113e3-1944-4957-a5ea-dba454c0300b
+Yellow Tea,"A rare Yellow tea, featuring a mellow and sweet flavor.",21.0,tea,images/yellow-tea.jpg,232aa472-1f9f-4db8-aadd-5c520b5e9be8
+Genmaicha Tea,A Japanese Genmaicha tea with a nutty flavor from roasted rice.,15.0,tea,images/genmaicha-tea.jpg,61dcce79-099e-4fbf-a484-01c25a9e01a5
+Ginger Lemon Tea,"A spicy Ginger Lemon tea, refreshing and invigorating.",12.0,tea,images/ginger-lemon-tea.jpg,d249c600-0ae7-4de2-98e6-dbc683a4e534
+Earl Grey Tea,"A citrusy Earl Grey tea, flavored with bergamot orange.",11.0,tea,images/earl-grey-tea.jpg,e0264f06-8fb0-4bee-be26-d9909a53df06
+Turmeric Tea,"A golden Turmeric tea, known for its anti-inflammatory properties.",14.0,tea,images/turmeric-tea.jpg,fc5a0523-9e05-428f-9e25-b8638dfd62b9
+Saffron Tea,"A luxurious Saffron tea, offering a rich, golden brew.",25.0,tea,images/saffron-tea.jpg,5befd0cd-c592-4b52-8c8d-ae4d3f9ad8af
+Moringa Tea,"A nutrient-rich Moringa tea, packed with vitamins and minerals.",19.0,tea,images/moringa-tea.jpg,bc285dd9-8d0a-49f0-bba9-cba12cc1cdc4
