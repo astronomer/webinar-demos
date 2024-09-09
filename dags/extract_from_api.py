@@ -11,7 +11,9 @@ from airflow.datasets import Dataset
 from airflow.models.baseoperator import chain
 from airflow.io.path import ObjectStoragePath
 from airflow.providers.amazon.aws.operators.s3 import S3CreateBucketOperator
+from airflow.models.param import Param
 from pendulum import datetime, duration
+import pandas as pd
 import logging
 import os
 
@@ -19,9 +21,10 @@ import os
 t_log = logging.getLogger("airflow.task")
 
 # S3 variables
-_AWS_CONN_ID = os.getenv("AWS_CONN_ID")
-_S3_BUCKET = os.getenv("S3_BUCKET")
-_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME")
+_AWS_CONN_ID = os.getenv("AWS_CONN_ID", "aws_default")
+_S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "my-bucket")
+_BUCKET_REGION = os.getenv("BUCKET_REGION", "us-east-1")
+_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME", "tea-sales-ingest")
 _PRODUCT_INFO_FOLDER_NAME = os.getenv("PRODUCT_INFO_FOLDER_NAME")
 
 # Creating ObjectStoragePath objects
@@ -33,7 +36,7 @@ KEY_SRC = "include/demo_data/product_info/"
 
 OBJECT_STORAGE_DST = "s3"
 CONN_ID_DST = _AWS_CONN_ID
-KEY_DST = _S3_BUCKET + "/" + _INGEST_FOLDER_NAME
+KEY_DST = _S3_BUCKET_NAME + "/" + _INGEST_FOLDER_NAME
 
 base_src = ObjectStoragePath(f"{OBJECT_STORAGE_SRC}://{KEY_SRC}", conn_id=CONN_ID_SRC)
 base_dst = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=CONN_ID_DST)
@@ -44,69 +47,132 @@ base_dst = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=CONN_I
 
 
 @dag(
-    dag_display_name="🛠️ Load sample product info to S3",
+    dag_display_name="📊 Extract data from the internal API and load it to S3",
     start_date=datetime(2024, 8, 1),
-    schedule=[Dataset("setup")],
+    schedule="@daily",
     catchup=False,
+    max_consecutive_failed_dag_runs=10,  # auto-pauses the DAG after 10 consecutive failed runs, experimental
     default_args={
-        "owner": "Demo team",
+        "owner": "Data team",
         "retries": 3,
         "retry_delay": duration(minutes=1),
     },
+    params={
+        "num_sales": Param(
+            100,
+            description="The number of sales to fetch from the API.",
+            type="number",
+        ),
+    },
     doc_md=__doc__,
-    description="Helper",
-    tags=["helper"],
+    description="E",
+    tags=["ETL"],
 )
 def extract_from_api():
 
+    # ---------------- #
+    # Task Definitions #
+    # ---------------- #
+    # the @task decorator turns any Python function into an Airflow task
+    # any @task decorated function that is called inside the @dag decorated
+    # function is automatically added to the DAG.
+    # if one exists for your use case you can still use traditional Airflow operators
+    # and mix them with @task decorators. Checkout registry.astronomer.io for available operators
+    # see: https://www.astronomer.io/docs/learn/airflow-decorators for information about @task
+    # see: https://www.astronomer.io/docs/learn/what-is-an-operator for information about traditional operators
+
+    # create the S3 bucket if it does not exist yet
     create_bucket = S3CreateBucketOperator(
-        task_id="create_bucket", aws_conn_id=_AWS_CONN_ID, bucket_name=_S3_BUCKET
+        task_id="create_bucket",
+        aws_conn_id=_AWS_CONN_ID,
+        bucket_name=_S3_BUCKET_NAME,
+        region_name=_BUCKET_REGION,
     )
 
     @task
-    def list_files_sample_img(
-        path_src: ObjectStoragePath,
-    ) -> list[ObjectStoragePath]:
-        """List files in local object storage."""
-        t_log.info(f"Checking for folders at: {path_src.as_uri()}")
-        files = [f for f in path_src.iterdir() if f.is_dir()]
-        return files
+    def get_new_sales_from_api(**context) -> list[pd.DataFrame]:
+        """
+        Get new sales data from an internal API.
+        Args:
+            num_sales (int): The number of sales to fetch.
+        Returns:
+            list[pd.DataFrame]: A list of DataFrames containing data relating
+            to the newest sales.
+        """
+        num_sales = context["params"]["num_sales"]
+        date = context["ts"]
+        from include.api_functions import get_new_sales_from_internal_api
 
-    list_files_sample_img_obj = list_files_sample_img(path_src=base_src)
+        sales_df, users_df, teas_df, utm_df = get_new_sales_from_internal_api(num_sales, date)
+
+        t_log.info(f"Fetching {num_sales} new sales from the internal API.")
+        t_log.info(f"Head of the new sales data: {sales_df.head()}")
+        t_log.info(f"Head of the new users data: {users_df.head()}")
+        t_log.info(f"Head of the new teas data: {teas_df.head()}")
+        t_log.info(f"Head of the new utm data: {utm_df.head()}")
+
+        return [
+            {"name": "sales", "data": sales_df},
+            {"name": "users", "data": users_df},
+            {"name": "teas", "data": teas_df},
+            {"name": "utms", "data": utm_df},
+        ]
+
+    get_new_sales_from_api_obj = get_new_sales_from_api()
 
     @task(map_index_template="{{ my_custom_map_index }}")
-    def copy_local_to_remote(path_src: ObjectStoragePath, base_dst: ObjectStoragePath):
-        """Copy files from local storage to remote object storage."""
+    def write_to_s3(
+        data_to_write: pd.DataFrame, base_dst: ObjectStoragePath, **context
+    ):
+        """
+        Write the data to an S3 bucket.
+        Args:
+            data_to_write (pd.DataFrame): The data to write to S3.
+            base_dst (ObjectStoragePath): The base path to write the data to.
+        """
+        import io
 
-        for file in path_src.iterdir():
-            full_key = base_dst / os.path.join(*file.parts[-3:])
-            file.copy(dst=full_key)
-            t_log.info(f"Successfully wrote {full_key} to remote storage!")
+        data = data_to_write["data"]
+        name = data_to_write["name"]
+        dag_run_id = context["dag_run"].run_id
+
+        csv_buffer = io.BytesIO()
+        data.to_csv(csv_buffer, index=False)
+
+        csv_bytes = csv_buffer.getvalue()
+
+        path_dst = base_dst / name / f"{dag_run_id}.csv"
+
+        # Write the bytes to the S3 bucket using your existing method
+        path_dst.write_bytes(csv_bytes)
 
         # get the current context and define the custom map index variable
         from airflow.operators.python import get_current_context
 
         context = get_current_context()
-        context["my_custom_map_index"] = f"Copying files from: {path_src.as_uri()}"
+        context["my_custom_map_index"] = f"Wrote new {name} data to S3."
+
+    write_to_s3_obj = write_to_s3.partial(base_dst=base_dst).expand(
+        data_to_write=get_new_sales_from_api_obj
+    )
 
     @task(
         outlets=[
-            Dataset(base_dst.as_uri() + f"/{_PRODUCT_INFO_FOLDER_NAME}"),
+            Dataset(base_dst.as_uri()),
         ]
     )
-    def sample_img_in():
-        t_log.info("Sample images loaded to remote storage!")
+    def update_dataset():
+        t_log.info("New sales data loaded to remote storage!")
 
     # ------------------------------ #
     # Define additional dependencies #
     # ------------------------------ #
 
     chain(
-        [create_bucket, list_files_sample_img_obj],
-        copy_local_to_remote.partial(base_dst=base_dst).expand(
-            path_src=list_files_sample_img_obj
-        ),
-        sample_img_in(),
+        create_bucket,
+        get_new_sales_from_api_obj,
+        write_to_s3_obj,
+        update_dataset(),
     )
 
 
