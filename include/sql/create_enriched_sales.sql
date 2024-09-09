@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS {{ params.db_name }}.{{ params.schema_name }}.enriche
     tea_name STRING,
     tea_type STRING,
     quantity INT,
-    sale_date DATE,
+    sale_date TIMESTAMP,
     utm_source STRING,
     utm_medium STRING,
     utm_campaign STRING,

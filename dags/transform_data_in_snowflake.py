@@ -151,6 +151,11 @@ def transform_data_in_snowflake():
                 "db_name": _SNOWFLAKE_DB_NAME,
                 "schema_name": _SNOWFLAKE_SCHEMA_NAME,
             },
+            outlets=[
+                Dataset(
+                    f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}.user_purchase_summary"
+                )
+            ],
         )
 
         upsert_revenue_by_tea_type = SQLExecuteQueryOperator(
@@ -162,6 +167,11 @@ def transform_data_in_snowflake():
                 "db_name": _SNOWFLAKE_DB_NAME,
                 "schema_name": _SNOWFLAKE_SCHEMA_NAME,
             },
+            outlets=[
+                Dataset(
+                    f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}.revenue_by_tea_type"
+                )
+            ],
         )
 
         upsert_top_users_by_spending = SQLExecuteQueryOperator(
@@ -173,6 +183,11 @@ def transform_data_in_snowflake():
                 "db_name": _SNOWFLAKE_DB_NAME,
                 "schema_name": _SNOWFLAKE_SCHEMA_NAME,
             },
+            outlets=[
+                Dataset(
+                    f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}.top_users_by_spending"
+                )
+            ],
         )
 
         upsert_sales_funnel_analysis = SQLExecuteQueryOperator(
@@ -184,6 +199,11 @@ def transform_data_in_snowflake():
                 "db_name": _SNOWFLAKE_DB_NAME,
                 "schema_name": _SNOWFLAKE_SCHEMA_NAME,
             },
+            outlets=[
+                Dataset(
+                    f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}.sales_funnel_analysis"
+                )
+            ],
         )
 
     chain(
