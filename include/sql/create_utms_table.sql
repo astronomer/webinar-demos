@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS
     utm_medium STRING,
     utm_campaign STRING,
     utm_term STRING,
-    utm_content STRING
+    utm_content STRING,
+    updated_at TIMESTAMP
 );

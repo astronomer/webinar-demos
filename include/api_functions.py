@@ -11,7 +11,7 @@ def generate_uuids(n):
     return [str(uuid.uuid4()) for _ in range(n)]
 
 
-def generate_users_data(num_users=100, filename="users.csv"):
+def generate_users_data(num_users=100, date=None, filename="users.csv"):
     data = {
         "user_id": generate_uuids(num_users),
         "user_name": [fake.name() for _ in range(num_users)],
@@ -22,6 +22,7 @@ def generate_users_data(num_users=100, filename="users.csv"):
             fake.date_between(start_date="-3y", end_date="today")
             for _ in range(num_users)
         ],
+        "updated_at": date,
     }
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
@@ -141,7 +142,7 @@ def generate_teas_data(filename="teas.csv", date=None):
     return df
 
 
-def generate_utm_data(num_utms=100, filename="utms.csv"):
+def generate_utm_data(num_utms=100, date=None, filename="utms.csv"):
     utm_sources = ["Google", "Facebook", "Twitter", "LinkedIn", "Instagram"]
     utm_mediums = ["CPC", "email", "social", "referral", "banner"]
     utm_campaigns = [
@@ -161,6 +162,7 @@ def generate_utm_data(num_utms=100, filename="utms.csv"):
         "utm_campaign": random.choices(utm_campaigns, k=num_utms),
         "utm_term": random.choices(utm_terms, k=num_utms),
         "utm_content": random.choices(utm_contents, k=num_utms),
+        "updated_at": date,
     }
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
@@ -198,9 +200,9 @@ def get_new_sales_from_internal_api(num_sales, date):
     num_users = int(0.75 * num_sales)
     if num_users < 1:
         num_users = 1
-    users_df = generate_users_data(num_users=num_users)
+    users_df = generate_users_data(num_users=num_users, date=date)
     teas_df = generate_teas_data(date=date)
-    utm_df = generate_utm_data(num_utms=num_users)
+    utm_df = generate_utm_data(num_utms=num_users, date=date)
     sales_df = generate_sales_data(
         num_sales=num_sales, users_df=users_df, teas_df=teas_df, utm_df=utm_df, date=date
     )

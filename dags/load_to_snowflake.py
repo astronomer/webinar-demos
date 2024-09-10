@@ -169,78 +169,48 @@ def load_to_snowflake():
                 schema=_SNOWFLAKE_SCHEMA_NAME,
                 table=_TABLE,
                 stage=_SNOWFLAKE_STAGE_NAME,
-                prefix=f"{_INGEST_FOLDER_NAME}/{_TABLE}/",
+                prefix=f"{_TABLE}/",
                 file_format="(type = 'CSV', field_delimiter = ',', skip_header = 1, field_optionally_enclosed_by = '\"')",
             )
 
-            if _TABLE == "teas":
+            deduplicate_records = SQLExecuteQueryOperator(
+                task_id=f"deduplicate_records_{_TABLE}",
+                conn_id=_SNOWFLAKE_CONN_ID,
+                sql=f"remove_duplicate_{_TABLE}.sql",
+                show_return_value_in_logs=True,
+                params={
+                    "db_name": _SNOWFLAKE_DB_NAME,
+                    "schema_name": _SNOWFLAKE_SCHEMA_NAME,
+                },
+            )
 
-                deduplicate_teas = SQLExecuteQueryOperator(
-                    task_id="deduplicate_teas",
-                    conn_id=_SNOWFLAKE_CONN_ID,
-                    sql="remove_duplicate_teas.sql",
-                    show_return_value_in_logs=True,
-                    params={
-                        "db_name": _SNOWFLAKE_DB_NAME,
-                        "schema_name": _SNOWFLAKE_SCHEMA_NAME,
-                    },
-                )
+            vital_dq_checks = SQLColumnCheckOperator(
+                task_id=f"vital_checks_{_TABLE}_table",
+                conn_id=_SNOWFLAKE_CONN_ID,
+                database=_SNOWFLAKE_DB_NAME,
+                table=f"{_SNOWFLAKE_SCHEMA_NAME}.{_TABLE}",
+                column_mapping={
+                    f"{_TABLE[:-1]}_ID": {
+                        "unique_check": {"equal_to": 0},  # primary key check
+                        "null_check": {"equal_to": 0},
+                    }
+                },
+                outlets=[
+                    Dataset(
+                        f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}.{_TABLE}"
+                    )
+                ],
+            )
 
-                vital_dq_checks = SQLColumnCheckOperator(
-                    task_id=f"vital_checks_{_TABLE}_table",
-                    conn_id=_SNOWFLAKE_CONN_ID,
-                    database=_SNOWFLAKE_DB_NAME,
-                    table=f"{_SNOWFLAKE_SCHEMA_NAME}.{_TABLE}",
-                    column_mapping={
-                        f"{_TABLE[:-1]}_ID": {
-                            "unique_check": {"equal_to": 0},  # primary key check
-                            "null_check": {"equal_to": 0},
-                        }
-                    },
-                    outlets=[
-                        Dataset(
-                            f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}.{_TABLE}"
-                        )
-                    ],
-                )
-
-                chain(
-                    start,
-                    stage_data_obj,
-                    create_table_if_not_exists,
-                    copy_into_table,
-                    deduplicate_teas,
-                    vital_dq_checks,
-                    base_tables_ready,
-                )
-
-            else:
-
-                vital_dq_checks = SQLColumnCheckOperator(
-                    task_id=f"vital_checks_{_TABLE}_table",
-                    conn_id=_SNOWFLAKE_CONN_ID,
-                    database=_SNOWFLAKE_DB_NAME,
-                    table=f"{_SNOWFLAKE_SCHEMA_NAME}.{_TABLE}",
-                    column_mapping={
-                        f"{_TABLE[:-1]}_ID": {
-                            "unique_check": {"equal_to": 0},  # primary key check
-                            "null_check": {"equal_to": 0},
-                        }
-                    },
-                    outlets=[
-                        Dataset(
-                            f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}.{_TABLE}"
-                        )
-                    ],
-                )
-
-                chain(
-                    stage_data_obj,
-                    create_table_if_not_exists,
-                    copy_into_table,
-                    vital_dq_checks,
-                    base_tables_ready,
-                )
+            chain(
+                start,
+                stage_data_obj,
+                create_table_if_not_exists,
+                copy_into_table,
+                deduplicate_records,
+                vital_dq_checks,
+                base_tables_ready,
+            )
 
         ingest_data()
 
@@ -327,7 +297,7 @@ def load_to_snowflake():
             schema=_SNOWFLAKE_SCHEMA_NAME,
             table="sales",
             stage=_SNOWFLAKE_STAGE_NAME,
-            prefix=f"{_INGEST_FOLDER_NAME}/sales/",
+            prefix="sales/",
             file_format="(type = 'CSV', field_delimiter = ',', skip_header = 1, field_optionally_enclosed_by = '\"')",
         )
 

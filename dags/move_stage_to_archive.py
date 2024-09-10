@@ -60,7 +60,7 @@ BASE_DST = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=CONN_I
     description="ETL",
     tags=["archive", "S3"],
 )
-def move_ingest_to_archive():
+def move_stage_to_archive():
 
     @task
     def list_ingest_folders(base_path: ObjectStoragePath) -> list[ObjectStoragePath]:
@@ -141,4 +141,4 @@ def move_ingest_to_archive():
     chain(copy_ingest_to_stage_obj, verify_checksum_obj, del_files_from_ingest_obj)
 
 
-move_ingest_to_archive()
+move_stage_to_archive()
