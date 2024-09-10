@@ -25,20 +25,14 @@ _AWS_CONN_ID = os.getenv("AWS_CONN_ID", "aws_default")
 _S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "my-bucket")
 _BUCKET_REGION = os.getenv("BUCKET_REGION", "us-east-1")
 _INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME", "tea-sales-ingest")
-_PRODUCT_INFO_FOLDER_NAME = os.getenv("PRODUCT_INFO_FOLDER_NAME")
 
 # Creating ObjectStoragePath objects
 # See https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/objectstorage.html
 # for more information on the Airflow Object Storage feature
-OBJECT_STORAGE_SRC = "file"
-CONN_ID_SRC = None
-KEY_SRC = "include/demo_data/product_info/"
-
 OBJECT_STORAGE_DST = "s3"
 CONN_ID_DST = _AWS_CONN_ID
 KEY_DST = _S3_BUCKET_NAME + "/" + _INGEST_FOLDER_NAME
 
-base_src = ObjectStoragePath(f"{OBJECT_STORAGE_SRC}://{KEY_SRC}", conn_id=CONN_ID_SRC)
 base_dst = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=CONN_ID_DST)
 
 # -------------- #
@@ -65,8 +59,8 @@ base_dst = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=CONN_I
         ),
     },
     doc_md=__doc__,
-    description="E",
-    tags=["ETL"],
+    description="ETL",
+    tags=["ETL", "S3", "Internal API"],
 )
 def extract_from_api():
 

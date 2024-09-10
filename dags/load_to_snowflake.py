@@ -42,7 +42,6 @@ _SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID", "snowflake_default")
 _SNOWFLAKE_DB_NAME = os.getenv("SNOWFLAKE_DB_NAME", "ETL_DEMO")
 _SNOWFLAKE_SCHEMA_NAME = os.getenv("SNOWFLAKE_SCHEMA_NAME", "DEV")
 _SNOWFLAKE_STAGE_NAME = os.getenv("SNOWFLAKE_STAGE_NAME", "ETL_STAGE")
-_SNOWFLAKE_TABLE_NAME = os.getenv("SNOWFLAKE_TABLE_NAME_SNEAKERS_DATA", "DEMO_TABLE")
 
 LIST_OF_BASE_TABLE_NAMES = ["users", "teas", "utms"]
 
@@ -85,7 +84,7 @@ dag_directory = os.path.dirname(os.path.abspath(__file__))
         os.path.join(dag_directory, "../include/sql")
     ],  # path to the SQL templates
 )
-def s3_to_snowflake_example():
+def load_to_snowflake():
 
     # ---------------- #
     # Task Definitions #
@@ -224,7 +223,7 @@ def s3_to_snowflake_example():
             table=f"{_SNOWFLAKE_SCHEMA_NAME}.teas",
             column_mapping={
                 "TEA_NAME": {
-                    "null_check": {"equal_to": 1},
+                    "null_check": {"equal_to": 0},
                     "distinct_check": {"geq_to": 20},
                 },
                 "TEA_TYPE": {
@@ -320,4 +319,4 @@ def s3_to_snowflake_example():
     )
 
 
-s3_to_snowflake_example()
+load_to_snowflake()

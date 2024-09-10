@@ -44,7 +44,7 @@ dag_directory = os.path.dirname(os.path.abspath(__file__))
     },
     doc_md=__doc__,  # add DAG Docs in the UI, see https://www.astronomer.io/docs/learn/custom-airflow-ui-docs-tutorial
     description="ETL",  # description next to the DAG name in the UI
-    tags=["S3", "Snowflake"],  # add tags in the UI
+    tags=["Snowflake"],  # add tags in the UI
     template_searchpath=[
         os.path.join(dag_directory, "../include/sql")
     ],  # path to the SQL templates
