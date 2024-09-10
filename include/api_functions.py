@@ -170,14 +170,25 @@ def generate_utm_data(num_utms=100, filename="utms.csv"):
 def generate_sales_data(
     num_sales=1000, users_df=None, teas_df=None, utm_df=None, filename="sales.csv", date=None
 ):
-    data = {
-        "sale_id": generate_uuids(num_sales),
-        "user_id": np.random.choice(users_df["user_id"], size=num_sales),
-        "tea_id": np.random.choice(teas_df["tea_id"], size=num_sales),
-        "utm_id": np.random.choice(utm_df["utm_id"], size=num_sales),
-        "quantity": np.random.randint(1, 10, size=num_sales),
-        "sale_date": date,
-    }
+    if num_sales == 1:
+        data = {
+            "sale_id": generate_uuids(num_sales),
+            "user_id": users_df["user_id"].values[0],
+            "tea_id": teas_df["tea_id"].values[0],
+            "utm_id": utm_df["utm_id"].values[0],
+            "quantity": np.random.randint(1, 10),
+            "sale_date": date,
+        }
+
+    elif num_sales > 1:
+        data = {
+            "sale_id": generate_uuids(num_sales),
+            "user_id": np.random.choice(users_df["user_id"], size=num_sales),
+            "tea_id": np.random.choice(teas_df["tea_id"], size=num_sales),
+            "utm_id": np.random.choice(utm_df["utm_id"], size=num_sales),
+            "quantity": np.random.randint(1, 10, size=num_sales),
+            "sale_date": date,
+        }
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
     return df
@@ -185,6 +196,8 @@ def generate_sales_data(
 
 def get_new_sales_from_internal_api(num_sales, date):
     num_users = int(0.75 * num_sales)
+    if num_users < 1:
+        num_users = 1
     users_df = generate_users_data(num_users=num_users)
     teas_df = generate_teas_data(date=date)
     utm_df = generate_utm_data(num_utms=num_users)
