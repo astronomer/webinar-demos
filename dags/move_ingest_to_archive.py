@@ -23,7 +23,7 @@ _SNOWFLAKE_SCHEMA_NAME = os.getenv("SNOWFLAKE_SCHEMA_NAME", "DEV")
 # S3 variables
 _AWS_CONN_ID = os.getenv("AWS_CONN_ID")
 _S3_BUCKET = os.getenv("S3_BUCKET_NAME")
-_SRC_FOLDER_NAME = "tea-sales-ingest"
+_STAGE_FOLDER_NAME = "tea-sales-stage"
 _ARCHIVE_FOLDER_NAME = "tea-sales-archive"
 
 # Creating ObjectStoragePath objects
@@ -31,7 +31,7 @@ _ARCHIVE_FOLDER_NAME = "tea-sales-archive"
 # for more information on the Airflow Object Storage feature
 OBJECT_STORAGE_SRC = "s3"
 CONN_ID_SRC = _AWS_CONN_ID
-KEY_SRC = _S3_BUCKET + "/" + _SRC_FOLDER_NAME
+KEY_SRC = _S3_BUCKET + "/" + _STAGE_FOLDER_NAME
 
 OBJECT_STORAGE_DST = "s3"
 CONN_ID_DST = _AWS_CONN_ID
@@ -129,7 +129,7 @@ def move_ingest_to_archive():
     verify_checksum_obj = verify_checksum(
         base_src=BASE_SRC,
         base_dst=BASE_DST,
-        folder_name_src=_SRC_FOLDER_NAME,
+        folder_name_src=_STAGE_FOLDER_NAME,
         folder_name_dst=_ARCHIVE_FOLDER_NAME,
     )
     del_files_from_ingest_obj = del_files_from_ingest(base_src=BASE_SRC)

@@ -11,7 +11,7 @@ To use this DAG, you need to have a Snowflake stage configured with a connection
 to your S3 bucket.
 """
 
-from airflow.decorators import dag, task_group
+from airflow.decorators import dag, task_group, task
 from airflow.datasets import Dataset
 from airflow.models.baseoperator import chain
 from airflow.io.path import ObjectStoragePath
@@ -33,6 +33,7 @@ import os
 ## SET YOUR OWN BUCKET NAME HERE
 _S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "my-bucket")
 _INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME", "tea-sales-ingest")
+_STAGE_FOLDER_NAME = os.getenv("STAGE_FOLDER_NAME", "tea-sales-stage")
 
 # Get the Airflow task logger, print statements work as well to log at level INFO
 t_log = logging.getLogger("airflow.task")
@@ -50,11 +51,12 @@ LIST_OF_BASE_TABLE_NAMES = ["users", "teas", "utms"]
 # for more information on the Airflow Object Storage feature
 OBJECT_STORAGE_SRC = "s3"
 CONN_ID_SRC = os.getenv("CONN_ID_AWS", "aws_default")
-KEY_SRC = f"{_S3_BUCKET_NAME}/{_INGEST_FOLDER_NAME}/"
-URI = f"{OBJECT_STORAGE_SRC}://{KEY_SRC}"
+KEY_SRC = f"{_S3_BUCKET_NAME}/{_INGEST_FOLDER_NAME}"
+KEY_DST = f"{_S3_BUCKET_NAME}/{_STAGE_FOLDER_NAME}"
 
 # Create the ObjectStoragePath object
-base_src = ObjectStoragePath(URI, conn_id=CONN_ID_SRC)
+base_src = ObjectStoragePath(f"{OBJECT_STORAGE_SRC}://{KEY_SRC}/", conn_id=CONN_ID_SRC)
+base_dst = ObjectStoragePath(f"{OBJECT_STORAGE_SRC}://{KEY_DST}/", conn_id=CONN_ID_SRC)
 
 dag_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -100,6 +102,46 @@ def load_to_snowflake():
     # optional starting task to structure the DAG, does not do anything
     start = EmptyOperator(task_id="start")
     base_tables_ready = EmptyOperator(task_id="base_tables_ready")
+
+    @task_group
+    def stage_data():
+
+        @task
+        def list_ingest_folders(
+            base_path: ObjectStoragePath,
+        ) -> list[ObjectStoragePath]:
+            """List files in remote object storage."""
+            path = base_path
+            folders = [f for f in path.iterdir() if f.is_dir()]
+            return folders
+
+        list_stage_folders_obj = list_ingest_folders(base_src)
+
+        @task(map_index_template="{{ my_custom_map_index }}")
+        def copy_ingest_to_stage(
+            path_src: ObjectStoragePath, base_dst: ObjectStoragePath
+        ) -> None:
+            """Copy a file from remote to local storage.
+            The file is streamed in chunks using shutil.copyobj"""
+
+            for f in path_src.iterdir():
+                full_key = base_dst / os.path.join(*f.parts[-2:])
+                t_log.info(f"Copying {f} to {full_key}")
+                f.copy(dst=full_key)
+
+            # get the current context and define the custom map index variable
+            from airflow.operators.python import get_current_context
+
+            context = get_current_context()
+            context["my_custom_map_index"] = (
+                f"Copying files from {os.path.join(*path_src.parts[-2:])}."
+            )
+
+        copy_ingest_to_stage_obj = copy_ingest_to_stage.partial(
+            base_dst=base_dst
+        ).expand(path_src=list_stage_folders_obj)
+
+    stage_data_obj = stage_data()
 
     for _TABLE in LIST_OF_BASE_TABLE_NAMES:
 
@@ -164,6 +206,7 @@ def load_to_snowflake():
 
                 chain(
                     start,
+                    stage_data_obj,
                     create_table_if_not_exists,
                     copy_into_table,
                     deduplicate_teas,
@@ -192,14 +235,14 @@ def load_to_snowflake():
                 )
 
                 chain(
-                    start,
+                    stage_data_obj,
                     create_table_if_not_exists,
                     copy_into_table,
                     vital_dq_checks,
                     base_tables_ready,
                 )
 
-        ingest_data_obj = ingest_data()
+        ingest_data()
 
     @task_group(
         default_args={
@@ -263,41 +306,52 @@ def load_to_snowflake():
                 column_mapping=_COLUMN_MAPPING,
             )
 
-    create_table_sales_if_not_exists = SQLExecuteQueryOperator(
-        task_id=f"create_table_sales_if_not_exists",
-        conn_id=_SNOWFLAKE_CONN_ID,
-        sql="create_sales_table.sql",
-        show_return_value_in_logs=True,
-        params={
-            "db_name": _SNOWFLAKE_DB_NAME,
-            "schema_name": _SNOWFLAKE_SCHEMA_NAME,
-        },
-    )
+    @task_group 
+    def ingest_sales_data():
 
-    copy_into_sales_table = CopyFromExternalStageToSnowflakeOperator(
-        task_id="copy_into_sales_table",
-        snowflake_conn_id=_SNOWFLAKE_CONN_ID,
-        database=_SNOWFLAKE_DB_NAME,
-        schema=_SNOWFLAKE_SCHEMA_NAME,
-        table="sales",
-        stage=_SNOWFLAKE_STAGE_NAME,
-        prefix=f"{_INGEST_FOLDER_NAME}/sales/",
-        file_format="(type = 'CSV', field_delimiter = ',', skip_header = 1, field_optionally_enclosed_by = '\"')",
-    )
+        create_table_sales_if_not_exists = SQLExecuteQueryOperator(
+            task_id=f"create_table_sales_if_not_exists",
+            conn_id=_SNOWFLAKE_CONN_ID,
+            sql="create_sales_table.sql",
+            show_return_value_in_logs=True,
+            params={
+                "db_name": _SNOWFLAKE_DB_NAME,
+                "schema_name": _SNOWFLAKE_SCHEMA_NAME,
+            },
+        )
 
-    vital_dq_checks_sales_table = SQLColumnCheckOperator(
-        task_id=f"vital_checks_sales_table",
-        conn_id=_SNOWFLAKE_CONN_ID,
-        database=_SNOWFLAKE_DB_NAME,
-        table=f"{_SNOWFLAKE_SCHEMA_NAME}.sales",
-        column_mapping={
-            "SALE_ID": {
-                "unique_check": {"equal_to": 0},  # SALES_ID is the primary key
-                "null_check": {"equal_to": 0},
-            }
-        },
-        outlets=[Dataset(f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}")],
-    )
+        copy_into_sales_table = CopyFromExternalStageToSnowflakeOperator(
+            task_id="copy_into_sales_table",
+            snowflake_conn_id=_SNOWFLAKE_CONN_ID,
+            database=_SNOWFLAKE_DB_NAME,
+            schema=_SNOWFLAKE_SCHEMA_NAME,
+            table="sales",
+            stage=_SNOWFLAKE_STAGE_NAME,
+            prefix=f"{_INGEST_FOLDER_NAME}/sales/",
+            file_format="(type = 'CSV', field_delimiter = ',', skip_header = 1, field_optionally_enclosed_by = '\"')",
+        )
+
+        vital_dq_checks_sales_table = SQLColumnCheckOperator(
+            task_id=f"vital_checks_sales_table",
+            conn_id=_SNOWFLAKE_CONN_ID,
+            database=_SNOWFLAKE_DB_NAME,
+            table=f"{_SNOWFLAKE_SCHEMA_NAME}.sales",
+            column_mapping={
+                "SALE_ID": {
+                    "unique_check": {"equal_to": 0},  # SALES_ID is the primary key
+                    "null_check": {"equal_to": 0},
+                }
+            },
+            outlets=[Dataset(f"snowflake://{_SNOWFLAKE_DB_NAME}.{_SNOWFLAKE_SCHEMA_NAME}")],
+        )
+
+        chain(
+            create_table_sales_if_not_exists,
+            copy_into_sales_table,
+            vital_dq_checks_sales_table,
+        )
+
+    ingest_sales_data_obj = ingest_sales_data()
 
     end = EmptyOperator(
         task_id="end",
@@ -308,15 +362,14 @@ def load_to_snowflake():
     # Define dependencies #
     # ------------------- #
 
+
     chain(
-        start,
         base_tables_ready,
-        create_table_sales_if_not_exists,
-        copy_into_sales_table,
-        vital_dq_checks_sales_table,
+        ingest_sales_data_obj,
         additional_dq_checks(),
         end,
     )
+
 
 
 load_to_snowflake()
