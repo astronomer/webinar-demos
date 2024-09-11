@@ -60,7 +60,7 @@ BASE_DST = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=CONN_I
     },
     doc_md=__doc__,
     description="ETL",
-    tags=["archive", "S3"],
+    tags=["S3"],
 )
 def move_ingest_to_stage():
 
