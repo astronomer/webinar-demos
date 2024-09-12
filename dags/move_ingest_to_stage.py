@@ -1,5 +1,5 @@
 """
-### ETL: Archive raw sales data
+### ETL: Move data from ingest to stage
 """
 
 from airflow.decorators import dag, task
@@ -16,26 +16,22 @@ from include.utils import get_all_files, get_all_checksums, compare_checksums
 # Get the Airflow task logger
 t_log = logging.getLogger("airflow.task")
 
-# Snowflake variables
-_SNOWFLAKE_DB_NAME = os.getenv("SNOWFLAKE_DB_NAME", "ETL_DEMO")
-_SNOWFLAKE_SCHEMA_NAME = os.getenv("SNOWFLAKE_SCHEMA_NAME", "DEV")
-
 # S3 variables
 _AWS_CONN_ID = os.getenv("AWS_CONN_ID")
 _S3_BUCKET = os.getenv("S3_BUCKET_NAME")
-_STAGE_FOLDER_NAME = "tea-sales-ingest"
-_ARCHIVE_FOLDER_NAME = "tea-sales-stage"
+_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME", "tea-sales-ingest")
+_STAGE_FOLDER_NAME = os.getenv("STAGE_FOLDER_NAME", "tea-sales-stage")
 
 # Creating ObjectStoragePath objects
 # See https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/objectstorage.html
 # for more information on the Airflow Object Storage feature
 OBJECT_STORAGE_SRC = "s3"
 CONN_ID_SRC = _AWS_CONN_ID
-KEY_SRC = _S3_BUCKET + "/" + _STAGE_FOLDER_NAME
+KEY_SRC = _S3_BUCKET + "/" + _INGEST_FOLDER_NAME
 
 OBJECT_STORAGE_DST = "s3"
 CONN_ID_DST = _AWS_CONN_ID
-KEY_DST = _S3_BUCKET + "/" + _ARCHIVE_FOLDER_NAME
+KEY_DST = _S3_BUCKET + "/" + _STAGE_FOLDER_NAME
 
 
 BASE_SRC = ObjectStoragePath(f"{OBJECT_STORAGE_SRC}://{KEY_SRC}", conn_id=CONN_ID_SRC)
@@ -131,8 +127,8 @@ def move_ingest_to_stage():
     verify_checksum_obj = verify_checksum(
         base_src=BASE_SRC,
         base_dst=BASE_DST,
-        folder_name_src=_STAGE_FOLDER_NAME,
-        folder_name_dst=_ARCHIVE_FOLDER_NAME,
+        folder_name_src=_INGEST_FOLDER_NAME,
+        folder_name_dst=_STAGE_FOLDER_NAME,
     )
     del_files_from_ingest_obj = del_files_from_ingest(base_src=BASE_SRC)
 

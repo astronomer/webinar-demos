@@ -97,7 +97,9 @@ def extract_from_api():
         date = context["ts"]
         from include.api_functions import get_new_sales_from_internal_api
 
-        sales_df, users_df, teas_df, utm_df = get_new_sales_from_internal_api(num_sales, date)
+        sales_df, users_df, teas_df, utm_df = get_new_sales_from_internal_api(
+            num_sales, date
+        )
 
         t_log.info(f"Fetching {num_sales} new sales from the internal API.")
         t_log.info(f"Head of the new sales data: {sales_df.head()}")
@@ -155,8 +157,15 @@ def extract_from_api():
             Dataset(base_dst.as_uri()),
         ]
     )
-    def update_dataset():
-        t_log.info("New sales data loaded to remote storage!")
+    def confirm_ingest(base_path):
+        """List files in remote object storage."""
+        path = base_path
+        folders = [f for f in path.iterdir() if f.is_dir()]
+        for folder in folders:
+            t_log.info(f"Folder: {folder}")
+            files = [f for f in folder.iterdir() if f.is_file()]
+            for file in files:
+                t_log.info(f"File: {file}")
 
     # ------------------------------ #
     # Define additional dependencies #
@@ -166,7 +175,7 @@ def extract_from_api():
         create_bucket,
         get_new_sales_from_api_obj,
         write_to_s3_obj,
-        update_dataset(),
+        confirm_ingest(base_path=base_dst),
     )
 
 
