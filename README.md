@@ -51,13 +51,19 @@ GRANT ALL PRIVILEGES ON ALL STAGES IN SCHEMA DEMO_DB.DEMO_SCHEMA TO ROLE my_demo
 GRANT ALL PRIVILEGES ON FUTURE STAGES IN SCHEMA DEMO_DB.DEMO_SCHEMA TO ROLE my_demo_role;
 ```
 
-5. Create a key-pair by running the following command in your CLI. (If you are a Windows user you might need to install ssh-keygen or use a different tool, see the [Microsoft documentation](https://learn.microsoft.com/en-us/viva/glint/setup/sftp-ssh-key-gen).)
+5. In your terminal run the following command to [generate a private RSA key using OpenSSL](https://docs.openssl.org/master/man1/openssl-genrsa/). Note that while there are other options to generate a key pair, Snowflake has [specific requirements for the key format](https://docs.snowflake.com/en/user-guide/key-pair-auth) and may not accept keys generated with other tools. Make sure to write down the key passphrase as you will need it later.
 
 ```bash
-ssh-keygen -t rsa -b 4096 -m PEM -f ~/.ssh/snowflake_rsa_key
+openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8
 ```
 
-6. Create a user for the demo and set your public key. You can do this by running the following SQL commands.
+Generate the associated public key using the following command:
+
+```bash
+openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub 
+```
+
+6. Create a user for the demo and set your **public** key from the `rsa_key_pub` file. You can do this by running the following SQL commands.
 
 ```sql
 CREATE USER my_demo_user
