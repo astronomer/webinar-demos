@@ -127,4 +127,4 @@ Optional: Set up a streamlit app in Snowflake using the script in [include/strea
 
 ## Next steps
 
-If you'd like to build your own batch inference pipeline, feel free adapt this repository to your use case. We recommend to deploy the Airflow pipelines using a [free trial](https://www.astronomer.io/try-astro/?utm_source=learn-docs-reference-architectures&utm_medium=web&utm_campaign=free-trial) of Astro.
+If you'd like to build your own ETL pipeline with Snowflake, feel free adapt this repository to your use case. We recommend to deploy the Airflow pipelines using a [free trial](https://www.astronomer.io/try-astro/?utm_source=learn-docs-reference-architectures&utm_medium=web&utm_campaign=free-trial) of Astro.
