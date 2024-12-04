@@ -24,12 +24,12 @@ from pendulum import datetime
 
 t_log = logging.getLogger("airflow.task")
 
-_AWS_CONN_ID = os.getenv("AWS_CONN_ID")
-_S3_BUCKET = os.getenv("S3_BUCKET")
-_DBX_CONN_ID = os.getenv("DBX_CONN_ID")
-_DBX_WH_HTTP_PATH = os.getenv("DBX_WH_HTTP_PATH")
-_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME")
-_S3_BUCKET_ACCESS_ROLE_ARN = os.getenv("S3_BUCKET_ACCESS_ROLE_ARN")
+_AWS_CONN_ID = os.getenv("AWS_CONN_ID", "aws_default")
+_S3_BUCKET = os.getenv("S3_BUCKET", "your-bucket")
+_DBX_CONN_ID = os.getenv("DBX_CONN_ID", "databricks_default")
+_DBX_WH_HTTP_PATH = os.getenv("DBX_WH_HTTP_PATH", "/sql/1.0/warehouses/<your endpoint>")
+_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME", "your-ingest-folder")
+_S3_BUCKET_ACCESS_ROLE_ARN = os.getenv("S3_BUCKET_ACCESS_ROLE_ARN", "arn:aws:iam::<acct-id>:role/<role-id>")
 
 OBJECT_STORAGE_DST = "s3"
 KEY_DST = _S3_BUCKET + "/" + _INGEST_FOLDER_NAME

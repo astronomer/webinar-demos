@@ -15,9 +15,9 @@ from pendulum import datetime
 
 t_log = logging.getLogger("airflow.task")
 
-_AWS_CONN_ID = os.getenv("AWS_CONN_ID")
-_S3_BUCKET = os.getenv("S3_BUCKET")
-_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME")
+_AWS_CONN_ID = os.getenv("AWS_CONN_ID", "aws_default")
+_S3_BUCKET = os.getenv("S3_BUCKET", "your-bucket")
+_INGEST_FOLDER_NAME = os.getenv("INGEST_FOLDER_NAME", "your-ingest-folder")
 
 OBJECT_STORAGE_SRC = "file"
 CONN_ID_SRC = None
