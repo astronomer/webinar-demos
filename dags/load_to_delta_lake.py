@@ -1,21 +1,26 @@
 """
-## 
+## Load data from S3 to Databricks Delta Lake
+
+This DAG retrieves a csv file from S3, uses the column naming conventions
+to infer the schema, and creates a Delta Lake table in Databricks.
+Subsequently, the data is copied into the Delta Lake table.
 """
 
-from airflow.decorators import dag, task_group, task
+import logging
+import os
+
+import pandas as pd
 from airflow.datasets import Dataset
+from airflow.decorators import dag, task, task_group
+from airflow.io.path import ObjectStoragePath
+from airflow.models import Variable
+from airflow.models.baseoperator import chain
+from airflow.providers.amazon.aws.hooks.base_aws import AwsGenericHook
 from airflow.providers.databricks.operators.databricks_sql import (
     DatabricksCopyIntoOperator,
     DatabricksSqlOperator,
 )
-from airflow.providers.amazon.aws.hooks.base_aws import AwsGenericHook
-from airflow.io.path import ObjectStoragePath
 from pendulum import datetime
-from airflow.models.baseoperator import chain
-from airflow.models import Variable
-import pandas as pd
-import logging
-import os
 
 t_log = logging.getLogger("airflow.task")
 
@@ -34,7 +39,7 @@ base_s3 = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=_AWS_CO
 
 @dag(
     dag_display_name="Load data S3 to Delta Lake 🐟",
-    start_date=datetime(2024, 7, 1),
+    start_date=datetime(2024, 11, 6),
     schedule="@daily",
     catchup=False,
     tags=["DBX"],
@@ -156,7 +161,7 @@ def load_to_delta_lake():
                 "AWS_SESSION_TOKEN": Variable.get("AWSSESSIONTOKEN", "Notset"),
             },
             copy_options={"mergeSchema": "true"},
-            outlets=[Dataset("dbx://hive_metastore.default.facilityefficiency")]
+            outlets=[Dataset("dbx://hive_metastore.default.facilityefficiency")],
         )
 
         chain(

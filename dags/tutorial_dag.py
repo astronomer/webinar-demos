@@ -1,17 +1,17 @@
 """
-### Run notebooks in databricks as a Databricks Workflow using the Astro Databricks provider
+## Run notebooks in databricks as a Databricks Workflow using the Astro Databricks provider
 
 This DAG runs two Databricks notebooks as a Databricks workflow.
 """
 
 from airflow.decorators import dag
-from pendulum import datetime
 from airflow.providers.databricks.operators.databricks import DatabricksNotebookOperator
 from airflow.providers.databricks.operators.databricks_workflow import (
     DatabricksWorkflowTaskGroup,
 )
+from pendulum import datetime
 
-DATABRICKS_LOGIN_EMAIL = "tamara.fingerlin@gmail.com"
+DATABRICKS_LOGIN_EMAIL = "<your-email>"
 DATABRICKS_NOTEBOOK_NAME_1 = "notebook1"
 DATABRICKS_NOTEBOOK_NAME_2 = "notebook2"
 DATABRICKS_NOTEBOOK_PATH_1 = (
@@ -48,7 +48,7 @@ job_cluster_spec = [
 ]
 
 
-@dag(start_date=datetime(2023, 6, 1), schedule=None, catchup=False)
+@dag(start_date=datetime(2024, 11, 6), schedule=None, catchup=False)
 def my_simple_databricks_dag():
     task_group = DatabricksWorkflowTaskGroup(
         group_id="databricks_workflow",

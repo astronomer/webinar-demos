@@ -4,14 +4,14 @@
 Helper DAG to set up the demo. 
 """
 
-from airflow.decorators import dag, task
-from airflow.datasets import Dataset
-from airflow.providers.amazon.aws.operators.s3 import S3CreateBucketOperator
-from airflow.io.path import ObjectStoragePath
-from pendulum import datetime
-from airflow.models.baseoperator import chain
-import os
 import logging
+import os
+
+from airflow.decorators import dag, task
+from airflow.io.path import ObjectStoragePath
+from airflow.models.baseoperator import chain
+from airflow.providers.amazon.aws.operators.s3 import S3CreateBucketOperator
+from pendulum import datetime
 
 t_log = logging.getLogger("airflow.task")
 
@@ -33,7 +33,7 @@ base_dst = ObjectStoragePath(f"{OBJECT_STORAGE_DST}://{KEY_DST}", conn_id=CONN_I
 
 @dag(
     dag_display_name="Load sample data to S3",
-    start_date=datetime(2024, 7, 1),
+    start_date=datetime(2024, 11, 6),
     schedule="@daily",
     catchup=False,
     doc_md=__doc__,

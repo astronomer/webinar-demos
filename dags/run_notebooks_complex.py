@@ -4,16 +4,17 @@
 This DAG runs two Databricks notebooks as a Databricks workflow.
 """
 
-from airflow.decorators import dag, task_group, task
+import os
+
 from airflow.datasets import Dataset
+from airflow.decorators import dag, task, task_group
+from airflow.models.baseoperator import chain
+from airflow.models.param import Param
 from airflow.providers.databricks.operators.databricks import DatabricksNotebookOperator
 from airflow.providers.databricks.operators.databricks_workflow import (
     DatabricksWorkflowTaskGroup,
 )
-from airflow.models.baseoperator import chain
-from airflow.models.param import Param
 from pendulum import datetime
-import os
 
 from include.custom_operators import SnowflakeOperator
 from include.sql_statements import ex_sql
@@ -68,7 +69,7 @@ job_cluster_spec = [
 
 @dag(
     dag_display_name="Run DBX Workflow - Fun version",
-    start_date=datetime(2024, 7, 1),
+    start_date=datetime(2024, 11, 6),
     schedule=[Dataset("dbx://hive_metastore.default.facilityefficiency")],
     catchup=False,
     doc_md=__doc__,
@@ -92,9 +93,7 @@ def run_notebooks_complex():
         group_id="databricks_workflow",
         databricks_conn_id=_DBX_CONN_ID,
         job_clusters=job_cluster_spec,
-        notebook_params={
-            "extraction_department": "{{ params.extraction_department }}"
-        },
+        notebook_params={"extraction_department": "{{ params.extraction_department }}"},
     )
 
     with dbx_workflow_task_group:

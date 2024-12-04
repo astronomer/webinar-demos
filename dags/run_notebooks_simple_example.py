@@ -4,15 +4,16 @@
 This DAG runs two Databricks notebooks as a Databricks workflow.
 """
 
-from airflow.decorators import dag
+import os
+
 from airflow.datasets import Dataset
+from airflow.decorators import dag
+from airflow.models.baseoperator import chain
 from airflow.providers.databricks.operators.databricks import DatabricksNotebookOperator
 from airflow.providers.databricks.operators.databricks_workflow import (
     DatabricksWorkflowTaskGroup,
 )
-from airflow.models.baseoperator import chain
 from pendulum import datetime
-import os
 
 _DATABRICKS_FOLDER = os.getenv("DATABRICKS_FOLDER")
 
@@ -62,7 +63,7 @@ job_cluster_spec = [
 
 @dag(
     dag_display_name="Run DBX Workflow - Simple Example",
-    start_date=datetime(2024, 7, 1),
+    start_date=datetime(2024, 11, 6),
     schedule=[Dataset("dbx://hive_metastore.default.facilityefficiency")],
     catchup=False,
     doc_md=__doc__,
