@@ -19,7 +19,7 @@ from pendulum import datetime
 from include.custom_operators import SnowflakeOperator
 from include.sql_statements import ex_sql
 
-_DATABRICKS_FOLDER = os.getenv("DATABRICKS_FOLDER")
+_DATABRICKS_FOLDER = os.getenv("DATABRICKS_FOLDER", "default")
 
 _DATABRICKS_NOTEBOOK_PATH_EX_GREEN = (
     f"/Users/{_DATABRICKS_FOLDER}/extract_green_manufacturing"
@@ -38,9 +38,9 @@ _DATABRICKS_NOTEBOOK_PATH_ANALYTICS = f"/Users/{_DATABRICKS_FOLDER}/analytics"
 
 DATABRICKS_JOB_CLUSTER_KEY = "test-cluster-3"
 
-_DBX_CONN_ID = os.getenv("DBX_CONN_ID")
-_SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID")
-_SNOWFLAKE_SQL = os.getenv("SNOWFLAKE_SQL")
+_DBX_CONN_ID = os.getenv("DBX_CONN_ID", "databricks_default")
+_SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID", "snowflake_default")
+_SNOWFLAKE_SQL = os.getenv("SNOWFLAKE_SQL", "SELECT 1")
 
 
 job_cluster_spec = [

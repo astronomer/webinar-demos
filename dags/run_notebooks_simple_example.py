@@ -15,7 +15,7 @@ from airflow.providers.databricks.operators.databricks_workflow import (
 )
 from pendulum import datetime
 
-_DATABRICKS_FOLDER = os.getenv("DATABRICKS_FOLDER")
+_DATABRICKS_FOLDER = os.getenv("DATABRICKS_FOLDER", "default")
 
 _DATABRICKS_NOTEBOOK_PATH_EX_GREEN = (
     f"/Users/{_DATABRICKS_FOLDER}/extract_green_manufacturing"

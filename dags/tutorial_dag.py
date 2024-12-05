@@ -9,6 +9,7 @@ from airflow.providers.databricks.operators.databricks import DatabricksNotebook
 from airflow.providers.databricks.operators.databricks_workflow import (
     DatabricksWorkflowTaskGroup,
 )
+from airflow.models.baseoperator import chain
 from pendulum import datetime
 
 DATABRICKS_LOGIN_EMAIL = "<your-email>"
@@ -50,6 +51,7 @@ job_cluster_spec = [
 
 @dag(start_date=datetime(2024, 11, 6), schedule=None, catchup=False)
 def my_simple_databricks_dag():
+
     task_group = DatabricksWorkflowTaskGroup(
         group_id="databricks_workflow",
         databricks_conn_id=DATABRICKS_CONN_ID,
@@ -71,7 +73,7 @@ def my_simple_databricks_dag():
             source="WORKSPACE",
             job_cluster_key=DATABRICKS_JOB_CLUSTER_KEY,
         )
-        notebook_1 >> notebook_2
+        chain(notebook_1, notebook_2)
 
 
 my_simple_databricks_dag()
