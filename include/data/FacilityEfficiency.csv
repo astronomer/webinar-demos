@@ -1,104 +1,104 @@
 TS,ProductionFacilityLocation,Department,AmtPowerUse,IsGreenEnergyInitiative,AmtPowerReturnedToGrid,AmtProductOutput
-2024-06-21,North Facility,Manufacturing,4253.82,True,393.68,333.02
-2024-06-21,North Facility,Quality Control,1644.53,True,499.15,391.55
+2024-06-21,North Facility,Manufacturing,4253.82,True,393.68,433.02
+2024-06-21,North Facility,Quality Control,1644.53,True,499.15,491.55
 2024-06-21,North Facility,Research & Development,4484.54,False,,399.54
-2024-06-21,North Facility,Logistics,3228.95,False,,353.95
+2024-06-21,North Facility,Logistics,3228.95,False,,253.95
 2024-06-21,South Facility,Manufacturing,4317.42,False,,185.63
-2024-06-21,South Facility,Quality Control,2772.6,True,128.31,459.22
+2024-06-21,South Facility,Quality Control,2772.6,True,128.31,559.22
 2024-06-21,South Facility,Research & Development,2397.55,False,,175.09
-2024-06-21,South Facility,Logistics,2624.01,True,198.19,177.33
-2024-06-21,East Facility,Manufacturing,1349.03,True,134.63,349.75
+2024-06-21,South Facility,Logistics,2624.01,True,198.19,277.33
+2024-06-21,East Facility,Manufacturing,1349.03,True,134.63,449.75
 2024-06-21,East Facility,Quality Control,3298.16,False,,243.23
-2024-06-21,East Facility,Research & Development,3202.57,False,,416.13
-2024-06-21,East Facility,Logistics,2021.05,True,275.89,328.15
+2024-06-21,East Facility,Research & Development,3202.57,False,,316.13
+2024-06-21,East Facility,Logistics,2021.05,True,275.89,428.15
 2024-06-21,West Facility,Manufacturing,2934.87,False,,352.77
-2024-06-21,West Facility,Quality Control,1192.47,True,228.75,382.07
-2024-06-21,West Facility,Research & Development,1856.85,True,219.61,54.28
-2024-06-21,West Facility,Logistics,3243.59,False,,492.61
-2024-06-21,Central Facility,Manufacturing,1674.36,False,,369.4
-2024-06-21,Central Facility,Quality Control,2223.89,False,,234.04
-2024-06-21,Central Facility,Research & Development,2807.34,True,197.95,55.45
-2024-06-21,Central Facility,Logistics,3647.61,True,433.1,247.73
-2024-06-21,Northeast Facility,Manufacturing,4095.14,True,357.72,359.01
+2024-06-21,West Facility,Quality Control,1192.47,True,228.75,482.07
+2024-06-21,West Facility,Research & Development,1856.85,True,219.61,154.28
+2024-06-21,West Facility,Logistics,3243.59,False,,392.61
+2024-06-21,Central Facility,Manufacturing,1674.36,False,,269.4
+2024-06-21,Central Facility,Quality Control,2223.89,False,,134.04
+2024-06-21,Central Facility,Research & Development,2807.34,True,197.95,555.45
+2024-06-21,Central Facility,Logistics,3647.61,True,433.1,547.73
+2024-06-21,Northeast Facility,Manufacturing,4095.14,True,357.72,559.01
 2024-06-21,Northeast Facility,Quality Control,2246.48,False,,81.27
-2024-06-21,Northeast Facility,Research & Development,2522.34,False,,194.39
-2024-06-21,Northeast Facility,Logistics,3443.57,False,,261.17
+2024-06-21,Northeast Facility,Research & Development,2522.34,False,,94.39
+2024-06-21,Northeast Facility,Logistics,3443.57,False,,61.17
 2024-06-21,Northwest Facility,Manufacturing,2964.2,True,279.51,52.6
 2024-06-21,Northwest Facility,Quality Control,2458.6,True,390.61,315.0
-2024-06-21,Northwest Facility,Research & Development,2539.33,False,,359.37
+2024-06-21,Northwest Facility,Research & Development,2539.33,False,,59.37
 2024-06-21,Northwest Facility,Logistics,3452.84,True,272.25,380.14
 2024-06-21,Southeast Facility,Manufacturing,4474.12,True,275.95,473.79
 2024-06-21,Southeast Facility,Quality Control,1323.63,True,246.53,168.32
 2024-06-21,Southeast Facility,Research & Development,2929.59,True,235.97,368.65
-2024-06-21,Southeast Facility,Logistics,2576.3,False,,273.94
+2024-06-21,Southeast Facility,Logistics,2576.3,False,,73.94
 2024-06-22,North Facility,Manufacturing,1397.96,True,292.79,87.11
 2024-06-22,North Facility,Quality Control,2877.3,True,377.83,438.37
 2024-06-22,North Facility,Research & Development,4885.89,True,349.47,242.47
 2024-06-22,North Facility,Logistics,4064.09,True,113.14,109.18
-2024-06-22,South Facility,Manufacturing,3130.18,False,,87.11
+2024-06-22,South Facility,Manufacturing,3130.18,False,,7.11
 2024-06-22,South Facility,Quality Control,4587.87,True,117.29,382.32
-2024-06-22,South Facility,Research & Development,3661.69,False,,408.89
-2024-06-22,South Facility,Logistics,2948.09,False,,421.81
-2024-06-22,East Facility,Manufacturing,3967.14,False,,334.92
+2024-06-22,South Facility,Research & Development,3661.69,False,,08.89
+2024-06-22,South Facility,Logistics,2948.09,False,,21.81
+2024-06-22,East Facility,Manufacturing,3967.14,False,,34.92
 2024-06-22,East Facility,Quality Control,4429.44,True,476.45,66.49
 2024-06-22,East Facility,Research & Development,1644.24,True,425.78,294.82
-2024-06-22,East Facility,Logistics,4191.0,False,,164.11
-2024-06-22,West Facility,Manufacturing,1002.57,False,,91.24
-2024-06-22,West Facility,Quality Control,3815.47,False,,238.86
-2024-06-22,West Facility,Research & Development,2343.99,False,,336.05
-2024-06-22,West Facility,Logistics,2953.22,False,,126.81
-2024-06-22,Central Facility,Manufacturing,4768.46,False,,358.12
+2024-06-22,East Facility,Logistics,4191.0,False,,64.11
+2024-06-22,West Facility,Manufacturing,1002.57,False,,1.24
+2024-06-22,West Facility,Quality Control,3815.47,False,,38.86
+2024-06-22,West Facility,Research & Development,2343.99,False,,36.05
+2024-06-22,West Facility,Logistics,2953.22,False,,26.81
+2024-06-22,Central Facility,Manufacturing,4768.46,False,,58.12
 2024-06-22,Central Facility,Quality Control,2426.24,True,363.04,119.99
 2024-06-22,Central Facility,Research & Development,1045.05,True,304.23,195.51
 2024-06-22,Central Facility,Logistics,4212.73,True,133.63,382.67
 2024-06-22,Northeast Facility,Manufacturing,4019.72,True,454.0,384.49
 2024-06-22,Northeast Facility,Quality Control,3455.94,True,445.64,432.79
 2024-06-22,Northeast Facility,Research & Development,2500.71,True,419.45,247.46
-2024-06-22,Northeast Facility,Logistics,4227.4,False,,348.44
+2024-06-22,Northeast Facility,Logistics,4227.4,False,,48.44
 2024-06-22,Northwest Facility,Manufacturing,2632.91,True,108.0,387.3
 2024-06-22,Northwest Facility,Quality Control,4574.8,True,300.16,314.5
-2024-06-22,Northwest Facility,Research & Development,1895.46,False,,149.83
+2024-06-22,Northwest Facility,Research & Development,1895.46,False,,49.83
 2024-06-22,Northwest Facility,Logistics,3188.05,True,402.02,242.44
 2024-06-22,Southeast Facility,Manufacturing,1345.76,True,150.59,429.22
-2024-06-22,Southeast Facility,Quality Control,2207.21,False,,322.67
+2024-06-22,Southeast Facility,Quality Control,2207.21,False,,22.67
 2024-06-22,Southeast Facility,Research & Development,4781.25,True,346.8,246.4
 2024-06-22,Southeast Facility,Logistics,4858.26,True,453.76,274.2
-2024-06-23,North Facility,Manufacturing,1262.27,False,,431.01
-2024-06-23,North Facility,Quality Control,3246.51,False,,376.95
+2024-06-23,North Facility,Manufacturing,1262.27,False,,31.01
+2024-06-23,North Facility,Quality Control,3246.51,False,,76.95
 2024-06-23,North Facility,Research & Development,3331.3,True,130.8,240.13
 2024-06-23,North Facility,Logistics,1805.94,True,461.52,197.27
 2024-06-23,South Facility,Manufacturing,1577.94,True,274.1,290.03
 2024-06-23,South Facility,Quality Control,2647.61,True,171.51,107.37
-2024-06-23,South Facility,Research & Development,1056.85,False,,176.66
-2024-06-23,South Facility,Logistics,2387.26,False,,486.36
-2024-06-23,East Facility,Manufacturing,1645.02,False,,466.85
+2024-06-23,South Facility,Research & Development,1056.85,False,,76.66
+2024-06-23,South Facility,Logistics,2387.26,False,,86.36
+2024-06-23,East Facility,Manufacturing,1645.02,False,,66.85
 2024-06-23,East Facility,Quality Control,1508.58,True,248.51,419.75
-2024-06-23,East Facility,Research & Development,4278.14,False,,495.75
-2024-06-23,East Facility,Logistics,3966.42,False,,359.08
-2024-06-23,West Facility,Manufacturing,2338.51,False,,463.42
-2024-06-23,West Facility,Quality Control,4731.13,False,,260.94
-2024-06-23,West Facility,Research & Development,4384.69,False,,461.03
-2024-06-23,West Facility,Logistics,3817.06,False,,420.96
-2024-06-23,Central Facility,Manufacturing,3218.88,False,,413.58
+2024-06-23,East Facility,Research & Development,4278.14,False,,95.75
+2024-06-23,East Facility,Logistics,3966.42,False,,59.08
+2024-06-23,West Facility,Manufacturing,2338.51,False,,43.42
+2024-06-23,West Facility,Quality Control,4731.13,False,,20.94
+2024-06-23,West Facility,Research & Development,4384.69,False,,46.03
+2024-06-23,West Facility,Logistics,3817.06,False,,42.96
+2024-06-23,Central Facility,Manufacturing,3218.88,False,,43.58
 2024-06-23,Central Facility,Quality Control,1551.99,False,,87.24
 2024-06-23,Central Facility,Research & Development,4156.01,True,300.07,189.62
 2024-06-23,Central Facility,Logistics,1142.71,True,239.29,420.49
-2024-06-23,Northeast Facility,Manufacturing,3898.39,False,,189.59
-2024-06-23,Northeast Facility,Quality Control,4562.23,False,,350.71
+2024-06-23,Northeast Facility,Manufacturing,3898.39,False,,19.59
+2024-06-23,Northeast Facility,Quality Control,4562.23,False,,30.71
 2024-06-23,Northeast Facility,Research & Development,1176.18,True,443.49,281.64
-2024-06-23,Northeast Facility,Logistics,3453.17,False,,434.37
+2024-06-23,Northeast Facility,Logistics,3453.17,False,,44.37
 2024-06-23,Northwest Facility,Manufacturing,2581.73,True,140.15,99.71
-2024-06-23,Northwest Facility,Quality Control,1845.31,False,,312.99
+2024-06-23,Northwest Facility,Quality Control,1845.31,False,,32.99
 2024-06-23,Northwest Facility,Research & Development,1386.46,True,281.93,152.68
-2024-06-23,Northwest Facility,Logistics,2995.37,False,,178.38
-2024-06-23,Southeast Facility,Manufacturing,4317.75,False,,496.29
+2024-06-23,Northwest Facility,Logistics,2995.37,False,,17.38
+2024-06-23,Southeast Facility,Manufacturing,4317.75,False,,46.29
 2024-06-23,Southeast Facility,Quality Control,4316.52,False,,147.06
-2024-06-23,Southeast Facility,Research & Development,3802.65,False,,284.81
+2024-06-23,Southeast Facility,Research & Development,3802.65,False,,24.81
 2024-06-23,Southeast Facility,Logistics,2171.02,True,179.82,78.45
-2024-06-24,North Facility,Manufacturing,3773.16,False,,362.37
-2024-06-24,North Facility,Quality Control,1302.65,False,,331.05
+2024-06-24,North Facility,Manufacturing,3773.16,False,,32.37
+2024-06-24,North Facility,Quality Control,1302.65,False,,31.05
 2024-06-24,North Facility,Research & Development,2672.02,True,445.7,214.9
-2024-06-24,North Facility,Logistics,2229.93,False,,287.12
+2024-06-24,North Facility,Logistics,2229.93,False,,27.12
 2024-06-24,South Facility,Manufacturing,1395.31,True,341.45,121.51
 2024-06-24,South Facility,Quality Control,1418.54,False,,116.59
 2024-06-24,South Facility,Research & Development,1502.34,False,,170.58
@@ -673,86 +673,86 @@ TS,ProductionFacilityLocation,Department,AmtPowerUse,IsGreenEnergyInitiative,Amt
 2024-07-11,Southeast Facility,Logistics,2594.77,True,369.49,472.3
 2024-07-12,North Facility,Manufacturing,2182.5,False,,51.65
 2024-07-12,North Facility,Quality Control,3456.17,False,,323.93
-2024-07-12,North Facility,Research & Development,4857.76,False,,483.61
+2024-07-12,North Facility,Research & Development,4857.76,False,,43.61
 2024-07-12,North Facility,Logistics,2597.86,True,160.34,338.34
-2024-07-12,South Facility,Manufacturing,3671.94,False,,131.35
-2024-07-12,South Facility,Quality Control,2999.18,False,,135.05
-2024-07-12,South Facility,Research & Development,2591.07,False,,215.92
+2024-07-12,South Facility,Manufacturing,3671.94,False,,11.35
+2024-07-12,South Facility,Quality Control,2999.18,False,,15.05
+2024-07-12,South Facility,Research & Development,2591.07,False,,25.92
 2024-07-12,South Facility,Logistics,2792.89,True,364.35,253.51
 2024-07-12,East Facility,Manufacturing,2726.8,True,268.03,418.72
-2024-07-12,East Facility,Quality Control,3740.71,False,,362.53
-2024-07-12,East Facility,Research & Development,3083.26,False,,289.52
-2024-07-12,East Facility,Logistics,4255.87,False,,290.55
-2024-07-12,West Facility,Manufacturing,2126.91,False,,302.57
-2024-07-12,West Facility,Quality Control,1607.55,False,,406.49
-2024-07-12,West Facility,Research & Development,4514.86,False,,100.36
-2024-07-12,West Facility,Logistics,3970.22,False,,488.51
-2024-07-12,Central Facility,Manufacturing,2980.82,False,,417.4
+2024-07-12,East Facility,Quality Control,3740.71,False,,32.53
+2024-07-12,East Facility,Research & Development,3083.26,False,,29.52
+2024-07-12,East Facility,Logistics,4255.87,False,,20.55
+2024-07-12,West Facility,Manufacturing,2126.91,False,,32.57
+2024-07-12,West Facility,Quality Control,1607.55,False,,46.49
+2024-07-12,West Facility,Research & Development,4514.86,False,,10.36
+2024-07-12,West Facility,Logistics,3970.22,False,,48.51
+2024-07-12,Central Facility,Manufacturing,2980.82,False,,47.4
 2024-07-12,Central Facility,Quality Control,2942.78,True,151.43,404.43
 2024-07-12,Central Facility,Research & Development,2654.48,True,497.26,488.35
-2024-07-12,Central Facility,Logistics,1880.16,False,,360.15
+2024-07-12,Central Facility,Logistics,1880.16,False,,30.15
 2024-07-12,Northeast Facility,Manufacturing,3540.93,True,408.67,214.6
 2024-07-12,Northeast Facility,Quality Control,1294.53,True,351.62,120.45
-2024-07-12,Northeast Facility,Research & Development,4332.79,False,,275.7
-2024-07-12,Northeast Facility,Logistics,1432.69,False,,330.59
-2024-07-12,Northwest Facility,Manufacturing,1903.92,False,,314.81
+2024-07-12,Northeast Facility,Research & Development,4332.79,False,,25.7
+2024-07-12,Northeast Facility,Logistics,1432.69,False,,33.59
+2024-07-12,Northwest Facility,Manufacturing,1903.92,False,,34.81
 2024-07-12,Northwest Facility,Quality Control,4175.25,True,150.04,359.32
-2024-07-12,Northwest Facility,Research & Development,3257.97,False,,62.61
-2024-07-12,Northwest Facility,Logistics,4052.53,False,,140.14
+2024-07-12,Northwest Facility,Research & Development,3257.97,False,,6.61
+2024-07-12,Northwest Facility,Logistics,4052.53,False,,14.14
 2024-07-12,Southeast Facility,Manufacturing,3332.66,True,171.25,153.48
-2024-07-12,Southeast Facility,Quality Control,2804.38,False,,293.37
+2024-07-12,Southeast Facility,Quality Control,2804.38,False,,23.37
 2024-07-12,Southeast Facility,Research & Development,4712.45,True,244.18,445.2
-2024-07-12,Southeast Facility,Logistics,2637.37,False,,222.97
-2024-07-13,North Facility,Manufacturing,4134.77,False,,322.23
+2024-07-12,Southeast Facility,Logistics,2637.37,False,,22.97
+2024-07-13,North Facility,Manufacturing,4134.77,False,,32.23
 2024-07-13,North Facility,Quality Control,4932.98,False,,64.21
 2024-07-13,North Facility,Research & Development,1697.48,True,487.11,197.0
 2024-07-13,North Facility,Logistics,1616.85,True,392.97,416.49
-2024-07-13,South Facility,Manufacturing,3767.56,False,,345.21
-2024-07-13,South Facility,Quality Control,3204.45,False,,443.1
-2024-07-13,South Facility,Research & Development,1704.82,False,,151.63
-2024-07-13,South Facility,Logistics,3905.31,False,,147.36
+2024-07-13,South Facility,Manufacturing,3767.56,False,,34.21
+2024-07-13,South Facility,Quality Control,3204.45,False,,43.1
+2024-07-13,South Facility,Research & Development,1704.82,False,,15.63
+2024-07-13,South Facility,Logistics,3905.31,False,,17.36
 2024-07-13,East Facility,Manufacturing,1187.38,True,109.23,443.44
-2024-07-13,East Facility,Quality Control,1056.63,False,,479.67
+2024-07-13,East Facility,Quality Control,1056.63,False,,49.67
 2024-07-13,East Facility,Research & Development,3925.7,True,317.93,115.79
-2024-07-13,East Facility,Logistics,2460.67,False,,322.16
+2024-07-13,East Facility,Logistics,2460.67,False,,32.16
 2024-07-13,West Facility,Manufacturing,4580.11,True,210.64,318.57
 2024-07-13,West Facility,Quality Control,2428.34,True,131.09,322.08
-2024-07-13,West Facility,Research & Development,3465.29,False,,109.95
-2024-07-13,West Facility,Logistics,3448.02,False,,361.67
+2024-07-13,West Facility,Research & Development,3465.29,False,,19.95
+2024-07-13,West Facility,Logistics,3448.02,False,,31.67
 2024-07-13,Central Facility,Manufacturing,1179.77,True,458.83,95.67
-2024-07-13,Central Facility,Quality Control,2477.46,False,,236.84
-2024-07-13,Central Facility,Research & Development,4032.63,False,,352.52
-2024-07-13,Central Facility,Logistics,1086.72,False,,324.39
+2024-07-13,Central Facility,Quality Control,2477.46,False,,26.84
+2024-07-13,Central Facility,Research & Development,4032.63,False,,32.52
+2024-07-13,Central Facility,Logistics,1086.72,False,,34.39
 2024-07-13,Northeast Facility,Manufacturing,2043.83,True,165.83,75.42
 2024-07-13,Northeast Facility,Quality Control,4991.48,True,318.48,392.45
 2024-07-13,Northeast Facility,Research & Development,4926.45,True,465.41,427.12
-2024-07-13,Northeast Facility,Logistics,1750.42,False,,419.91
-2024-07-13,Northwest Facility,Manufacturing,2505.76,False,,339.57
+2024-07-13,Northeast Facility,Logistics,1750.42,False,,49.91
+2024-07-13,Northwest Facility,Manufacturing,2505.76,False,,39.57
 2024-07-13,Northwest Facility,Quality Control,4788.78,True,366.18,449.44
 2024-07-13,Northwest Facility,Research & Development,1228.41,True,131.25,333.24
-2024-07-13,Northwest Facility,Logistics,1892.78,False,,398.11
-2024-07-13,Southeast Facility,Manufacturing,4900.19,False,,200.32
+2024-07-13,Northwest Facility,Logistics,1892.78,False,,38.11
+2024-07-13,Southeast Facility,Manufacturing,4900.19,False,,20.32
 2024-07-13,Southeast Facility,Quality Control,3802.98,True,275.63,205.69
 2024-07-13,Southeast Facility,Research & Development,1562.82,True,174.39,274.5
 2024-07-13,Southeast Facility,Logistics,2309.01,True,458.85,420.79
 2024-07-14,North Facility,Manufacturing,3269.71,True,200.65,310.33
-2024-07-14,North Facility,Quality Control,2668.62,False,,149.5
+2024-07-14,North Facility,Quality Control,2668.62,False,,19.5
 2024-07-14,North Facility,Research & Development,4206.57,True,301.69,428.73
 2024-07-14,North Facility,Logistics,4965.06,True,428.61,426.78
-2024-07-14,South Facility,Manufacturing,2535.96,False,,194.44
-2024-07-14,South Facility,Quality Control,1330.61,False,,452.93
-2024-07-14,South Facility,Research & Development,4515.2,False,,189.3
-2024-07-14,South Facility,Logistics,4228.98,False,,145.33
+2024-07-14,South Facility,Manufacturing,2535.96,False,,14.44
+2024-07-14,South Facility,Quality Control,1330.61,False,,42.93
+2024-07-14,South Facility,Research & Development,4515.2,False,,19.3
+2024-07-14,South Facility,Logistics,4228.98,False,,15.33
 2024-07-14,East Facility,Manufacturing,4765.79,True,445.44,498.11
-2024-07-14,East Facility,Quality Control,4478.27,False,,221.81
-2024-07-14,East Facility,Research & Development,4628.33,False,,232.08
-2024-07-14,East Facility,Logistics,2901.88,False,,336.6
+2024-07-14,East Facility,Quality Control,4478.27,False,,21.81
+2024-07-14,East Facility,Research & Development,4628.33,False,,22.08
+2024-07-14,East Facility,Logistics,2901.88,False,,36.6
 2024-07-14,West Facility,Manufacturing,3501.75,True,237.72,54.28
 2024-07-14,West Facility,Quality Control,1079.46,False,,321.26
-2024-07-14,West Facility,Research & Development,4095.26,False,,432.14
+2024-07-14,West Facility,Research & Development,4095.26,False,,42.14
 2024-07-14,West Facility,Logistics,4265.34,True,425.26,80.66
-2024-07-14,Central Facility,Manufacturing,2963.06,False,,152.8
-2024-07-14,Central Facility,Quality Control,1057.86,False,,138.18
+2024-07-14,Central Facility,Manufacturing,2963.06,False,,12.8
+2024-07-14,Central Facility,Quality Control,1057.86,False,,13.18
 2024-07-14,Central Facility,Research & Development,2092.29,True,493.83,291.48
 2024-07-14,Central Facility,Logistics,4680.51,False,,472.39
 2024-07-14,Northeast Facility,Manufacturing,2623.3,True,362.49,348.98
@@ -760,202 +760,202 @@ TS,ProductionFacilityLocation,Department,AmtPowerUse,IsGreenEnergyInitiative,Amt
 2024-07-14,Northeast Facility,Research & Development,2107.56,True,386.59,160.39
 2024-07-14,Northeast Facility,Logistics,1001.85,True,380.0,171.07
 2024-07-14,Northwest Facility,Manufacturing,1868.38,True,486.53,464.96
-2024-07-14,Northwest Facility,Quality Control,2793.74,False,,192.67
+2024-07-14,Northwest Facility,Quality Control,2793.74,False,,12.67
 2024-07-14,Northwest Facility,Research & Development,2365.09,True,418.96,399.74
-2024-07-14,Northwest Facility,Logistics,4377.54,False,,416.07
+2024-07-14,Northwest Facility,Logistics,4377.54,False,,46.07
 2024-07-14,Southeast Facility,Manufacturing,2792.8,True,332.72,230.91
 2024-07-14,Southeast Facility,Quality Control,4102.32,True,499.49,190.44
 2024-07-14,Southeast Facility,Research & Development,4362.62,True,257.94,172.69
 2024-07-14,Southeast Facility,Logistics,3838.01,False,,166.42
 2024-07-15,North Facility,Manufacturing,2169.37,True,486.13,295.13
-2024-07-15,North Facility,Quality Control,4233.49,False,,452.47
+2024-07-15,North Facility,Quality Control,4233.49,False,,45.47
 2024-07-15,North Facility,Research & Development,3236.91,True,292.2,121.73
-2024-07-15,North Facility,Logistics,4574.79,False,,401.56
-2024-07-15,South Facility,Manufacturing,4170.22,False,,67.48
+2024-07-15,North Facility,Logistics,4574.79,False,,40.56
+2024-07-15,South Facility,Manufacturing,4170.22,False,,6.48
 2024-07-15,South Facility,Quality Control,1001.93,True,496.12,441.24
-2024-07-15,South Facility,Research & Development,1185.03,False,,120.26
-2024-07-15,South Facility,Logistics,3527.69,False,,136.06
+2024-07-15,South Facility,Research & Development,1185.03,False,,10.26
+2024-07-15,South Facility,Logistics,3527.69,False,,13.06
 2024-07-15,East Facility,Manufacturing,3192.55,True,349.84,296.42
 2024-07-15,East Facility,Quality Control,1305.29,False,,338.65
 2024-07-15,East Facility,Research & Development,4803.52,True,123.03,133.11
 2024-07-15,East Facility,Logistics,4347.54,True,354.53,211.19
-2024-07-15,West Facility,Manufacturing,1632.8,False,,150.75
+2024-07-15,West Facility,Manufacturing,1632.8,False,,15.75
 2024-07-15,West Facility,Quality Control,3852.84,True,399.92,139.85
 2024-07-15,West Facility,Research & Development,1344.52,True,146.15,291.69
 2024-07-15,West Facility,Logistics,1177.41,True,429.83,163.89
 2024-07-15,Central Facility,Manufacturing,2058.03,False,,472.18
 2024-07-15,Central Facility,Quality Control,4140.8,False,,492.7
-2024-07-15,Central Facility,Research & Development,2518.06,False,,362.85
-2024-07-15,Central Facility,Logistics,3177.11,True,300.03,183.87
-2024-07-15,Northeast Facility,Manufacturing,2691.59,True,184.03,215.43
-2024-07-15,Northeast Facility,Quality Control,4772.61,True,260.58,132.83
-2024-07-15,Northeast Facility,Research & Development,2861.27,False,,371.88
+2024-07-15,Central Facility,Research & Development,2518.06,False,,32.85
+2024-07-15,Central Facility,Logistics,3177.11,True,300.03,1183.87
+2024-07-15,Northeast Facility,Manufacturing,2691.59,True,184.03,1215.43
+2024-07-15,Northeast Facility,Quality Control,4772.61,True,260.58,1132.83
+2024-07-15,Northeast Facility,Research & Development,2861.27,False,,31.88
 2024-07-15,Northeast Facility,Logistics,1414.18,True,265.02,191.5
 2024-07-15,Northwest Facility,Manufacturing,3605.32,True,376.16,137.74
-2024-07-15,Northwest Facility,Quality Control,1025.91,False,,129.69
-2024-07-15,Northwest Facility,Research & Development,2527.32,False,,403.4
-2024-07-15,Northwest Facility,Logistics,3238.85,False,,261.21
-2024-07-15,Southeast Facility,Manufacturing,1732.38,True,136.81,261.92
-2024-07-15,Southeast Facility,Quality Control,2679.61,True,381.03,299.48
-2024-07-15,Southeast Facility,Research & Development,2858.34,True,333.98,440.11
-2024-07-15,Southeast Facility,Logistics,3261.54,False,,399.76
-2024-07-16,North Facility,Manufacturing,4727.47,False,,336.93
+2024-07-15,Northwest Facility,Quality Control,1025.91,False,,19.69
+2024-07-15,Northwest Facility,Research & Development,2527.32,False,,43.4
+2024-07-15,Northwest Facility,Logistics,3238.85,False,,21.21
+2024-07-15,Southeast Facility,Manufacturing,1732.38,True,136.81,1261.92
+2024-07-15,Southeast Facility,Quality Control,2679.61,True,381.03,1299.48
+2024-07-15,Southeast Facility,Research & Development,2858.34,True,333.98,1440.11
+2024-07-15,Southeast Facility,Logistics,3261.54,False,,39.76
+2024-07-16,North Facility,Manufacturing,4727.47,False,,36.93
 2024-07-16,North Facility,Quality Control,2066.68,True,385.52,153.46
-2024-07-16,North Facility,Research & Development,3026.84,False,,266.21
-2024-07-16,North Facility,Logistics,1688.86,True,244.49,187.46
-2024-07-16,South Facility,Manufacturing,3087.89,True,216.38,480.99
+2024-07-16,North Facility,Research & Development,3026.84,False,,26.21
+2024-07-16,North Facility,Logistics,1688.86,True,244.49,1187.46
+2024-07-16,South Facility,Manufacturing,3087.89,True,216.38,1480.99
 2024-07-16,South Facility,Quality Control,2370.54,False,,372.11
-2024-07-16,South Facility,Research & Development,4585.57,False,,243.79
-2024-07-16,South Facility,Logistics,2535.53,True,124.26,389.59
-2024-07-16,East Facility,Manufacturing,3349.58,False,,282.44
-2024-07-16,East Facility,Quality Control,4224.91,True,375.35,320.41
-2024-07-16,East Facility,Research & Development,4990.32,False,,461.19
-2024-07-16,East Facility,Logistics,4584.86,False,,105.03
-2024-07-16,West Facility,Manufacturing,1645.03,True,347.69,340.27
+2024-07-16,South Facility,Research & Development,4585.57,False,,24.79
+2024-07-16,South Facility,Logistics,2535.53,True,124.26,1389.59
+2024-07-16,East Facility,Manufacturing,3349.58,False,,22.44
+2024-07-16,East Facility,Quality Control,4224.91,True,375.35,1320.41
+2024-07-16,East Facility,Research & Development,4990.32,False,,41.19
+2024-07-16,East Facility,Logistics,4584.86,False,,15.03
+2024-07-16,West Facility,Manufacturing,1645.03,True,347.69,1340.27
 2024-07-16,West Facility,Quality Control,2063.62,False,,98.04
-2024-07-16,West Facility,Research & Development,4783.57,True,448.63,367.34
-2024-07-16,West Facility,Logistics,1681.79,False,,279.27
-2024-07-16,Central Facility,Manufacturing,1674.31,False,,465.94
-2024-07-16,Central Facility,Quality Control,4206.38,False,,403.79
-2024-07-16,Central Facility,Research & Development,3366.6,True,203.6,485.24
-2024-07-16,Central Facility,Logistics,2101.83,False,,122.21
-2024-07-16,Northeast Facility,Manufacturing,2566.94,True,419.21,345.61
-2024-07-16,Northeast Facility,Quality Control,2351.9,False,,332.78
-2024-07-16,Northeast Facility,Research & Development,1125.85,False,,399.94
-2024-07-16,Northeast Facility,Logistics,1082.46,True,155.73,122.29
-2024-07-16,Northwest Facility,Manufacturing,2491.26,True,104.38,336.22
-2024-07-16,Northwest Facility,Quality Control,4293.91,False,,417.15
-2024-07-16,Northwest Facility,Research & Development,4320.69,True,288.01,275.47
-2024-07-16,Northwest Facility,Logistics,2784.93,False,,234.11
-2024-07-16,Southeast Facility,Manufacturing,1824.55,True,124.3,174.58
-2024-07-16,Southeast Facility,Quality Control,2063.9,False,,283.51
-2024-07-16,Southeast Facility,Research & Development,1097.17,False,,402.39
-2024-07-16,Southeast Facility,Logistics,2128.2,False,,111.21
-2024-07-17,North Facility,Manufacturing,2165.14,True,419.52,494.45
-2024-07-17,North Facility,Quality Control,2851.75,True,214.8,485.58
-2024-07-17,North Facility,Research & Development,4990.79,False,,413.62
+2024-07-16,West Facility,Research & Development,4783.57,True,448.63,1367.34
+2024-07-16,West Facility,Logistics,1681.79,False,,27.27
+2024-07-16,Central Facility,Manufacturing,1674.31,False,,45.94
+2024-07-16,Central Facility,Quality Control,4206.38,False,,43.79
+2024-07-16,Central Facility,Research & Development,3366.6,True,203.6,1485.24
+2024-07-16,Central Facility,Logistics,2101.83,False,,12.21
+2024-07-16,Northeast Facility,Manufacturing,2566.94,True,419.21,1345.61
+2024-07-16,Northeast Facility,Quality Control,2351.9,False,,33.78
+2024-07-16,Northeast Facility,Research & Development,1125.85,False,,39.94
+2024-07-16,Northeast Facility,Logistics,1082.46,True,155.73,1122.29
+2024-07-16,Northwest Facility,Manufacturing,2491.26,True,104.38,1336.22
+2024-07-16,Northwest Facility,Quality Control,4293.91,False,,17.15
+2024-07-16,Northwest Facility,Research & Development,4320.69,True,288.01,1275.47
+2024-07-16,Northwest Facility,Logistics,2784.93,False,,23.11
+2024-07-16,Southeast Facility,Manufacturing,1824.55,True,124.3,1174.58
+2024-07-16,Southeast Facility,Quality Control,2063.9,False,,28.51
+2024-07-16,Southeast Facility,Research & Development,1097.17,False,,40.39
+2024-07-16,Southeast Facility,Logistics,2128.2,False,,11.21
+2024-07-17,North Facility,Manufacturing,2165.14,True,419.52,2494.45
+2024-07-17,North Facility,Quality Control,2851.75,True,214.8,2485.58
+2024-07-17,North Facility,Research & Development,4990.79,False,,13.62
 2024-07-17,North Facility,Logistics,1066.6,False,,51.85
-2024-07-17,South Facility,Manufacturing,2255.25,True,494.99,175.62
-2024-07-17,South Facility,Quality Control,1849.26,True,159.5,258.82
-2024-07-17,South Facility,Research & Development,2570.32,True,234.93,323.99
-2024-07-17,South Facility,Logistics,1601.54,False,,252.31
-2024-07-17,East Facility,Manufacturing,1978.95,True,110.27,314.91
+2024-07-17,South Facility,Manufacturing,2255.25,True,494.99,2175.62
+2024-07-17,South Facility,Quality Control,1849.26,True,159.52,258.82
+2024-07-17,South Facility,Research & Development,2570.32,True,234.93,2323.99
+2024-07-17,South Facility,Logistics,1601.54,False,,25.31
+2024-07-17,East Facility,Manufacturing,1978.95,True,110.27,2314.91
 2024-07-17,East Facility,Quality Control,3290.78,True,364.91,469.83
-2024-07-17,East Facility,Research & Development,3948.37,False,,307.95
-2024-07-17,East Facility,Logistics,4676.13,False,,269.96
-2024-07-17,West Facility,Manufacturing,3334.78,True,462.96,435.58
-2024-07-17,West Facility,Quality Control,4121.08,True,278.89,309.75
-2024-07-17,West Facility,Research & Development,2016.49,True,228.88,439.82
-2024-07-17,West Facility,Logistics,4647.06,True,279.17,199.42
-2024-07-17,Central Facility,Manufacturing,3378.19,False,,140.66
-2024-07-17,Central Facility,Quality Control,1527.26,False,,353.01
-2024-07-17,Central Facility,Research & Development,3331.41,True,314.42,403.37
-2024-07-17,Central Facility,Logistics,3755.89,True,300.66,321.05
-2024-07-17,Northeast Facility,Manufacturing,3400.3,False,,229.67
-2024-07-17,Northeast Facility,Quality Control,2832.88,False,,319.01
-2024-07-17,Northeast Facility,Research & Development,1007.84,True,176.39,144.66
-2024-07-17,Northeast Facility,Logistics,3413.67,False,,191.06
-2024-07-17,Northwest Facility,Manufacturing,1784.73,True,489.76,273.04
-2024-07-17,Northwest Facility,Quality Control,2616.31,True,444.5,380.95
-2024-07-17,Northwest Facility,Research & Development,1659.13,False,,138.16
-2024-07-17,Northwest Facility,Logistics,3874.62,True,469.3,247.67
-2024-07-17,Southeast Facility,Manufacturing,1093.46,True,425.87,266.85
-2024-07-17,Southeast Facility,Quality Control,4954.85,False,,356.74
+2024-07-17,East Facility,Research & Development,3948.37,False,,30.95
+2024-07-17,East Facility,Logistics,4676.13,False,,26.96
+2024-07-17,West Facility,Manufacturing,3334.78,True,462.96,2435.58
+2024-07-17,West Facility,Quality Control,4121.08,True,278.89,2309.75
+2024-07-17,West Facility,Research & Development,2016.49,True,228.88,2439.82
+2024-07-17,West Facility,Logistics,4647.06,True,279.17,2199.42
+2024-07-17,Central Facility,Manufacturing,3378.19,False,,14.66
+2024-07-17,Central Facility,Quality Control,1527.26,False,,35.01
+2024-07-17,Central Facility,Research & Development,3331.41,True,314.42,2403.37
+2024-07-17,Central Facility,Logistics,3755.89,True,300.66,2321.05
+2024-07-17,Northeast Facility,Manufacturing,3400.3,False,,29.67
+2024-07-17,Northeast Facility,Quality Control,2832.88,False,,31.01
+2024-07-17,Northeast Facility,Research & Development,1007.84,True,176.39,2144.66
+2024-07-17,Northeast Facility,Logistics,3413.67,False,,11.06
+2024-07-17,Northwest Facility,Manufacturing,1784.73,True,489.76,2273.04
+2024-07-17,Northwest Facility,Quality Control,2616.31,True,444.5,2380.95
+2024-07-17,Northwest Facility,Research & Development,1659.13,False,,13.16
+2024-07-17,Northwest Facility,Logistics,3874.62,True,469.3,2247.67
+2024-07-17,Southeast Facility,Manufacturing,1093.46,True,425.87,2266.85
+2024-07-17,Southeast Facility,Quality Control,4954.85,False,,35.74
 2024-07-17,Southeast Facility,Research & Development,2298.85,False,,70.47
 2024-07-17,Southeast Facility,Logistics,3201.37,False,,74.35
-2024-07-18,North Facility,Manufacturing,3507.03,True,353.19,462.61
+2024-07-18,North Facility,Manufacturing,3507.03,True,353.19,3462.61
 2024-07-18,North Facility,Quality Control,1465.79,False,,164.02
-2024-07-18,North Facility,Research & Development,1099.19,False,,466.75
-2024-07-18,North Facility,Logistics,3843.6,False,,452.12
-2024-07-18,South Facility,Manufacturing,4122.64,False,,388.58
-2024-07-18,South Facility,Quality Control,2418.17,True,322.89,386.15
-2024-07-18,South Facility,Research & Development,2591.26,True,242.34,412.84
-2024-07-18,South Facility,Logistics,1850.36,True,317.94,96.43
-2024-07-18,East Facility,Manufacturing,3277.51,True,343.97,397.78
-2024-07-18,East Facility,Quality Control,4555.39,False,,442.41
-2024-07-18,East Facility,Research & Development,4586.02,True,242.63,254.33
-2024-07-18,East Facility,Logistics,1344.14,True,474.56,397.22
+2024-07-18,North Facility,Research & Development,1099.19,False,,346.75
+2024-07-18,North Facility,Logistics,3843.6,False,,42.12
+2024-07-18,South Facility,Manufacturing,4122.64,False,,38.58
+2024-07-18,South Facility,Quality Control,2418.17,True,322.89,3386.15
+2024-07-18,South Facility,Research & Development,2591.26,True,242.34,3412.84
+2024-07-18,South Facility,Logistics,1850.36,True,317.94,3096.43
+2024-07-18,East Facility,Manufacturing,3277.51,True,343.97,3397.78
+2024-07-18,East Facility,Quality Control,4555.39,False,,44.41
+2024-07-18,East Facility,Research & Development,4586.02,True,242.63,3254.33
+2024-07-18,East Facility,Logistics,1344.14,True,474.56,3397.22
 2024-07-18,West Facility,Manufacturing,1515.82,True,271.64,204.83
-2024-07-18,West Facility,Quality Control,2558.52,False,,404.12
-2024-07-18,West Facility,Research & Development,2981.39,False,,277.36
-2024-07-18,West Facility,Logistics,3985.86,False,,157.92
-2024-07-18,Central Facility,Manufacturing,3158.68,False,,249.31
-2024-07-18,Central Facility,Quality Control,1984.57,True,465.32,316.37
-2024-07-18,Central Facility,Research & Development,4012.86,True,125.86,277.45
-2024-07-18,Central Facility,Logistics,3973.5,False,,98.27
-2024-07-18,Northeast Facility,Manufacturing,1553.05,False,,372.79
-2024-07-18,Northeast Facility,Quality Control,2149.79,False,,406.16
-2024-07-18,Northeast Facility,Research & Development,3412.81,True,205.56,164.12
+2024-07-18,West Facility,Quality Control,2558.52,False,,44.12
+2024-07-18,West Facility,Research & Development,2981.39,False,,27.36
+2024-07-18,West Facility,Logistics,3985.86,False,,17.92
+2024-07-18,Central Facility,Manufacturing,3158.68,False,,29.31
+2024-07-18,Central Facility,Quality Control,1984.57,True,465.32,3316.37
+2024-07-18,Central Facility,Research & Development,4012.86,True,125.86,2377.45
+2024-07-18,Central Facility,Logistics,3973.5,False,,9.27
+2024-07-18,Northeast Facility,Manufacturing,1553.05,False,,37.79
+2024-07-18,Northeast Facility,Quality Control,2149.79,False,,46.16
+2024-07-18,Northeast Facility,Research & Development,3412.81,True,205.56,3164.12
 2024-07-18,Northeast Facility,Logistics,3263.51,False,,51.54
-2024-07-18,Northwest Facility,Manufacturing,1385.97,True,437.79,410.47
-2024-07-18,Northwest Facility,Quality Control,3942.01,True,461.11,96.67
-2024-07-18,Northwest Facility,Research & Development,4479.61,False,,459.79
-2024-07-18,Northwest Facility,Logistics,2348.31,False,,175.75
-2024-07-18,Southeast Facility,Manufacturing,3774.56,False,,261.22
-2024-07-18,Southeast Facility,Quality Control,2003.72,False,,465.31
-2024-07-18,Southeast Facility,Research & Development,3379.96,False,,493.89
-2024-07-18,Southeast Facility,Logistics,2461.2,True,360.42,193.63
-2024-07-19,North Facility,Manufacturing,2775.57,False,,472.19
-2024-07-19,North Facility,Quality Control,3023.25,True,107.76,387.5
-2024-07-19,North Facility,Research & Development,1967.95,False,,214.45
-2024-07-19,North Facility,Logistics,1262.26,False,,201.2
-2024-07-19,South Facility,Manufacturing,4355.02,True,189.49,443.79
-2024-07-19,South Facility,Quality Control,4546.38,False,,474.53
-2024-07-19,South Facility,Research & Development,4445.83,False,,147.78
+2024-07-18,Northwest Facility,Manufacturing,1385.97,True,437.79,3410.47
+2024-07-18,Northwest Facility,Quality Control,3942.01,True,461.11,3096.67
+2024-07-18,Northwest Facility,Research & Development,4479.61,False,,45.79
+2024-07-18,Northwest Facility,Logistics,2348.31,False,,15.75
+2024-07-18,Southeast Facility,Manufacturing,3774.56,False,,21.22
+2024-07-18,Southeast Facility,Quality Control,2003.72,False,,46.31
+2024-07-18,Southeast Facility,Research & Development,3379.96,False,,49.89
+2024-07-18,Southeast Facility,Logistics,2461.2,True,360.42,4193.63
+2024-07-19,North Facility,Manufacturing,2775.57,False,,42.19
+2024-07-19,North Facility,Quality Control,3023.25,True,107.76,4387.5
+2024-07-19,North Facility,Research & Development,1967.95,False,,24.45
+2024-07-19,North Facility,Logistics,1262.26,False,,21.2
+2024-07-19,South Facility,Manufacturing,4355.02,True,189.49,4443.79
+2024-07-19,South Facility,Quality Control,4546.38,False,,44.53
+2024-07-19,South Facility,Research & Development,4445.83,False,,14.78
 2024-07-19,South Facility,Logistics,2430.17,False,,440.82
-2024-07-19,East Facility,Manufacturing,3084.62,False,,369.38
+2024-07-19,East Facility,Manufacturing,3084.62,False,,36.38
 2024-07-19,East Facility,Quality Control,4735.63,True,373.42,422.13
-2024-07-19,East Facility,Research & Development,4851.51,True,105.52,199.2
-2024-07-19,East Facility,Logistics,3005.91,True,436.68,71.87
-2024-07-19,West Facility,Manufacturing,2609.45,True,171.12,266.48
-2024-07-19,West Facility,Quality Control,2404.87,False,,351.07
-2024-07-19,West Facility,Research & Development,4722.02,True,378.07,319.52
-2024-07-19,West Facility,Logistics,4057.76,True,437.99,139.75
-2024-07-19,Central Facility,Manufacturing,4304.08,False,,115.03
-2024-07-19,Central Facility,Quality Control,1690.92,True,122.63,488.93
-2024-07-19,Central Facility,Research & Development,3743.53,True,483.91,483.68
-2024-07-19,Central Facility,Logistics,4565.44,False,,286.9
-2024-07-19,Northeast Facility,Manufacturing,2186.62,True,193.16,421.91
-2024-07-19,Northeast Facility,Quality Control,1180.74,False,,320.26
-2024-07-19,Northeast Facility,Research & Development,2100.55,False,,107.59
-2024-07-19,Northeast Facility,Logistics,2113.31,True,493.51,119.67
+2024-07-19,East Facility,Research & Development,4851.51,True,105.52,4199.2
+2024-07-19,East Facility,Logistics,3005.91,True,436.68,471.87
+2024-07-19,West Facility,Manufacturing,2609.45,True,171.12,4266.48
+2024-07-19,West Facility,Quality Control,2404.87,False,,31.07
+2024-07-19,West Facility,Research & Development,4722.02,True,378.07,4319.52
+2024-07-19,West Facility,Logistics,4057.76,True,437.99,4139.75
+2024-07-19,Central Facility,Manufacturing,4304.08,False,,15.03
+2024-07-19,Central Facility,Quality Control,1690.92,True,122.63,4488.93
+2024-07-19,Central Facility,Research & Development,3743.53,True,483.91,4483.68
+2024-07-19,Central Facility,Logistics,4565.44,False,,26.9
+2024-07-19,Northeast Facility,Manufacturing,2186.62,True,193.16,4421.91
+2024-07-19,Northeast Facility,Quality Control,1180.74,False,,30.26
+2024-07-19,Northeast Facility,Research & Development,2100.55,False,,17.59
+2024-07-19,Northeast Facility,Logistics,2113.31,True,493.51,5119.67
 2024-07-19,Northwest Facility,Manufacturing,2694.68,False,,71.54
-2024-07-19,Northwest Facility,Quality Control,2176.77,True,319.55,326.16
-2024-07-19,Northwest Facility,Research & Development,2874.67,True,126.84,378.23
-2024-07-19,Northwest Facility,Logistics,1125.26,True,104.39,257.59
-2024-07-19,Southeast Facility,Manufacturing,1464.47,False,,403.62
-2024-07-19,Southeast Facility,Quality Control,1402.95,True,193.18,360.24
-2024-07-19,Southeast Facility,Research & Development,2930.14,True,379.62,214.62
-2024-07-19,Southeast Facility,Logistics,1818.07,True,179.53,260.11
-2024-07-20,North Facility,Manufacturing,1632.01,True,134.13,330.79
-2024-07-20,North Facility,Quality Control,3314.09,False,,223.74
-2024-07-20,North Facility,Research & Development,4340.62,True,261.62,345.77
+2024-07-19,Northwest Facility,Quality Control,2176.77,True,319.55,5326.16
+2024-07-19,Northwest Facility,Research & Development,2874.67,True,126.84,5378.23
+2024-07-19,Northwest Facility,Logistics,1125.26,True,104.39,5257.59
+2024-07-19,Southeast Facility,Manufacturing,1464.47,False,,43.62
+2024-07-19,Southeast Facility,Quality Control,1402.95,True,193.18,5360.24
+2024-07-19,Southeast Facility,Research & Development,2930.14,True,379.62,5214.62
+2024-07-19,Southeast Facility,Logistics,1818.07,True,179.53,5260.11
+2024-07-20,North Facility,Manufacturing,1632.01,True,134.13,5330.79
+2024-07-20,North Facility,Quality Control,3314.09,False,,23.74
+2024-07-20,North Facility,Research & Development,4340.62,True,261.62,5345.77
 2024-07-20,North Facility,Logistics,3083.78,False,,60.07
-2024-07-20,South Facility,Manufacturing,4262.72,False,,201.43
-2024-07-20,South Facility,Quality Control,4455.4,False,,459.61
-2024-07-20,South Facility,Research & Development,1394.97,True,105.21,445.67
+2024-07-20,South Facility,Manufacturing,4262.72,False,,21.43
+2024-07-20,South Facility,Quality Control,4455.4,False,,49.61
+2024-07-20,South Facility,Research & Development,1394.97,True,105.21,5445.67
 2024-07-20,South Facility,Logistics,3348.25,True,499.9,195.75
-2024-07-20,East Facility,Manufacturing,3751.59,True,322.22,387.36
-2024-07-20,East Facility,Quality Control,2931.39,True,415.9,142.17
-2024-07-20,East Facility,Research & Development,3345.28,True,454.42,315.06
-2024-07-20,East Facility,Logistics,1168.0,False,,474.09
-2024-07-20,West Facility,Manufacturing,1211.05,False,,133.33
-2024-07-20,West Facility,Quality Control,3757.83,True,438.5,115.98
-2024-07-20,West Facility,Research & Development,1881.6,False,,409.57
-2024-07-20,West Facility,Logistics,1768.07,True,456.17,333.99
-2024-07-20,Central Facility,Manufacturing,2164.75,False,,392.87
-2024-07-20,Central Facility,Quality Control,3391.56,False,,153.64
-2024-07-20,Central Facility,Research & Development,4381.41,True,236.57,67.81
-2024-07-20,Central Facility,Logistics,1401.58,True,244.47,84.93
-2024-07-20,Northeast Facility,Manufacturing,4315.41,True,338.99,125.62
-2024-07-20,Northeast Facility,Quality Control,1727.48,True,173.69,80.91
-2024-07-20,Northeast Facility,Research & Development,2260.58,False,,437.13
-2024-07-20,Northeast Facility,Logistics,3325.92,True,225.95,454.65
-2024-07-20,Northwest Facility,Manufacturing,3455.66,False,,477.47
-2024-07-20,Northwest Facility,Quality Control,3085.8,False,,117.16
+2024-07-20,East Facility,Manufacturing,3751.59,True,322.22,5287.36
+2024-07-20,East Facility,Quality Control,2931.39,True,415.9,5142.17
+2024-07-20,East Facility,Research & Development,3345.28,True,454.42,5315.06
+2024-07-20,East Facility,Logistics,1168.0,False,,44.09
+2024-07-20,West Facility,Manufacturing,1211.05,False,,13.33
+2024-07-20,West Facility,Quality Control,3757.83,True,438.5,5115.98
+2024-07-20,West Facility,Research & Development,1881.6,False,,49.57
+2024-07-20,West Facility,Logistics,1768.07,True,456.17,5233.99
+2024-07-20,Central Facility,Manufacturing,2164.75,False,,32.87
+2024-07-20,Central Facility,Quality Control,3391.56,False,,13.64
+2024-07-20,Central Facility,Research & Development,4381.41,True,236.57,5267.81
+2024-07-20,Central Facility,Logistics,1401.58,True,244.47,5284.93
+2024-07-20,Northeast Facility,Manufacturing,4315.41,True,338.99,2125.62
+2024-07-20,Northeast Facility,Quality Control,1727.48,True,173.69,280.91
+2024-07-20,Northeast Facility,Research & Development,2260.58,False,,47.13
+2024-07-20,Northeast Facility,Logistics,3325.92,True,225.95,5454.65
+2024-07-20,Northwest Facility,Manufacturing,3455.66,False,,47.47
+2024-07-20,Northwest Facility,Quality Control,3085.8,False,,17.16
 2024-07-20,Northwest Facility,Research & Development,4346.51,False,,60.81
-2024-07-20,Northwest Facility,Logistics,2644.31,True,160.63,378.97
-2024-07-20,Southeast Facility,Manufacturing,4599.5,False,,304.29
-2024-07-20,Southeast Facility,Quality Control,4906.72,False,,350.52
-2024-07-20,Southeast Facility,Research & Development,1701.73,True,446.75,263.04
-2024-07-20,Southeast Facility,Logistics,1512.05,False,,94.05
+2024-07-20,Northwest Facility,Logistics,2644.31,True,160.63,5378.97
+2024-07-20,Southeast Facility,Manufacturing,4599.5,False,,34.29
+2024-07-20,Southeast Facility,Quality Control,4906.72,False,,30.52
+2024-07-20,Southeast Facility,Research & Development,1701.73,True,446.75,5263.04
+2024-07-20,Southeast Facility,Logistics,1512.05,False,,9.05
