@@ -1,6 +1,5 @@
-dags
-include
-plugins
 airflow-settings.yaml
 .env
 .DS_Store
+.venv
+*__pycache__/
