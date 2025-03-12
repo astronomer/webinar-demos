@@ -28,5 +28,5 @@ def update_dataset_local_deployment(dataset_uri: str, extra: dict):
 
 if __name__ == "__main__":
     update_dataset_local_deployment(
-        "s3://bucket/data.csv", {"Hello :)": "I am a payload"}
+        "s3://bucket/data.csv", {"Hello :)": "Hello!"}
     )

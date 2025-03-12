@@ -35,7 +35,7 @@ def fetch_extra_info():
             print(dataset)
             print(dataset_event_list)
             print(dataset_event_list[0].extra["myNum"])
-            # dataset_list[0].source_dag_run.run_id  # you can also fetch the run_id of the upstream DAG, this will AttributeError if the Trigger was the API!
+            dataset_event_list[0].source_dag_run.run_id  # you can also fetch the run_id of the upstream DAG, this will AttributeError if the Trigger was the API!
 
     get_extra_triggering_run()
 
