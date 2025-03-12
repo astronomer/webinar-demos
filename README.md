@@ -24,4 +24,4 @@ The [`include`](include) directory contains two scripts to create dataset update
 The dags in [`dags/2_dataset_alias`](/dags/2_dataset_alias/) create the following situation once both dataset `x-dataset-A` and `x-dataset-B` have been
 attached to the dataset alias.
 
-![DatasetAlias overview slide](/static/dataset_alias_overview.png)
+![DatasetAlias overview slide](/static/datasetalias_overview.png)
