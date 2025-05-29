@@ -1,12 +1,45 @@
-# webinar-demos
+Overview
+========
 
-This repo contains public demos used in [Astronomer webinars](https://www.astronomer.io/events/webinars/). Each branch of the repo contains the demo for a different webinar.
+Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
 
-## Webinar Demos
+Project Contents
+================
 
-- Branch: [`datasets-and-data-aware-scheduling-in-airflow`](https://github.com/astronomer/webinar-demos/tree/datasets-and-data-aware-scheduling-in-airflow) - [Datasets and Data-Aware Scheduling in Airflow](https://www.astronomer.io/events/webinars/datasets-and-data-aware-scheduling-in-airflow-video) from 2025-03-12.
-- Branch: [`how-to-orchestrate-databricks-jobs-using-airflow`](https://github.com/astronomer/webinar-demos/tree/how-to-orchestrate-databricks-jobs-using-airflow) - [How to Orchestrate Databricks Jobs Using Airflow](https://www.astronomer.io/events/webinars/%20orchestrate-databricks-jobs-using-airflow-video/) from 2024-07-25.
-- Branch: [`optimizing-mlai-workflows-with-essential-airflow-features`](https://github.com/astronomer/webinar-demos/tree/optimizing-mlai-workflows-with-essential-airflow-features) - [Optimizing ML/AI Workflows with Essential Airflow Features](https://www.astronomer.io/events/webinars/optimizing-ml-ai-workflows-with-essential-airflow-features-video/) from 2024-04-25. 
-- Branch: [`best-practices-prod`](https://github.com/astronomer/webinar-demos/tree/best-practices-prod) - [DAG writing for data engineers and data scientists](https://www.astronomer.io/events/webinars/dag-writing-for-data-engineers-and-data-scientists-video/)
-- Branch: [`connections-management`](https://github.com/astronomer/webinar-demos/tree/connections-management) - [How to manage connections in Airflow](https://www.astronomer.io/events/webinars/how-to-manage-connections-in-airflow-video/)
-- Branch: [`how-to-orchestrate-azure-data-factory-jobs-with-airflow`](https://github.com/astronomer/webinar-demos/tree/how-to-orchestrate-azure-data-factory-jobs-with-airflow) - [How to Orchestrate Azure Data Factory Jobs with Airflow](https://www.astronomer.io/events/webinars/how-to-orchestrate-azure-data-factory-jobs-with-airflow-video/)
+Your Astro project contains the following files and folders:
+
+- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
+    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
+- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
+- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
+- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
+- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
+- plugins: Add custom or community plugins for your project to this file. It is empty by default.
+- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+
+Deploy Your Project Locally
+===========================
+
+Start Airflow on your local machine by running 'astro dev start'.
+
+This command will spin up five Docker containers on your machine, each for a different Airflow component:
+
+- Postgres: Airflow's Metadata Database
+- Scheduler: The Airflow component responsible for monitoring and triggering tasks
+- DAG Processor: The Airflow component responsible for parsing DAGs
+- API Server: The Airflow component responsible for serving the Airflow UI and API
+- Triggerer: The Airflow component responsible for triggering deferred tasks
+
+When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
+
+Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+
+Deploy Your Project to Astronomer
+=================================
+
+If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+
+Contact
+=======
+
+The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
