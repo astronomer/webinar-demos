@@ -26,7 +26,7 @@ weather_report_agent = Agent(
     params={
         "location": Param(
             type="string",
-            default="Bern",
+            default="New York",
         ),
     },
 )
