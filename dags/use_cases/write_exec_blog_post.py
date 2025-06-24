@@ -83,6 +83,8 @@ def write_exec_blog_post():
         file_path.touch()
         file_path.write_text(results)
 
+        return results
+
     upload_results(results)
 
 
