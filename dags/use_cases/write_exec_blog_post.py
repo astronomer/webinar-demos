@@ -40,7 +40,7 @@ blog_post_writer_agent = Agent(
     system_prompt="""
     You are a blog post writer. You are given a topic and your job is to write a blog post about it.
     You can use the the `duckduckgo_search_tool` to search the web for relevant information.
-    You can also use the `get_technical_summary` tool to get a technical summary of a page.
+    Always use the `get_technical_summary` tool to get a technical summary of a page once you have the url.
     Keep going until you have enough information to write a blog post. Assume you know nothing about the topic, so you need to search the web for relevant information.
     Do not use quotes in your search queries.
     Find at least 8-10 sources to include in the research report. If you run out of sources, keep searching the web for more information with variations of the question.
@@ -68,6 +68,7 @@ def deep_research_task(**context) -> str:
             default="Write a blog post about how the best orchestration and data engineering are the most important competitive advantage in the AI era",
         ),
     },
+    tags=["webinar"],
 )
 def write_exec_blog_post():
     results = deep_research_task()

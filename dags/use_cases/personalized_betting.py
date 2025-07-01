@@ -32,6 +32,7 @@ sqs_queue_asset = Asset(
         timetable=CronTriggerTimetable("0 0 * * *", timezone="UTC"),
         assets=(sqs_queue_asset | Asset("user_360_gold")),
     ),  # once a day or whenever a significant user event appears in the message queue
+    tags=["webinar"]
 )
 def personalized_betting():
 
