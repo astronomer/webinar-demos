@@ -1,45 +1,46 @@
-Overview
-========
+## # Upgrading to Airflow 3 Webinar
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+This repository contains the demo for the [Best practices for Upgrading to Airflow 3](https://www.astronomer.io/events/webinars/best-practices-for-upgrading-to-airflow-3-video/) webinar.
 
-Project Contents
-================
+## Repository Content
 
-Your Astro project contains the following files and folders:
+### Migration Examples (`dags/`)
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+* **`my_legacy_dag.py`** - Legacy DAG that runs in Airflow 2 but not in Airflow 3, demonstrating deprecated syntax and patterns
+* **`my_fixed_dag.py`** - Fixed version of the legacy DAG that works in Airflow 3, showing the necessary syntax updates
+* **`my_direct_db_access_dag.py`** - Demonstrates bad practice of direct metadatabase access (works in <3.0, removed in 3.0)
+* **`my_dag_using_the_rest_api.py`** - Shows the recommended approach using Airflow REST API to access metadata in Airflow 3
 
-Deploy Your Project Locally
-===========================
+## Key Migration Changes Demonstrated
 
-Start Airflow on your local machine by running 'astro dev start'.
+### Syntax Updates
+- `from airflow.decorators` → `from airflow.sdk`
+- `schedule_interval` → `schedule`
+- `execution_date` → `logical_date`
+- `days_ago()` → `datetime()`
+- `Dataset` → `Asset`
+- `BashOperator` import path updated
 
-This command will spin up five Docker containers on your machine, each for a different Airflow component:
+## Getting Started
 
-- Postgres: Airflow's Metadata Database
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- DAG Processor: The Airflow component responsible for parsing DAGs
-- API Server: The Airflow component responsible for serving the Airflow UI and API
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+## Run the Demo Locally
 
-When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
+1. Fork this repo and clone this branch (`best-practices-for-upgrading-to-airflow-3`) to your local machine.
 
-Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+2. Make sure you have the [Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli) installed and are at least on version 1.34.0 to be able to run Airflow 3.
 
-Deploy Your Project to Astronomer
-=================================
+3. Start the Airflow 2 project with 
+   ```bash
+   astro dev start
+   ```
+   The Airflow 3 webserver with the Airflow UI will be available at `localhost:8080` log in with `admin` as the username and password. Test out the two dags that work with Airflow 2.
 
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+4. Run `astro dev kill` to reset the project. 
 
-Contact
-=======
+5. Switch the Dockerfile to the Airflow 3 image.
 
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+6. Run `astro dev start` to start up the project with Airflow 3.
+
+7. Run the 3 DAGs. The `my_direct_db_access_dag` will fail because direct DB access is not allowed in Airflow 3. Note that you will likely need to adjust the `HOST` variable in the `my_dag_using_the_rest_api` to be able to query your Airflow environment.
+
+8. Install [ruff](https://docs.astral.sh/ruff/rules/#airflow-air) and use `ruff check dags/my_legacy_dag.py` to see the ruff linter pointing out issues with the legacy dag.
