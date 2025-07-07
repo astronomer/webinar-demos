@@ -1,4 +1,4 @@
-## # Upgrading to Airflow 3 Webinar
+## Upgrading to Airflow 3 Webinar
 
 This repository contains the demo for the [Best practices for Upgrading to Airflow 3](https://www.astronomer.io/events/webinars/best-practices-for-upgrading-to-airflow-3-video/) webinar.
 
