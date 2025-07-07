@@ -1,0 +1,11 @@
+[lint]
+select = [
+    "AIR30",  # Contains mandatory changes like removed arguments
+    "AIR31"  # Contains optional changes like deprecated classes
+]
+preview = true
+
+# fix = true  # for automated fixing of the issue if available
+
+
+# CLI command version: ruff check --preview --select AIR30 <path_to_your_dag_code>
