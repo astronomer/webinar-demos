@@ -12,7 +12,7 @@ URL = "https://manateejokesapi.herokuapp.com/manatees/random"
     schedule="@daily",
     catchup=False, # Not needed in Airflow 3.0 :) 
 )
-def my_legacy_dag():
+def my_fixed_dag():
 
     @task
     def extract(logical_date):
@@ -34,7 +34,7 @@ def my_legacy_dag():
         outlets=[Asset("my_manatee_joke")]
     )
 
-my_legacy_dag()
+my_fixed_dag()
 
     
 
