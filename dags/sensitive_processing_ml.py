@@ -32,7 +32,7 @@ def sensitive_processing_ml():
         task_logger.info("Updated credit scores for 10,000 customers")
         return {"status": "success", "processed": 10000}
 
-    @task(queue="ml-compute")
+    @task(queue="sensitive-on-prem")
     def ml_fraud_detection_training(pii_data):
         """Train ML models on sensitive transaction data for fraud detection"""
         task_logger.info(
@@ -85,6 +85,12 @@ def sensitive_processing_ml():
             "encrypted_files": 25,
             "archive_location": "s3://secure-vault/financial/",
         }
+    
+    @task(queue="default")
+    def send_email_to_team(status):
+        task_logger.info("🔔 Sending email to team...")
+        task_logger.info("Email sent to team with sensitive data processing results")
+        return {"status": "success", "email_sent": True}
 
     _extract_customer_pii_data = extract_customer_pii_data()
     _credit_scores = process_credit_scores(_extract_customer_pii_data)
@@ -94,6 +100,6 @@ def sensitive_processing_ml():
     _encrypt_and_archive_sensitive_data = encrypt_and_archive_sensitive_data(
         _reports, _validation
     )
-
+    _send_email_to_team = send_email_to_team(_encrypt_and_archive_sensitive_data)
 
 sensitive_processing_ml()
