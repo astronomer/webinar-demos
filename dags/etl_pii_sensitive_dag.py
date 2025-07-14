@@ -1,4 +1,4 @@
-from airflow.sdk import dag, task, Asset
+from airflow.sdk import dag, task, Asset, chain
 from pendulum import datetime
 
 
@@ -13,8 +13,7 @@ def etl_pii_sensitive_dag():
     def process_cleaned_data():
         print("Processing cleaned data")
 
-    clean_pii_from_db()
-    process_cleaned_data()
+    chain(clean_pii_from_db(), process_cleaned_data())
 
 
 etl_pii_sensitive_dag()
