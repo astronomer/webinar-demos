@@ -2,7 +2,7 @@ from airflow.sdk import dag, task, Asset
 from pendulum import datetime
 
 
-@dag(start_date=datetime(2025, 7, 1), schedule=[Asset("pii_cleaned")])
+@dag(start_date=datetime(2025, 7, 1), schedule=[Asset("cleaned_data_ready")])
 def etl_dag():
 
     @task
