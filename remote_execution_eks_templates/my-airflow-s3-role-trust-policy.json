@@ -1,0 +1,17 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::<your-account-id>:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/<your-cluster-oidc-id>"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringLike": {
+                    "oidc.eks.us-east-1.amazonaws.com/id/<your-cluster-oidc-id>:sub": "system:serviceaccount:*:*"
+                }
+            }
+        }
+    ]
+}

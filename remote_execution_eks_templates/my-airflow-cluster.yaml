@@ -1,0 +1,27 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: <your-cluster-name>
+  region: <your-region>          # it is recommended to use the same region as your Astro Cluster
+  version: "1.33"               
+
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["api", "audit", "authenticator", "controllerManager", "scheduler"] 
+
+iam:
+  withOIDC: true                 # This setting is important for the IRSA role that will interact with S3 to save logs/xcom
+
+nodeGroups:
+  - name: workers
+    instanceType: m5.xlarge      # 4 vCPUs, 16 GiB RAM - minimum for 3x1CPU + k8s overhead
+    desiredCapacity: 2           # Number of nodes to start with
+    minSize: 0                   # Minimum number of nodes
+    maxSize: 4                   # Maximum number of nodes
+    volumeSize: 50               # EBS volume size in GB
+    amiFamily: AmazonLinux2023      
+    labels: { role: worker }
+    tags:
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/remote-execution-airflow-cluster: "owned"

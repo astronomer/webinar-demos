@@ -1,0 +1,819 @@
+# Name prefix for all the Kubernetes resources related to Agent components, that would be deployed via this chart
+# This will be used for resources such as Deployments, ConfigMaps, Secrets, etc.
+resourceNamePrefix: <your-prefix>
+
+
+# If the helm chart should create the namespace for the Astro Remote Agent or not
+# If set to true, the namespace will be created with the name set in the namespace field
+# If set to false, the namespace must be created manually before deploying the chart
+# If you are passing imagePullSecretName and agentTokenSecretName, you must set this to false,
+# and create the namespace manually with the imagePullSecret and agentToken secret
+createNamespace: false
+# Namespace where the Astro Remote Agent Deployments are to be deployed
+# If createNamespace is set to true, the helm chart will create the namespace with the name specified
+# If createNamespace is set to false, the namespace must be created manually and then passed to the chart
+namespace: <your-namespace>
+
+
+# astroDeploymentAPIURL is the URL of the Astro Deployment's API server
+# The API URL of the API Server running in the Astro Orchestration Plane.
+# Components deployed by this chart will connect to this URL.
+astroDeploymentAPIURL: <your-astro-deployment-api-url>
+
+# Name of the secret containing the image pull secret to pull the Agent components and other container images
+# imagePullSecretName field should be used when the secret already exists in the namespace
+# The secret must contain a key named .dockerconfigjson with the value of the image pull secret
+# Sample command to create the secret: kubectl create secret docker-registry -n <namespace> <secretName> --docker-server images.astronomer.cloud --docker-username cli --docker-password <astroToken>
+# Either imagePullSecretName or the imagePullSecretData field must be set
+imagePullSecretName: <your-astro-registry-secret>
+# The docker configjson format containing the authentication information for the image registry
+# that is going to be used to pull the Agent components and other container images
+# The chart will create a secret with this data in the namespace, with the name image-pull-secret
+# The expected format is stringified JSON, containing the authentication information for the image registry
+# Example: '{"auths": {"registry.example.com": {"auth": "auth-token", "email": "email-address"}}}'
+# Either imagePullSecretName or the imagePullSecretData field must be set
+# Note: Both imagePullSecretName and imagePullSecretData field can not be set at the same time
+imagePullSecretData: ~
+
+
+# Name of the secret containing the Agent API token to connect the Agent to the Astro Deployment
+# agentTokenSecretName field should be used when the secret has already been created in the namespace through
+# the user's own external mechanism
+# The secret must contain a key named "token" with the value set to the Agent Token created in the Astro UI
+# If neither agentTokenSecretName nor agentToken is set, then it is up to the user to inject the token into all the Agent
+# containers and set the required ASTRO_AGENT_CLIENT_API_TOKEN environment variable, such as when using a vault agent init container
+# to inject the token into the Agent containers.
+agentTokenSecretName: <your-agent-token-secret>
+# The Agent API token to connect the Agent to the Astro Deployment
+# agentToken field is used when one wants to create a secret with the token in the namespace
+# The secret will be created with the name agent-token-secret
+# One should provide the token in the form of a string value
+# Note: Both agentTokenSecretName and agentToken field can not be set at the same time
+agentToken: ~
+
+
+# The Airflow secret backend class to use for the Agent
+# Example: "airflow.secrets.local_filesystem.LocalFilesystemBackend"
+# Note: The rest of the configuration is to be passed as environment variables to the Agent components
+secretBackend: "airflow.secrets.local_filesystem.LocalFilesystemBackend"
+
+# Airflow xcom backend class to use for the Agent
+# Example: "airflow.providers.common.io.xcom.backend.XComObjectStorageBackend"
+# Note: The rest of the configuration is to be passed as environment variables to the Agent components
+xcomBackend: "airflow.providers.common.io.xcom.backend.XComObjectStorageBackend"
+
+
+# DAG Bundle configuration for the Agents, this configuration is used by the Agents to fetch DAG Bundles from Git repositories or local file system
+# The configuration is set as AIRFLOW__DAG_PROCESSOR__DAG_BUNDLE_CONFIG_LIST environment variable on the Agent containers
+# This is a list of JSON objects, each object is a DAG Bundle configuration
+# Example: '[{"name": "dags-folder", "classpath": "airflow.providers.git.bundles.git.GitDagBundle", "kwargs": {"repo_url": "github.com/apache/airflow", "tracking_ref": "main", "subdir": "airflow-core/src/airflow/example_dags"}}]'
+dagBundleConfigList: '[{"name": "gitbundle-1", "classpath": "airflow.providers.git.bundles.git.GitDagBundle", "kwargs": {"git_conn_id": "git_default", "subdir": "dags", "tracking_ref": "main", "refresh_interval": 10}}]'
+
+
+# This is a list of environment variables that will be set on all the Agent components containers, i.e. Workers, DAG Processor, and Triggerer
+# This is useful to set common environment variables such as the Airflow Secret Backend or XCOM Backend configuration
+# Example:
+# commonEnv:
+#   - name: AIRFLOW__LOGGING__REMOTE_LOGGING
+#     value: True
+commonEnv:
+  - name: ASTRONOMER_ENVIRONMENT
+    value: "cloud"
+  - name: AIRFLOW_CONN_GIT_DEFAULT
+    value: '{"conn_type": "git", "login": "<your-git-login>", "password": "<your-git-access-token>", "host": "https://github.com/<your-git-org>/<your-git-repo>"}'
+  
+  - name: AIRFLOW__LOGGING__REMOTE_LOGGING
+    value: True
+  - name: AIRFLOW__LOGGING__LOGGING_CONFIG_CLASS
+    value: "astronomer.runtime.logging.logging_config"
+  - name: AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER
+    value: s3://<your bucket>/logs
+  - name: AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID
+    value: AWS_DEFAULT
+  - name: AWS_DEFAULT_REGION
+    value: "<your region>"
+  - name: ASTRO_LOGGING_AWS_WEB_IDENTITY_TOKEN_FILE
+    value: "/tmp/logging-token"
+  
+  - name: AIRFLOW_CONN_AWS_DEFAULT  
+    value: '{"conn_type": "aws", "extra": {"region_name": "<your region>"}}'
+
+  - name: AIRFLOW__COMMON_IO__XCOM_OBJECTSTORAGE_PATH
+    value: "s3://aws_default@<your bucket>/xcom"
+  - name: AIRFLOW__COMMON_IO__XCOM_OBJECTSTORAGE_THRESHOLD
+    value: "0"
+
+# OpenLineage configuration for all Agent components
+# This is used to collect observability data from the Agent components, and correspond it to the Astro Deployment
+openLineage:
+
+  # If set to true, the OpenLineage integration will be enabled on all Agent components.
+  # If set to false, sets the `OPENLINEAGE_DISABLED` environment variable on all Agent components.
+  enabled: false
+
+  # The secret containing the OpenLineage API key to connect the Agent and send observability data to Astro
+  # apiKeySecret field should be used when the secret has already been created in the namespace through
+  # the user's own external mechanism
+  # The secret must contain a key named api-key with the value set to the Deployment token from the Astro UI
+  # If neither the apiKeySecret nor apiKey field is set, it is up to the user to inject the token into all the Agent
+  # containers and set the required OPENLINEAGE_API_KEY environment variable, such as when using an external secrets manager.
+  apiKeySecret: ~
+
+  # The OpenLineage API key to connect the Agent and send observability data to Astro
+  # apiKey field is used when one wants to create a secret with the token in the namespace
+  # The secret will be created with the name openlineage-api-key-secret
+  # Provide the token as a string value
+  # Note: Both apiKeySecret and apiKey field can not be set at the same time
+  apiKey: ~
+
+  # The Astro Deployment release name to which the OpenLineage data is sent
+  # This is used to identify the Astro Deployment in the OpenLineage data
+  # This is set as the `OPENLINEAGE_NAMESPACE` environment variable on all Agent components
+  namespace: <your-astro-deployment-namespace>
+
+  # The OpenLineage API URL to which the OpenLineage data is sent
+  # This is set as the `OPENLINEAGE_URL` environment variable on all Agent components
+  url: https://o11y.astronomer.io
+
+# The log level for all the Agent components
+logLevel: INFO
+
+# Set of labels to be added to all Kubernetes objects and Pods defined in this chart.
+# Example:
+# labels:
+#   astronomer.io/deploymentId: "deployment-id"
+labels: {}
+
+# Set of annotations to be added to all Kubernetes objects and Pods defined in this chart.
+# Example:
+# annotations:
+#   astronomer.io/deploymentId: "deployment-id"
+annotations: {}
+
+# Pod security context for all the Agent Pods, i.e. Workers, DAG Processor, and Triggerer Pods
+# For example one can use this field to override the default security context to
+# install the Agent Client on a namespace with Pod security standard set to restricted.
+# The podSecurityContext in that case would look like:
+# podSecurityContext:
+#   runAsUser: 50000
+#   fsGroup: 50000
+#   runAsNonRoot: true
+#   seccompProfile:
+#     type: RuntimeDefault
+podSecurityContext:
+  runAsUser: 50000
+  fsGroup: 50000
+  runAsNonRoot: true
+
+# Security context for all the Agent containers, i.e. Workers, DAG Processor, and Triggerer containers
+# For example one can use this field to override the default security context to
+# install the Agent Client on a namespace with Pod security standard set to restricted.
+# The containerSecurityContext in that case would look like:
+# containerSecurityContext:
+#   allowPrivilegeEscalation: false
+#   readOnlyRootFilesystem: true
+#   capabilities:
+#     drop:
+#       - ALL
+containerSecurityContext: {}
+
+
+# Service account configuration, this allows you to configure the service accounts for the Agent components
+serviceAccount:
+  # Annotations to be added to all the service accounts
+  annotations: {}
+
+  # Workers specific service account configuration, note that this configuration would be applied to all the worker deployments
+  workers:
+    # Whether to create a service account for the workers, defaults to true
+    # If set to false, the service account will not be created, and the user must provide the service account name in the name field
+    create: true
+    # Name of the service account to be used for the workers, defaults to the resourceNamePrefix-worker-<name>
+    name: ~
+    # Annotations to be added to worker service account
+    annotations: {}
+
+  # Dag Processor specific service account configuration
+  dagProcessor:
+    # Whether to create a service account for the dag processor, defaults to true
+    # If set to false, the service account will not be created, and the user must provide the service account name in the name field
+    create: true
+    # Name of the service account to be used for the dag processor, defaults to the resourceNamePrefix-dag-processor-<name>
+    name: ~
+    # Annotations to be added to the dag processor service account
+    annotations: {}
+
+  # Triggerer specific service account configuration
+  triggerer:
+    # Whether to create a service account for the triggerer, defaults to true
+    # If set to false, the service account will not be created, and the user must provide the service account name in the name field
+    create: true
+    # Name of the service account to be used for the triggerer, defaults to the resourceNamePrefix-triggerer-<name>
+    name: ~
+    # Annotations to be added to the triggerer service account
+    annotations: {}
+
+# Sidecar Logging configuration to ship the task logs from Worker and Triggerer Pods to the configured logging backend
+loggingSidecar:
+
+  # The logging sidecar is disabled by default, to enable it set the enabled field to true
+  # The logging sidecar will be deployed as a sidecar container in the Worker and Triggerer Pods and
+  # will ship the task logs to the configured logging backend
+  enabled: false
+
+  # The name of the sidecar container to be used for logging,
+  # also the prefix for the name of the config map to be used for the sidecar configuration
+  # The config map will be created with the name <name>-cm
+  name: vector-logging-sidecar
+
+  # The image to be used for the logging sidecar container
+  image: timberio/vector:0.45.0-debian
+
+  # Environment variables to be passed to the logging sidecar container
+  # Note that commonEnv will not be passed to the logging sidecar container
+  env: []
+
+  # security context for the logging sidecar container
+  # One can use this field to override the default security context to
+  # install the Agent Client with logging sidecar container
+  # on a namespace with Pod security standard set to restricted.
+  # The securityContext in that case would look like:
+  # securityContext:
+  #   allowPrivilegeEscalation: false
+  #   readOnlyRootFilesystem: true
+  #   capabilities:
+  #     drop:
+  #       - ALL
+  securityContext: {}
+
+  # volumes to be mounted in the logging sidecar container
+  # This is useful to mount the task logs directory in the logging sidecar container
+  # Note that the volume would need to be defined in the Worker/Triggerer spec below
+  # Example:
+  # volumeMounts:
+  #   - name: task-logs
+  #     mountPath: /var/log/airflow
+  #     readOnly: true
+  volumeMounts: []
+
+  # The resources to be used for the logging sidecar container
+  # Example:
+  # resources:
+  #   limits:
+  #     cpu: "0.5"
+  #     memory: "512Mi"
+  #   requests:
+  #     cpu: "0.5"
+  #     ephemeral-storage: "1Gi"
+  #     memory: "512Mi"
+  resources: {}
+
+  # The config map to be used for the logging sidecar container
+  # The config map will be created with the name <name>-cm
+  # The config map will contain the configuration for the logging sidecar container
+  # The configuration is set as a key named vector.yaml in the config map,
+  # so the config must be set in YAML format
+  # Vector sidecar configuration: https://vector.dev/docs/reference/configuration/
+  config: ~
+
+# Astro Agent Worker configuration
+workers:
+
+  # The name of the Worker Deployment
+  # This is used to identify the Worker Deployment in the namespace
+  # The Worker Deployment will be created with the name <resourceNamePrefix>-worker-<name>
+  - name: default-worker
+
+    # The name of the queue that the Worker Deployment will look for tasks to execute
+    # This should be in line with the worker queues configured in the DAGs
+    queues: default
+
+    # Number of Agent Worker Pod replicas to be set for the Worker Deployment/queue
+    replicas: 1
+
+    # The number of concurrent tasks that the Worker Deployment will be able to execute
+    syncSlots: 20
+
+    # The image for the Agent Worker
+    image: images.astronomer.cloud/baseimages/astro-remote-execution-agent:3.0-4-python-3.12-astro-agent-1.0.2
+
+    # The resources to be used for the Agent Worker Pod
+    resources:
+      limits:
+        cpu: "1"
+        ephemeral-storage: "1Gi"
+        memory: "2Gi"
+      requests:
+        cpu: "1"
+        ephemeral-storage: "1Gi"
+        memory: "2Gi"
+
+    # Extra environment variables that needs to be passed to a particular Worker Deployment
+    # This is useful to set environment variables that are specific to a particular Worker Deployment or queue
+    env: []
+
+    # Agent Worker Horizontal Pod Autoscaler configuration
+    # This is used to enable the HPA for the Agent Worker
+    # The HPA will be created with the name <resourceNamePrefix>-worker-<name>-hpa
+    hpa:
+      # Enable or disable the HPA for the Agent Worker
+      enabled: false
+
+      # Minimum number of Agent Worker replicas, minimum allowed value is 1
+      minReplicaCount: 1
+
+      # Maximum number of Agent Worker replicas, minimum allowed value is 1
+      # Maximum required value could be determined based on maximum number of concurrent tasks
+      # that are expected to be run by this Agent Worker Deployment divided by the
+      # number of sync slots that are configured for this Agent Worker Deployment
+      # For example, if the maximum number of concurrent tasks at any moment is 100 and the number of sync slots
+      # is 10, then the maximum number of replicas required would be 10
+      maxReplicaCount: 1
+
+      # Metric to be used to compute the required number of replicas
+      # The recommended way to scale the Agent Worker is to use the
+      # queue tasks metric coming from the Agent Worker. This metric
+      # provides the number of tasks for each of the state for that Agent Worker Deployment.
+      # In order to use this metric, the Metric Server must be installed in the cluster
+      # and the Agent Worker metrics should be made available to the Metric Server.
+      # For example, the following configuration for Prometheus Adapter can be used to
+      # expose the metric to fetch queued or running tasks count to the Metric Server:
+      # rules:
+      #   - seriesQuery: '{__name__="astro_agent_client_queue_stats",container!="POD",namespace!="",pod!=""}'
+      #     resources:
+      #       overrides:
+      #         job:
+      #           resource: deployment
+      #         namespace:
+      #           resource: namespace
+      #     metricsQuery: max by (job) (<<.Series>>{state=~"queued|running", <<.LabelMatchers>>})
+      #     name:
+      #       matches: ".*astro_agent_client_queue_stats.*"
+      #       as: "astro_agent_client_queued_or_running_tasks"
+      #
+      # Note that the below metric configuration is described on the Agent Worker Deployment object. So HPA
+      # would expect the metrics (in this case astro_agent_client_queued_or_running_tasks) to grouped at Deployment level.
+      # The above example rule is going to group the metrics at Deployment level.
+      # The metric field allows to set the name of the metric to be used for scaling and the target value for the scaling decision.
+      # If you wish to use a different Object for scaling instead of metric described on the Deployment object,
+      # then you can set the enabled field to false, and then extraMetrics field would allow you to enter and maintain the entire Kubernetes HPA Metrics Object.
+      metric:
+        # Enable or disable this Agent Worker Deployment level object for scaling metrics or not.
+        enabled: true
+        # The name of the metric that is present in the custom metrics API, this one is based on the example prometheus adapter config from above,
+        # adjust the name based on the metric that is being used for scaling
+        name: astro_agent_client_queued_or_running_tasks
+        # The target value for the metric, this is assuming syncSlots is set to 10, i.e. ensure that the tasks built up are no more than capacity of one worker replica
+        target:
+          type: Value
+          Value: 10
+
+      # Extra metrics to be used for scaling the Agent Worker Deployment, this field allow users to maintain the entire Kubernetes HPA Metrics Object.
+      # The field would accept the entire Kubernetes HPA Metrics Object, so you can set the type of the metric, the object to be used for scaling, and the target value for the metric.
+      # Example:
+      # extraMetrics:
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 80
+      extraMetrics: []
+
+      # The scaling behavior is used to control the rate of scaling up and down
+      # Example configuration for scaling behavior:
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Pods
+              value: 1
+              periodSeconds: 60
+        scaleDown:
+          stabilizationWindowSeconds: 300
+
+    # The grace period for the Agent Worker Pod to finish the existing tasks before terminating
+    # This is useful to set a longer grace period for the Agent Worker Pod to finish the existing long running tasks before terminating
+    terminationGracePeriodSeconds: 600
+
+    # The liveness probe for the Agent Worker Pod.
+    # This is used to check if the Agent Worker Pod is alive and healthy
+    # The Agent service exposes the /healthz endpoint to check the health of the Agent Worker Pod
+    livenessProbe:
+      httpGet:
+        path: healthz
+        port: 39091
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+      timeoutSeconds: 5
+
+    # The readiness probe for the Agent Worker Pod.
+    # This is used to check if the Agent Worker Pod is ready to accept tasks
+    # The Agent service exposes the /healthz endpoint to check the health of the Agent Worker Pod
+    readinessProbe:
+      httpGet:
+        path: healthz
+        port: 39091
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+      timeoutSeconds: 5
+
+    # Pod security context for the Agent Worker Pod
+    # By default, the Agent Client runs as a non-root user with UID 50000
+    # and the group ID is set to 50000
+    # For example one can use this field to override the default security context to
+    # install the Agent Client on a namespace with Pod security standard set to restricted.
+    # The podSecurityContext in that case would look like:
+    # podSecurityContext:
+    #   runAsUser: 50000
+    #   fsGroup: 50000
+    #   runAsNonRoot: true
+    #   seccompProfile:
+    #     type: RuntimeDefault
+    podSecurityContext: ~
+
+    # Security context for the Agent Worker container
+    # For example one can use this field to override the default security context to
+    # install the Agent Client on a namespace with Pod security standard set to restricted.
+    # The containerSecurityContext in that case would look like:
+    # containerSecurityContext:
+    #   allowPrivilegeEscalation: false
+    #   readOnlyRootFilesystem: true
+    #   capabilities:
+    #     drop:
+    #       - ALL
+    containerSecurityContext: {}
+
+    # The init containers to be added to the Agent Worker Pod
+    # This is useful to set any initial setup that needs to be done before the Agent Worker Pod starts
+    # For example, one can use this field to set up a vault agent init container to inject the Agent token into the Agent Worker Pod
+    # Example:
+    # initContainers:
+    #   - name: vault-agent
+    #     image: vault:1.13.0
+    #     command: ["vault", "agent", "-config=/etc/vault/config.hcl"]
+    #     volumeMounts:
+    #       - name: vault-config
+    #         mountPath: /etc/vault
+    #     env:
+    #       - name: VAULT_ADDR
+    #         value: "https://vault.example.com"
+    #       - name: VAULT_TOKEN
+    #         valueFrom:
+    #           secretKeyRef:
+    #             key: token
+    #             name: vault-token
+    initContainers: []
+
+    # The extra containers to be added to the Agent Worker Pod as sidecars
+    # This is useful to set any side process that needs to be run along with the Agent Worker Pod
+    # Example:
+    # extraContainers:
+    #   - name: logging-sidecar
+    #     image: timberio/vector:0.45.0-debian
+    #     env:
+    #       - name: VECTOR_CONFIG
+    #         value: /etc/vector/vector.yaml
+    #     volumeMounts:
+    #       - name: vector-config
+    #         mountPath: /etc/vector
+    #     resources:
+    #       limits:
+    #         cpu: "0.5"
+    #         memory: "256Mi"
+    #       requests:
+    #         cpu: "0.5"
+    #         memory: "256Mi"
+    extraContainers: []
+
+    # The volumes to be mounted in the Agent Worker Pod
+    # This is useful to mount any external volumes in the Agent Worker Pod
+    # For example, one can use this field to mount a shared volume for the Agent Worker Pod
+    # to ship the task logs to a logging backend via the logging sidecar container
+    # Example:
+    # volumes:
+    #   - name: task-logs
+    #     emptyDir: {}
+    #   - name: vector-config
+    #     configMap:
+    #       name: vector-config
+    volumes: []
+
+    # The mount information for the volumes to be mounted in the Agent Worker container
+    # This is useful to mount any external volumes in the Agent Worker container
+    # For example, one can use this field to mount a shared volume for the Agent Worker container
+    # to ship the task logs to a logging backend via the logging sidecar container
+    # Example:
+    # volumeMounts:
+    #   - name: task-logs
+    #     mountPath: /var/log/airflow
+    #     readOnly: true
+    volumeMounts: []
+
+    # Node selector for the Agent Worker pod
+    # This can be used to schedule the Agent Worker pod on a specific node or node group
+    # For example, to schedule the Agent Worker pod on a node with the label "node-role.kubernetes.io/worker=true"
+    # nodeSelector:
+    #   node-role.kubernetes.io/worker: "true"
+    nodeSelector: ~
+
+# Astro Agent DAG Processor configuration
+dagProcessor:
+  # Docker image for the Agent DAG processor
+  image: images.astronomer.cloud/baseimages/astro-remote-execution-agent:3.0-4-python-3.12-astro-agent-1.0.2
+
+  # The resources to be used for the Agent DAG Processor Pod
+  resources:
+    limits:
+      cpu: "1"
+      ephemeral-storage: "1Gi"
+      memory: "2Gi"
+    requests:
+      cpu: "1"
+      ephemeral-storage: "1Gi"
+      memory: "2Gi"
+
+  # Extra environment variables that need to be passed to the Agent DAG Processor
+  # This is useful to set environment variables that are specific to the Agent DAG Processor
+  # For example, use this field to configure the DAG file parsing logic for the DAG Processor
+  env: []
+
+  # The liveness probe for the Agent DAG Processor Pod.
+  # This is used to check if the Agent DAG Processor Pod is alive and healthy
+  # The Agent service exposes the /healthz endpoint to check the health of the Agent DAG Processor Pod
+  livenessProbe:
+    httpGet:
+      path: healthz
+      port: 39091
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # The readiness probe for the DAG Processor Pod.
+  # The Agent service exposes the /healthz endpoint to check the health of the DAG Processor Pod
+  readinessProbe:
+    httpGet:
+      path: healthz
+      port: 39091
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # Pod security context for the Agent DAG Processor Pod
+  # By default, the Agent Client runs as a non-root user with UID 50000
+  # and the group ID is set to 50000
+  # For example one can use this field to override the default security context to
+  # install the Agent Client on a namespace with Pod security standard set to restricted.
+  # The podSecurityContext in that case would look like:
+  # podSecurityContext:
+  #   runAsUser: 50000
+  #   fsGroup: 50000
+  #   runAsNonRoot: true
+  #   seccompProfile:
+  #     type: RuntimeDefault
+  podSecurityContext: ~
+
+  # Security context for the Agent DAG Processor container
+  # For example one can use this field to override the default security context to
+  # install the Agent Client on a namespace with Pod security standard set to restricted.
+  # The containerSecurityContext in that case would look like:
+  # containerSecurityContext:
+  #   allowPrivilegeEscalation: false
+  #   readOnlyRootFilesystem: true
+  #   capabilities:
+  #     drop:
+  #       - ALL
+  containerSecurityContext: {}
+
+  # The init containers to be added to the Agent DAG Processor Pod
+  # This is useful to set any initial setup that needs to be done before the Agent DAG Processor Pod starts
+  # For example, one can use this field to set up a vault agent init container to inject the Agent token into the Agent DAG Processor Pod
+  # Example:
+  # initContainers:
+  #   - name: vault-agent
+  #     image: vault:1.13.0
+  #     command: ["vault", "agent", "-config=/etc/vault/config.hcl"]
+  #     volumeMounts:
+  #       - name: vault-config
+  #         mountPath: /etc/vault
+  #     env:
+  #       - name: VAULT_ADDR
+  #         value: "https://vault.example.com"
+  #       - name: VAULT_TOKEN
+  #         valueFrom:
+  #           secretKeyRef:
+  #             key: token
+  #             name: vault-token
+  initContainers: []
+
+  # The extra containers to be added to the Agent DAG Processor Pod as sidecars
+  # This is useful to set any side process that needs to be run along with the Agent DAG Processor Pod
+  # Example:
+  # extraContainers:
+  #   - name: logging-sidecar
+  #     image: timberio/vector:0.45.0-debian
+  #     env:
+  #       - name: VECTOR_CONFIG
+  #         value: /etc/vector/vector.yaml
+  #     volumeMounts:
+  #       - name: vector-config
+  #         mountPath: /etc/vector
+  #     resources:
+  #       limits:
+  #         cpu: "0.5"
+  #         memory: "256Mi"
+  #       requests:
+  #         cpu: "0.5"
+  #         memory: "256Mi"
+  extraContainers: []
+
+  # The volumes to be mounted in the Agent DAG Processor Pod
+  # This is useful to mount any external volumes in the Agent DAG Processor Pod
+  # For example, use this field to mount a shared volume for the Agent DAG Processor Pod
+  # to ship the logs to a logging backend via the logging sidecar container
+  # Example:
+  # volumes:
+  #   - name: task-logs
+  #     emptyDir: {}
+  #   - name: vector-config
+  #     configMap:
+  #       name: vector-config
+  volumes: []
+
+  # The mount information for the volumes to be mounted in the Agent DAG Processor container
+  # This is useful to mount any external volumes in the Agent DAG Processor container
+  # For example, use this field to mount a shared volume for the Agent DAG Processor container
+  # to ship the logs to a logging backend via the logging sidecar container
+  # Example:
+  # volumeMounts:
+  #   - name: task-logs
+  #     mountPath: /var/log/airflow
+  #     readOnly: true
+  volumeMounts: []
+
+  # Node selector for the Agent DAG Processor pod
+  # This can be used to schedule the Agent DAG Processor pod on a specific node or node group
+  # For example, to schedule the Agent DAG Processor pod on a node with size m5.Xlarge
+  # nodeSelector:
+  #   node.kubernetes.io/instance-type: m5.Xlarge
+  nodeSelector: ~
+
+# Astro Agent Triggerer configuration
+triggerer:
+
+  # Number of Agent Triggerer Pod replicas
+  replicas: 1
+
+  # The number of concurrent triggers that the Agent Triggerer Pod will be able to compute
+  asyncSlots: 1000
+
+  # The docker image for the Agent Triggerer
+  image: images.astronomer.cloud/baseimages/astro-remote-execution-agent:3.0-4-python-3.12-astro-agent-1.0.2
+
+  # The resources to be used for the Agent Triggerer Pod
+  resources:
+    limits:
+      cpu: "1"
+      ephemeral-storage: "1Gi"
+      memory: "2Gi"
+    requests:
+      cpu: "1"
+      ephemeral-storage: "1Gi"
+      memory: "2Gi"
+
+  # Extra environment variables that needs to be passed to the Agent Triggerer
+  # This is useful to set environment variables that are specific to the Agent Triggerer
+  env: []
+
+  # The liveness probe for the Agent Triggerer Pod.
+  # This is used to check if the Agent Triggerer Pod is alive and healthy
+  # The Agent service exposes the /healthz endpoint to check the health of the Agent Triggerer Pod
+  livenessProbe:
+    httpGet:
+      path: healthz
+      port: 39091
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # The readiness probe for the Agent Triggerer Pod.
+  # This is used to check if the Agent Triggerer Pod is ready to accept triggers to process
+  # The Agent service exposes the /healthz endpoint to check the health of the Agent Triggerer Pod
+  readinessProbe:
+    httpGet:
+      path: healthz
+      port: 39091
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # Pod security context for the Agent Triggerer Pod
+  # By default, the Agent Client runs as a non-root user with UID 50000
+  # and the group ID is set to 50000
+  # For example one can use this field to override the default security context to
+  # install the Agent Client on a namespace with Pod security standard set to restricted.
+  # The podSecurityContext in that case would look like:
+  # podSecurityContext:
+  #   runAsUser: 50000
+  #   fsGroup: 50000
+  #   runAsNonRoot: true
+  #   seccompProfile:
+  #     type: RuntimeDefault
+  podSecurityContext: ~
+
+  # Security context for the Agent Triggerer container
+  # For example one can use this field to override the default security context to
+  # install the Agent Client on a namespace with Pod security standard set to restricted.
+  # The containerSecurityContext in that case would look like:
+  # containerSecurityContext:
+  #   allowPrivilegeEscalation: false
+  #   readOnlyRootFilesystem: true
+  #   capabilities:
+  #     drop:
+  #       - ALL
+  containerSecurityContext: {}
+
+  # The init containers to be added to the Agent Triggerer Pod
+  # This is useful to set any initial setup that needs to be done before the Agent Triggerer Pod starts
+  # For example, one can use this field to set up a vault agent init container to inject the Agent token into the Agent Triggerer Pod
+  # Example:
+  # initContainers:
+  #   - name: vault-agent
+  #     image: vault:1.13.0
+  #     command: ["vault", "agent", "-config=/etc/vault/config.hcl"]
+  #     volumeMounts:
+  #       - name: vault-config
+  #         mountPath: /etc/vault
+  #     env:
+  #       - name: VAULT_ADDR
+  #         value: "https://vault.example.com"
+  #       - name: VAULT_TOKEN
+  #         valueFrom:
+  #           secretKeyRef:
+  #             key: token
+  #             name: vault-token
+  initContainers: []
+
+  # The extra containers to be added to the Agent Triggerer Pod as sidecars
+  # This is useful to set any side process that needs to be run along with the Agent Triggerer Pod
+  # Example:
+  # extraContainers:
+  #   - name: logging-sidecar
+  #     image: timberio/vector:0.45.0-debian
+  #     env:
+  #       - name: VECTOR_CONFIG
+  #         value: /etc/vector/vector.yaml
+  #     volumeMounts:
+  #       - name: vector-config
+  #         mountPath: /etc/vector
+  #     resources:
+  #       limits:
+  #         cpu: "0.5"
+  #         memory: "256Mi"
+  #       requests:
+  #         cpu: "0.5"
+  #         memory: "256Mi"
+  extraContainers: []
+
+  # The volumes to be mounted in the Agent Triggerer Pod
+  # This is useful to mount any external volumes in the Agent Triggerer Pod
+  # For example, use this field to mount a shared volume for the Agent Triggerer Pod
+  # to ship the logs to a logging backend via the logging sidecar container
+  # Example:
+  # volumes:
+  #   - name: task-logs
+  #     emptyDir: {}
+  #   - name: vector-config
+  #     configMap:
+  #       name: vector-config
+  volumes: []
+
+  # The mount information for the volumes to be mounted in the Agent Triggerer container
+  # This is useful to mount any external volumes in the Agent Triggerer container
+  # For example, use this field to mount a shared volume for the Agent Triggerer container
+  # to ship the logs to a logging backend via the logging sidecar container
+  # Example:
+  # volumeMounts:
+  #   - name: task-logs
+  #     mountPath: /var/log/airflow
+  #     readOnly: true
+  volumeMounts: []
+
+  # Node selector for the Agent Triggerer pod
+  # This can be used to schedule the Agent Triggerer pod on a specific node or node group
+  # For example, to schedule the Agent Triggerer pod on a node with size c5.large
+  # nodeSelector:
+  #   node.kubernetes.io/instance-type: c5.large
+  nodeSelector: ~
