@@ -82,7 +82,7 @@ def sensitive_processing_ml():
         task_logger.info("Data archived to secure S3 bucket with versioning enabled")
         return {
             "status": "success",
-            "encrypted_files": 25,
+            "encrypted_files": 23,
             "archive_location": "s3://secure-vault/financial/",
         }
     
@@ -90,6 +90,7 @@ def sensitive_processing_ml():
     def send_email_to_team(status):
         task_logger.info("🔔 Sending email to team...")
         task_logger.info("Email sent to team with sensitive data processing results")
+        task_logger.info(f"Status: {status}")
         return {"status": "success", "email_sent": True}
 
     _extract_customer_pii_data = extract_customer_pii_data()
