@@ -25,7 +25,7 @@ Note: It is a good best practice to have all resources in the same region.
 
 ![Screenshot of the Astro UI showing how to get an Agent Token](/src/img/get_agent_token.png)
 
-4. Next, click on **Agents** and **Register a Remote Agent**. You'll be given a `values.yaml` file to download and instructions on how to install the helm chart. Download the `values.yaml` file. It looks similar to [this file](/remote_execution_on_eks/values.yaml) but it will contain your `astroDeploymentAPIURL` and your `namespace` instead of a placeholder. Depending on your Astro Runtime version the images for the agents will also differ.
+4. Next, click on **Agents** and **Register a Remote Agent**. You'll be given a `values.yaml` file to download and instructions on how to install the helm chart. Download the `values.yaml` file. It looks similar to [this file](/remote_execution_eks_templates/values.yaml) but it will contain your `astroDeploymentAPIURL` and your `namespace` instead of a placeholder. Depending on your Astro Runtime version the images for the agents will also differ.
 
 5. You will also need a Deployment level API Token, so the Agents are able to fetch their images. Go to the **Access** tab and click on **API Tokens** then create a new Deployment API Token. Make sure you save it in a secure location.
 
