@@ -144,12 +144,12 @@ To create your cluster based on the file run the following eksctl command. This 
 
 ![Screenshot of an Astro deployment showing 3 Agents](/src/img/three-happy-agents.png)
 
-    You can also check in on your pods using the following commands:
+You can also check in on your pods using the following commands:
 
-    ```bash
-    kubectl get pods -n my-namespace
-    kubectl describe pods -n my-namespace
-    ```
+```bash
+kubectl get pods -n my-namespace
+kubectl describe pods -n my-namespace
+```
 
 13. Now you should see and be able to run any DAGs stored in all registered DAG bundles! You will noticed that 2 things are missing: Tasks that push to or pull from XCom still fail and there are no task logs displayed yet. This is because the worker pod needs access to S3 to push and pull XCom and store its task logs. And the Astro deployment needs the ability to read the task logs in S3. Let's fix that!
 
