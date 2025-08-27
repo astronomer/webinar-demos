@@ -1,0 +1,73 @@
+services:
+  postgres_data:
+    image: postgres:17
+    container_name: postgres_data
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres_data
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"  # Using 5433 to avoid conflict with Airflow's postgres on 5432
+    volumes:
+      - postgres_data:/include/postgres_data
+    networks:
+      - airflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres_data"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  kafka:
+    image: confluentinc/cp-kafka
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    environment:
+      # KRaft mode configuration
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Listener configuration
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:29093,DOCKER_HACK://kafka:19092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,DOCKER_HACK://kafka:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,DOCKER_HACK:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # Topic and replication settings
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # Cluster and log settings
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    volumes:
+      - /tmp/kraft-combined-logs:/tmp/kraft-combined-logs
+    command: >
+      sh -c "
+      kafka-storage format -t $${CLUSTER_ID} -c /etc/kafka/kafka.properties --ignore-formatted || true &&
+      /etc/confluent/docker/run &
+      sleep 30 &&
+      kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic my_topic || true &&
+      wait
+      "
+    networks:
+      - airflow
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  airflow:
+    external: false 
