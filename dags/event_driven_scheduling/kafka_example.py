@@ -21,7 +21,8 @@ def apply_function(*args, **kwargs):
 # Define a trigger that listens to an external message queue (Kafka in this case)
 trigger = MessageQueueTrigger(
     queue=KAFKA_QUEUE,
-    apply_function="dags.event_driven_dag.apply_function",
+    apply_function="dags.event_driven_scheduling.kafka_example.apply_function",
+    poll_interval=1
 )
 
 # Define an asset that watches for messages on the Kafka topic
@@ -30,10 +31,12 @@ kafka_topic_asset = Asset(
 )
 
 
-@dag(schedule=[kafka_topic_asset], tags=["webinar"])
+@dag(schedule=[kafka_topic_asset], tags=["webinar", "event-driven"])
 def event_driven_dag():
     @task
     def process_message(**context):
+        import time 
+        time.sleep(30)
         # Extract the triggering asset events from the context
         triggering_asset_events = context["triggering_asset_events"]
         for event in triggering_asset_events[kafka_topic_asset]:

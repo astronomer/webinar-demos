@@ -13,7 +13,7 @@ def _on_failure_callback(context):
 
 @dag(
     default_args={
-        "retries": 0,
+        "retries": 3,
         "retry_delay": timedelta(seconds=10),
         "retry_exponential_backoff": True,
         "on_failure_callback": _on_failure_callback,

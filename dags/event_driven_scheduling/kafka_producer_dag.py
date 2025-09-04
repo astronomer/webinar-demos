@@ -10,8 +10,6 @@ KAFKA_TOPIC = "my_topic"
 def producer_function():
     sample_messages = [
         {"message_id": 1, "content": "Hello from Airflow!"},
-        {"message_id": 2, "content": "Processing data batch"},
-        {"message_id": 3, "content": "Workflow completed successfully"},
     ]
 
     for i, message in enumerate(sample_messages):
@@ -20,7 +18,7 @@ def producer_function():
         yield (json.dumps(f"key_{i}"), json.dumps(message))
 
 
-@dag(tags=["webinar"])
+@dag(tags=["webinar", "event-driven"])
 def kafka_producer_dag():
 
     @task

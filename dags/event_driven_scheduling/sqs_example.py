@@ -19,7 +19,7 @@ sqs_queue_asset = Asset(
 
 
 # Schedule the DAG to run when the asset is triggered
-@dag(schedule=[sqs_queue_asset])
+@dag(schedule=[sqs_queue_asset], tags=["webinar"])
 def sqs_example():
     @task
     def process_message(**context):
