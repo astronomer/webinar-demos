@@ -73,7 +73,7 @@ def ai_support_ticket_system():
 {{ ti.xcom_pull(task_ids='format_response')['summary'] }}
 
 **AI Suggested Priority:** {{ ti.xcom_pull(task_ids='format_response')['priority'] }}
-**AI Confidence:** {{ "%.0f" | format(ti.xcom_pull(task_ids='format_response')['confidence'] * 100) }}%
+**AI Confidence:** {{ macros.my_macro_plugin.format_confidence(ti.xcom_pull(task_ids='format_response')['confidence']) }}
 **Suggested Tags:** {{ ti.xcom_pull(task_ids='format_response')['suggested_tags'] | join(', ') }}
 
 **AI Response:**
