@@ -1,0 +1,126 @@
+/* Brand Color Palette */
+:root {
+    --moonshot-900: #101935;
+    --moonshot-700: #2B215B;
+    --moonshot-500: #575293;
+    --moonshot-300: #8887C0;
+    --moonshot-50: #EBE9F8;
+    --amethyst-400: #AF76FF;
+    --sapphire-400: #0AA6FF;
+    --emerald-400: #0BCD93;
+    --white: #FFFFFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--moonshot-50) 0%, var(--white) 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    background: var(--white);
+    padding: 25px 40px; /* Reduced height - about 1/3 less */
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(16, 25, 53, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    border: 1px solid var(--moonshot-300);
+}
+
+.title {
+    font-size: 24px; /* Smaller since it's inline now */
+    font-weight: 600;
+    color: var(--moonshot-900);
+    margin: 0; /* Remove margin since it's inline */
+    letter-spacing: -0.3px;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 45px;  /* 25% smaller than 60px */
+    height: 22px; /* 25% smaller than 30px */
+    background: var(--moonshot-300);
+    border-radius: 15px; /* Adjusted for smaller size */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    outline: none;
+}
+
+.toggle-switch.loading {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.toggle-switch.on {
+    background: var(--emerald-400);
+}
+
+.toggle-switch::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px; /* 25% smaller than 24px */
+    height: 18px;
+    background: var(--white);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch.on::before {
+    transform: translateX(25px); /* Adjusted for smaller toggle */
+}
+
+.status-message {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.status-message.success {
+    background: rgba(11, 205, 147, 0.1);
+    color: var(--emerald-400);
+    border: 1px solid rgba(11, 205, 147, 0.3);
+}
+
+.status-message.error {
+    background: rgba(220, 38, 127, 0.1);
+    color: #dc267f;
+    border: 1px solid rgba(220, 38, 127, 0.3);
+}
+
+/* Info text removed - now using tooltip */
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.toggle-switch.loading::before {
+    animation: pulse 1s infinite;
+}

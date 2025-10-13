@@ -22,3 +22,7 @@
 - Calendar view
 - Shortcut g to switch between graph and grid view
 - Plugins
+    - Macro (format confidence)
+    - External view (learn)
+    - React app (toggle)
+    - Game

@@ -2,7 +2,7 @@ from airflow.plugins_manager import AirflowPlugin
 
 
 class LearnViewPlugin(AirflowPlugin):
-    name = "astro_learn_external_view"
+    name = "learn_view_plugin"
 
     external_views = [
         {
