@@ -17,7 +17,7 @@
 }
 
 #game-container > .dosbox-container > .dosbox-overlay {
-    background: url("static/placeholder.jpg") center/contain no-repeat;
+    background: url("placeholder.jpg") center/contain no-repeat;
 }
 
 #game-container > .dosbox-container > .dosbox-overlay > .dosbox-start {

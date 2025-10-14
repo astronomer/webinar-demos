@@ -2,14 +2,14 @@ from pathlib import Path
 
 from airflow.plugins_manager import AirflowPlugin
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
 PLUGIN_DIR = Path(__file__).parent
 app = FastAPI(title="DAG Toggle Plugin", version="0.1.0")
 
 # Mount static files
-app.mount("/static", StaticFiles(directory=str(PLUGIN_DIR / "static")), name="static")
+app.mount("/static", StaticFiles(directory=str(PLUGIN_DIR / "static")))
 
 @app.get("/")
 async def root():
@@ -165,7 +165,7 @@ async def toggle_all_dags():
 async def toggle_page():
     """Minimalist DAG Toggle Interface - loads from template file"""
     try:
-        template_path = PLUGIN_DIR / "templates" / "toggle_interface.html"
+        template_path = PLUGIN_DIR / "templates" / "interface.html"
         with open(template_path, "r") as f:
             html_content = f.read()
         return HTMLResponse(content=html_content)
@@ -179,22 +179,13 @@ async def toggle_page():
         """
         return HTMLResponse(content=error_html)
 
-@app.get("/toggle-widget.js")
+@app.get("/widget.js")
 async def dag_toggle_widget():
-    """React component for dashboard embedding - loads from static file"""
-    try:
-        widget_path = PLUGIN_DIR / "static" / "toggle_widget.js"
-        with open(widget_path, "r") as f:
-            js_content = f.read()
-        return Response(content=js_content, media_type="text/javascript")
-    except Exception as e:
-        error_js = f"""
-        console.error('Failed to load DAG Toggle Widget: {str(e)}');
-        globalThis['DAG Toggle Widget'] = () => React.createElement('div', {{
-            style: {{ padding: '20px', color: 'red', border: '1px solid red' }}
-        }}, 'Widget Load Error: {str(e)}');
-        """
-        return Response(content=error_js, media_type="text/javascript")
+    return FileResponse(
+        path=PLUGIN_DIR / "static" / "widget.js",
+        media_type="text/javascript",
+        filename="widget.js",
+    )
 
 # Plugin configuration - minimalist DAG toggle
 class DAGTogglePlugin(AirflowPlugin):
@@ -219,6 +210,6 @@ class DAGTogglePlugin(AirflowPlugin):
     # React app - widget embedded directly on dashboard
     react_apps = [{
         "name": "DAG Toggle Widget",
-        "bundle_url": "/dag-toggle/toggle-widget.js",
+        "bundle_url": "/dag-toggle/widget.js",
         "destination": "dashboard"
     }]
