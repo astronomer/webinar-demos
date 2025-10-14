@@ -68,14 +68,14 @@ async def placeholder_image():
 async def root():
     return {"message": "GameFlow Plugin Active"}
 
-class GameFlow(AirflowPlugin):
-    name = "game_flow_plugin"
-    fastapi_apps = [{"app": app, "url_prefix": "/gameflow", "name": "GameFlow"}]
-    react_apps = [
-        { "name": "Doom", "bundle_url": "/gameflow/doom.js", "destination": "dag", "url_route": "dag-doom", },
-        { "name": "Doom", "bundle_url": "/gameflow/doom.js", "destination": "nav", "url_route": "doom", },
-        { "name": "Giana Sisters", "bundle_url": "/gameflow/giana.js", "destination": "dag", "url_route": "dag-giana", },
-        { "name": "Giana Sisters", "bundle_url": "/gameflow/giana.js", "destination": "nav", "url_route": "giana", },
-        { "name": "Warcraft II", "bundle_url": "/gameflow/war2.js", "destination": "dag", "url_route": "dag-war2", },
-        { "name": "Warcraft II", "bundle_url": "/gameflow/war2.js", "destination": "nav", "url_route": "war2", },
-    ]
+# class GameFlow(AirflowPlugin):
+#     name = "game_flow_plugin"
+#     fastapi_apps = [{"app": app, "url_prefix": "/gameflow", "name": "GameFlow"}]
+#     react_apps = [
+#         { "name": "Doom", "bundle_url": "/gameflow/doom.js", "destination": "dag", "url_route": "dag-doom", },
+#         { "name": "Doom", "bundle_url": "/gameflow/doom.js", "destination": "nav", "url_route": "doom", },
+#         { "name": "Giana Sisters", "bundle_url": "/gameflow/giana.js", "destination": "dag", "url_route": "dag-giana", },
+#         { "name": "Giana Sisters", "bundle_url": "/gameflow/giana.js", "destination": "nav", "url_route": "giana", },
+#         { "name": "Warcraft II", "bundle_url": "/gameflow/war2.js", "destination": "dag", "url_route": "dag-war2", },
+#         { "name": "Warcraft II", "bundle_url": "/gameflow/war2.js", "destination": "nav", "url_route": "war2", },
+#     ]

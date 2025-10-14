@@ -187,29 +187,28 @@ async def dag_toggle_widget():
         filename="widget.js",
     )
 
-# Plugin configuration - minimalist DAG toggle
-class DAGTogglePlugin(AirflowPlugin):
-    name = "dag_toggle_plugin"
-
-    # FastAPI app for the toggle functionality
-    fastapi_apps = [{
-        "app": app,
-        "url_prefix": "/dag-toggle",
-        "name": "DAG Toggle Plugin"
-    }]
-
-    # External view - simple toggle interface accessible from navigation
-    external_views = [{
-        "name": "All DAGs Toggle",
-        "href": "/dag-toggle/interface",
-        "destination": "nav",
-        "category": "admin",
-        "url_route": "dag_toggle"
-    }]
-
-    # React app - widget embedded directly on dashboard
-    react_apps = [{
-        "name": "DAG Toggle Widget",
-        "bundle_url": "/dag-toggle/widget.js",
-        "destination": "dashboard"
-    }]
+# class DAGTogglePlugin(AirflowPlugin):
+#     name = "dag_toggle_plugin"
+#
+#     # FastAPI app for the toggle functionality
+#     fastapi_apps = [{
+#         "app": app,
+#         "url_prefix": "/dag-toggle",
+#         "name": "DAG Toggle Plugin"
+#     }]
+#
+#     # External view - simple toggle interface accessible from navigation
+#     external_views = [{
+#         "name": "All DAGs Toggle",
+#         "href": "/dag-toggle/interface",
+#         "destination": "nav",
+#         "category": "admin",
+#         "url_route": "dag_toggle"
+#     }]
+#
+#     # React app - widget embedded directly on dashboard
+#     react_apps = [{
+#         "name": "DAG Toggle Widget",
+#         "bundle_url": "/dag-toggle/widget.js",
+#         "destination": "dashboard"
+#     }]
