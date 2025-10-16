@@ -1,12 +1,14 @@
 # Airflow 3.1 Demo
 
+- Setup
 - Home view
   - Colors
   - Dark / light mode
-  - i18n
   - Pool Slots
+  - i18n
 - Dags view
   - Basic flow of `ai_support_ticket_system`
+    - Shortcut g to switch between graph and grid view
   - Code of `ai_support_ticket_system`
   - Run `ai_support_ticket_system` with approval
   - Run `ai_support_ticket_system` with escalate and manual response (stop at entry)
@@ -19,14 +21,12 @@
   - Enter manual response for `ai_support_ticket_system`
 - API showcase
 - Gantt chart
-- Open task instance, show log options
 - Calendar view
-- Shortcut g to switch between graph and grid view
 - Plugins
-    - Macro (format confidence)
-    - External view (learn)
-    - React app (toggle)
-    - Game
+  - Macro (format confidence)
+  - External view (learn)
+  - React app (toggle)
+  - Game
 
 ## API showcase
 
@@ -40,10 +40,8 @@ curl -X POST "localhost:8080/api/v2/dags/$dag_id/dagRuns" \
   -H "Content-Type: application/json" \
   -d '{"logical_date": null}' | jq .
 
-curl -X GET "localhost:8080/api/v2/dags/$dag_id/dagRuns" | jq .
-
 # copy dag_run_id from output
-dag_run_id=manual__2025-10-14T01:32:39.465322+00:00_ezNMD11d
+dag_run_id=manual__2025-10-16T15:41:29.629055+00:00_cm1kqRhh
 
 # different window, wait for completion with 2-second polling interval
 curl -X GET "http://localhost:8080/api/v2/dags/$dag_id/dagRuns/$dag_run_id/wait?interval=2" \
