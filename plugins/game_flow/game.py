@@ -30,15 +30,18 @@ def _serve_static(name: str, media_type: str) -> FileResponse:
 
 @app.get("/doom.zip")
 async def doom_zip():
-    return _stream_proxy("https://image.dosgamesarchive.com/games/doom-box.zip", "doom.zip")
+    # return _stream_proxy("https://image.dosgamesarchive.com/games/doom-box.zip", "doom.zip")
+    return _stream_proxy("https://files.janz.sh/doom-box.zip", "doom.zip")
 
 @app.get("/giana.zip")
 async def giana_zip():
-    return _stream_proxy("https://image.dosgamesarchive.com/games/giana-gus.zip", "giana.zip")
+    # return _stream_proxy("https://image.dosgamesarchive.com/games/giana-gus.zip", "giana.zip")
+    return _stream_proxy("https://files.janz.sh/giana-gus.zip", "giana.zip")
 
 @app.get("/war2.zip")
 async def giana_zip():
-    return _stream_proxy("https://image.dosgamesarchive.com/games/war2demo-box.zip", "war2.zip")
+    # return _stream_proxy("https://image.dosgamesarchive.com/games/war2demo-box.zip", "war2.zip")
+    return _stream_proxy("https://files.janz.sh/war2demo-box.zip", "war2.zip")
 
 @app.get("/game.css")
 async def game_css():
