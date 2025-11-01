@@ -1,0 +1,7 @@
+services:
+  scheduler:
+    volumes:
+      - ${HOME}/.aws:/home/astro/.aws:ro
+  triggerer:
+    volumes:
+      - ${HOME}/.aws:/home/astro/.aws:ro

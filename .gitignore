@@ -5,6 +5,7 @@ airflow_settings.yaml
 __pycache__/
 astro
 .venv
+docker-compose.override.yml
 airflow-webserver.pid
 webserver_config.py
 airflow.cfg

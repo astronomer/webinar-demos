@@ -1,7 +1,6 @@
-from airflow.io.path import ObjectStoragePath
 import logging
-import pandas as pd
-import json
+
+from airflow.sdk import ObjectStoragePath
 
 t_log = logging.getLogger("airflow.task")
 
@@ -43,32 +42,3 @@ def compare_checksums(
         )
     else:
         t_log.info("Copy from ingest to stage successful. All checksums match!")
-
-
-def read_files_from_path(
-    path: ObjectStoragePath, content_type: str, encoding: str
-) -> pd.DataFrame:
-    """Reads files from remote storage and returns as a dataframe."""
-
-    if path.is_dir():
-        files = [f for f in path.rglob("*") if f.is_file()]
-    else:
-        files = [path]
-
-    list_of_df = []
-
-    for f in files:
-        bytes = f.read_block(offset=0, length=None)
-        content = bytes.decode(encoding)
-        data_list = json.loads(content)
-
-        df = pd.DataFrame(data_list)
-
-        list_of_df.append(df)
-
-    if len(list_of_df) > 1:
-        return pd.concat(list_of_df, ignore_index=True)
-    elif len(list_of_df) == 1:
-        return list_of_df[0]
-    else:
-        return None

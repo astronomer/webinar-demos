@@ -30,7 +30,6 @@ def generate_users_data(num_users=100, date=None, filename="users.csv"):
 
 
 def generate_teas_data(filename="teas.csv", date=None):
-
     uuids = [
         "550e8400-e29b-41d4-a716-446655440000",
         "6fa459ea-ee8a-3ca4-894e-db77e160355e",
@@ -96,6 +95,7 @@ def generate_teas_data(filename="teas.csv", date=None):
         "Rooibos",
         "Honeybush",
     ]
+
     tea_types = [
         "Green",
         "Green",
@@ -128,6 +128,7 @@ def generate_teas_data(filename="teas.csv", date=None):
         "Herbal",
         "Herbal",
     ]
+
     prices = np.round(np.random.uniform(5.0, 20.0, size=len(tea_names)), 2)
 
     data = {
@@ -137,6 +138,7 @@ def generate_teas_data(filename="teas.csv", date=None):
         "price": prices,
         "updated_at": date,
     }
+
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
     return df
@@ -164,6 +166,7 @@ def generate_utm_data(num_utms=100, date=None, filename="utms.csv"):
         "utm_content": random.choices(utm_contents, k=num_utms),
         "updated_at": date,
     }
+
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
     return df
@@ -191,6 +194,7 @@ def generate_sales_data(
             "quantity": np.random.randint(1, 10, size=num_sales),
             "sale_date": date,
         }
+
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
     return df
@@ -200,10 +204,13 @@ def get_new_sales_from_internal_api(num_sales, date):
     num_users = int(0.75 * num_sales)
     if num_users < 1:
         num_users = 1
+
     users_df = generate_users_data(num_users=num_users, date=date)
     teas_df = generate_teas_data(date=date)
     utm_df = generate_utm_data(num_utms=num_users, date=date)
+
     sales_df = generate_sales_data(
         num_sales=num_sales, users_df=users_df, teas_df=teas_df, utm_df=utm_df, date=date
     )
+
     return sales_df, users_df, teas_df, utm_df
