@@ -7,8 +7,7 @@ This DAG transforms the data in Snowflake to create reporting tables.
 import os
 
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator, SQLColumnCheckOperator
-from airflow.providers.standard.operators.empty import EmptyOperator
-from airflow.sdk import dag, TaskGroup, chain, Asset
+from airflow.sdk import dag, chain, Asset, task_group
 from pendulum import datetime
 
 SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID", "snowflake_default")
@@ -28,51 +27,12 @@ dag_directory = os.path.dirname(os.path.abspath(__file__))
 )
 def transform_data_in_snowflake():
 
-    start = EmptyOperator(task_id="start")
-    end = EmptyOperator(task_id="end")
-
-    create_enriched_sales = SQLExecuteQueryOperator(
-        task_id="create_enriched_sales",
-        conn_id=SNOWFLAKE_CONN_ID,
-        sql="create_enriched_sales.sql",
-        show_return_value_in_logs=True,
-        params={
-            "db_name": SNOWFLAKE_DB_NAME,
-            "schema_name": SNOWFLAKE_SCHEMA_NAME,
-        },
-    )
-
-    upsert_enriched_sales = SQLExecuteQueryOperator(
-        task_id="upsert_enriched_sales",
-        conn_id=SNOWFLAKE_CONN_ID,
-        sql="upsert_enriched_sales.sql",
-        show_return_value_in_logs=False,
-        params={
-            "db_name": SNOWFLAKE_DB_NAME,
-            "schema_name": SNOWFLAKE_SCHEMA_NAME,
-        },
-    )
-
-    vital_checks_enriched_sales_table = SQLColumnCheckOperator(
-        task_id="vital_checks_enriched_sales_table",
-        conn_id=SNOWFLAKE_CONN_ID,
-        database=SNOWFLAKE_DB_NAME,
-        table=f"{SNOWFLAKE_SCHEMA_NAME}.enriched_sales",
-        column_mapping={
-            f"SALE_ID": {
-                "unique_check": {"equal_to": 0},  # primary key check
-                "null_check": {"equal_to": 0},
-            }
-        },
-        outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.enriched_sales")],
-    )
-
-    with TaskGroup(group_id="create_tables") as create_tables:
-
-        create_user_purchase_summary = SQLExecuteQueryOperator(
-            task_id="create_user_purchase_summary",
+    @task_group
+    def enriched_sales():
+        _create_enriched_sales = SQLExecuteQueryOperator(
+            task_id="create_enriched_sales",
             conn_id=SNOWFLAKE_CONN_ID,
-            sql="create_user_purchase_summary.sql",
+            sql="create_enriched_sales.sql",
             show_return_value_in_logs=True,
             params={
                 "db_name": SNOWFLAKE_DB_NAME,
@@ -80,7 +40,36 @@ def transform_data_in_snowflake():
             },
         )
 
-        create_revenue_by_tea_type = SQLExecuteQueryOperator(
+        _upsert_enriched_sales = SQLExecuteQueryOperator(
+            task_id="upsert_enriched_sales",
+            conn_id=SNOWFLAKE_CONN_ID,
+            sql="upsert_enriched_sales.sql",
+            show_return_value_in_logs=False,
+            params={
+                "db_name": SNOWFLAKE_DB_NAME,
+                "schema_name": SNOWFLAKE_SCHEMA_NAME,
+            },
+        )
+
+        _vital_checks_enriched_sales_table = SQLColumnCheckOperator(
+            task_id="vital_checks_enriched_sales_table",
+            conn_id=SNOWFLAKE_CONN_ID,
+            database=SNOWFLAKE_DB_NAME,
+            table=f"{SNOWFLAKE_SCHEMA_NAME}.enriched_sales",
+            column_mapping={
+                f"SALE_ID": {
+                    "unique_check": {"equal_to": 0},  # primary key check
+                    "null_check": {"equal_to": 0},
+                }
+            },
+            outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.enriched_sales")],
+        )
+
+        chain(_create_enriched_sales, _upsert_enriched_sales, _vital_checks_enriched_sales_table)
+
+    @task_group
+    def revenue_by_tea_type():
+        _create_revenue_by_tea_type = SQLExecuteQueryOperator(
             task_id="create_revenue_by_tea_type",
             conn_id=SNOWFLAKE_CONN_ID,
             sql="create_revenue_by_tea_type.sql",
@@ -91,43 +80,7 @@ def transform_data_in_snowflake():
             },
         )
 
-        create_sales_funnel_analysis = SQLExecuteQueryOperator(
-            task_id=f"create_sales_funnel_analysis",
-            conn_id=SNOWFLAKE_CONN_ID,
-            sql="create_sales_funnel_analysis.sql",
-            show_return_value_in_logs=True,
-            params={
-                "db_name": SNOWFLAKE_DB_NAME,
-                "schema_name": SNOWFLAKE_SCHEMA_NAME,
-            },
-        )
-
-        create_top_users_by_spending = SQLExecuteQueryOperator(
-            task_id=f"create_top_users_by_spending",
-            conn_id=SNOWFLAKE_CONN_ID,
-            sql="create_top_users_by_spending.sql",
-            show_return_value_in_logs=True,
-            params={
-                "db_name": SNOWFLAKE_DB_NAME,
-                "schema_name": SNOWFLAKE_SCHEMA_NAME,
-            },
-        )
-
-    with TaskGroup(group_id="upsert_tables") as upsert_tables:
-
-        upsert_user_purchase_summary = SQLExecuteQueryOperator(
-            task_id=f"upsert_user_purchase_summary",
-            conn_id=SNOWFLAKE_CONN_ID,
-            sql="upsert_user_purchase_summary.sql",
-            show_return_value_in_logs=True,
-            params={
-                "db_name": SNOWFLAKE_DB_NAME,
-                "schema_name": SNOWFLAKE_SCHEMA_NAME,
-            },
-            outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.user_purchase_summary")],
-        )
-
-        upsert_revenue_by_tea_type = SQLExecuteQueryOperator(
+        _upsert_revenue_by_tea_type = SQLExecuteQueryOperator(
             task_id="upsert_revenue_by_tea_type",
             conn_id=SNOWFLAKE_CONN_ID,
             sql="upsert_revenue_by_tea_type.sql",
@@ -139,7 +92,49 @@ def transform_data_in_snowflake():
             outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.revenue_by_tea_type")],
         )
 
-        upsert_top_users_by_spending = SQLExecuteQueryOperator(
+        chain(_create_revenue_by_tea_type, _upsert_revenue_by_tea_type)
+
+    @task_group
+    def user_purchase_summary():
+        _create_user_purchase_summary = SQLExecuteQueryOperator(
+            task_id="create_user_purchase_summary",
+            conn_id=SNOWFLAKE_CONN_ID,
+            sql="create_user_purchase_summary.sql",
+            show_return_value_in_logs=True,
+            params={
+                "db_name": SNOWFLAKE_DB_NAME,
+                "schema_name": SNOWFLAKE_SCHEMA_NAME,
+            },
+        )
+
+        _upsert_user_purchase_summary = SQLExecuteQueryOperator(
+            task_id=f"upsert_user_purchase_summary",
+            conn_id=SNOWFLAKE_CONN_ID,
+            sql="upsert_user_purchase_summary.sql",
+            show_return_value_in_logs=True,
+            params={
+                "db_name": SNOWFLAKE_DB_NAME,
+                "schema_name": SNOWFLAKE_SCHEMA_NAME,
+            },
+            outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.user_purchase_summary")],
+        )
+
+        chain(_create_user_purchase_summary, _upsert_user_purchase_summary)
+
+    @task_group
+    def top_users_by_spending():
+        _create_top_users_by_spending = SQLExecuteQueryOperator(
+            task_id=f"create_top_users_by_spending",
+            conn_id=SNOWFLAKE_CONN_ID,
+            sql="create_top_users_by_spending.sql",
+            show_return_value_in_logs=True,
+            params={
+                "db_name": SNOWFLAKE_DB_NAME,
+                "schema_name": SNOWFLAKE_SCHEMA_NAME,
+            },
+        )
+
+        _upsert_top_users_by_spending = SQLExecuteQueryOperator(
             task_id=f"upsert_top_users_by_spending",
             conn_id=SNOWFLAKE_CONN_ID,
             sql="upsert_top_users_by_spending.sql",
@@ -151,7 +146,22 @@ def transform_data_in_snowflake():
             outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.top_users_by_spending")],
         )
 
-        upsert_sales_funnel_analysis = SQLExecuteQueryOperator(
+        chain(_create_top_users_by_spending, _upsert_top_users_by_spending)
+
+    @task_group
+    def sales_funnel_analysis():
+        _create_sales_funnel_analysis = SQLExecuteQueryOperator(
+            task_id=f"create_sales_funnel_analysis",
+            conn_id=SNOWFLAKE_CONN_ID,
+            sql="create_sales_funnel_analysis.sql",
+            show_return_value_in_logs=True,
+            params={
+                "db_name": SNOWFLAKE_DB_NAME,
+                "schema_name": SNOWFLAKE_SCHEMA_NAME,
+            },
+        )
+
+        _upsert_sales_funnel_analysis = SQLExecuteQueryOperator(
             task_id=f"upsert_sales_funnel_analysis",
             conn_id=SNOWFLAKE_CONN_ID,
             sql="upsert_sales_funnel_analysis.sql",
@@ -163,30 +173,15 @@ def transform_data_in_snowflake():
             outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.sales_funnel_analysis")],
         )
 
-    chain(
-        start,
-        create_enriched_sales,
-        upsert_enriched_sales,
-        vital_checks_enriched_sales_table,
+        chain(_create_sales_funnel_analysis, _upsert_sales_funnel_analysis)
+
+    chain(enriched_sales(),
         [
-            create_user_purchase_summary,
-            create_revenue_by_tea_type,
-            create_sales_funnel_analysis,
-        ],
-    )
-    chain(create_user_purchase_summary, create_top_users_by_spending)
-    chain(create_user_purchase_summary, upsert_user_purchase_summary)
-    chain(create_revenue_by_tea_type, upsert_revenue_by_tea_type)
-    chain(create_sales_funnel_analysis, upsert_sales_funnel_analysis)
-    chain(create_top_users_by_spending, upsert_top_users_by_spending)
-    chain(
-        [
-            upsert_user_purchase_summary,
-            upsert_revenue_by_tea_type,
-            upsert_top_users_by_spending,
-            upsert_sales_funnel_analysis,
-        ],
-        end,
+            revenue_by_tea_type(),
+            user_purchase_summary(),
+            top_users_by_spending(),
+            sales_funnel_analysis()
+        ]
     )
 
 
