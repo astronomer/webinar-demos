@@ -120,7 +120,12 @@ def load_to_snowflake():
             "retries": 0,
             "on_failure_callback": DiscordNotifier(
                 discord_conn_id="discord_default",
-                text="Data quality checks failed for the {{ task.table }} table!"
+                text="""
+                Data quality checks failed for table: `{{ task.table }}`!
+                ```
+                {{ exception }}
+                ```
+                """
             ),
         },
     )
