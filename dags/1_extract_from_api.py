@@ -27,7 +27,8 @@ PATH_INGEST = ObjectStoragePath(f"s3://{S3_BUCKET_NAME}/tea-sales-ingest", conn_
             description="The number of sales to fetch from the API.",
             type="number",
         ),
-    }
+    },
+    default_args={"retries": 3}
 )
 def extract_from_api():
 

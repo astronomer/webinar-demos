@@ -17,7 +17,7 @@ import os
 
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator, SQLColumnCheckOperator, \
     SQLTableCheckOperator
-from airflow.providers.slack.notifications.slack import SlackNotifier
+from airflow.providers.discord.notifications.discord import DiscordNotifier
 from airflow.providers.snowflake.transfers.copy_into_snowflake import CopyFromExternalStageToSnowflakeOperator
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.sdk import ObjectStoragePath, dag, task_group, chain, Asset
@@ -45,7 +45,8 @@ LIST_OF_BASE_TABLE_NAMES = ["users", "teas", "utms"]
     schedule=[Asset(PATH_STAGE.as_uri())],
     max_consecutive_failed_dag_runs=3,  # auto-pauses the DAG after 3 consecutive failed runs
     template_searchpath="/usr/local/airflow/include/sql",
-    doc_md=__doc__
+    doc_md=__doc__,
+    default_args={"retries": 3}
 )
 def load_to_snowflake():
 
@@ -116,12 +117,10 @@ def load_to_snowflake():
 
     @task_group(
         default_args={
-            "owner": "DQ team",
             "retries": 0,
-            "on_failure_callback": SlackNotifier(
-                slack_conn_id="slack_conn",
-                text="Data quality checks failed for the {{ task.table }} table!",
-                channel="#alerts",
+            "on_failure_callback": DiscordNotifier(
+                discord_conn_id="discord_default",
+                text="Data quality checks failed for the {{ task.table }} table!"
             ),
         },
     )

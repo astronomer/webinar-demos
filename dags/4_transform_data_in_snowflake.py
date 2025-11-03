@@ -23,7 +23,8 @@ dag_directory = os.path.dirname(os.path.abspath(__file__))
     schedule=Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}"),
     max_consecutive_failed_dag_runs=3,  # auto-pauses the DAG after 3 consecutive failed runs
     template_searchpath="/usr/local/airflow/include/sql",
-    doc_md=__doc__
+    doc_md=__doc__,
+    default_args={"retries": 3}
 )
 def transform_data_in_snowflake():
 
