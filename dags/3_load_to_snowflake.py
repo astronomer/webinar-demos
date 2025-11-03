@@ -145,6 +145,7 @@ def load_to_snowflake():
                     "null_check": {"equal_to": 0},
                     "min": {"geq_to": 0},
                     "max": {"leq_to": 30},
+                    # "max": {"leq_to": 3},  # demo qa check failure
                 },
             },
         )
