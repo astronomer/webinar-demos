@@ -109,7 +109,7 @@ GRANT ALL PRIVILEGES ON ALL STAGES IN SCHEMA etl_demo.dev TO ROLE etl_demo_role;
 1. Unpause all Dags in the Airflow UI by clicking the toggle to the left of the Dag name.
 2. The `extract_from_api` Dag will start its first run automatically. All other Dags are scheduled based on Datasets to run as soon as the required data is available.
 
-Optional: Set up a Streamlit app in Snowflake using the script in [include/streamlit_app.py](include/streamlit_app.py) to visualize the data.
+Optional: Set up a [Streamlit](https://streamlit.io/) app in Snowflake using the script in [include/streamlit_app.py](include/streamlit_app.py) to visualize the data.
 
 ## Next steps
 
