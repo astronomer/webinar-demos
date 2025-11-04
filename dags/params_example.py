@@ -8,7 +8,8 @@ SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID", "snowflake_default")
 
 @dag(
     dag_display_name="Parameterized Queries 💡",
-    schedule="@daily"
+    schedule="@daily",
+    template_searchpath="/usr/local/airflow/include/sql"
 )
 def params_example():
 
@@ -19,6 +20,16 @@ def params_example():
             conn_id=SNOWFLAKE_CONN_ID,
             show_return_value_in_logs=True,
             sql="SELECT %(tea_type)s",
+            parameters={
+                "tea_type": "fruit"
+            }
+        )
+
+        _sql_file = SQLExecuteQueryOperator(
+            task_id="sql_file",
+            conn_id=SNOWFLAKE_CONN_ID,
+            show_return_value_in_logs=True,
+            sql="params_example.sql",
             parameters={
                 "tea_type": "fruit"
             }
