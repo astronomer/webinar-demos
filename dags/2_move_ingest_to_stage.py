@@ -4,7 +4,7 @@ import os
 from airflow.sdk import ObjectStoragePath, dag, task, chain, Asset
 from pendulum import datetime
 
-from include.utils import get_all_files
+from include.utils import get_all_files, copy_recursive
 
 logger = logging.getLogger("airflow.task")
 
@@ -36,13 +36,10 @@ def move_ingest_to_stage():
     def copy_ingest_to_stage(path_src: ObjectStoragePath, base_dst: ObjectStoragePath) -> None:
         from airflow.sdk import get_current_context
 
-        for source in path_src.iterdir():
-            dest = base_dst / os.path.join(*source.parts[-2:])
-            logger.info(f"copy {source} to {dest}")
-            source.copy(dst=dest)
-
         context = get_current_context()
         context["custom_map_index"] = os.path.join(*path_src.parts[-2:])
+
+        copy_recursive(path_src, base_dst)
 
     @task
     def del_files_from_ingest(base_src: ObjectStoragePath) -> None:

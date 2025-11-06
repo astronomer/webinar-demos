@@ -36,7 +36,7 @@ SNOWFLAKE_DB_NAME = os.getenv("SNOWFLAKE_DB_NAME", "ETL_DEMO")
 SNOWFLAKE_SCHEMA_NAME = os.getenv("SNOWFLAKE_SCHEMA_NAME", "DEV")
 SNOWFLAKE_STAGE_NAME = os.getenv("SNOWFLAKE_STAGE_NAME", "ETL_STAGE")
 
-LIST_OF_BASE_TABLE_NAMES = ["users", "teas", "utms"]
+BASE_TABLES = ["users", "teas", "utms"]
 
 
 @dag(
@@ -50,10 +50,9 @@ LIST_OF_BASE_TABLE_NAMES = ["users", "teas", "utms"]
 )
 def load_to_snowflake():
 
-    _start = EmptyOperator(task_id="start")
     _base_tables_ready = EmptyOperator(task_id="base_tables_ready")
 
-    for table in LIST_OF_BASE_TABLE_NAMES:
+    for table in BASE_TABLES:
 
         @task_group(group_id=f"ingest_{table}_data")
         def ingest_data():
@@ -105,7 +104,6 @@ def load_to_snowflake():
             )
 
             chain(
-                _start,
                 _create_table,
                 _copy_into_table,
                 _deduplicate_records,
@@ -215,7 +213,10 @@ def load_to_snowflake():
                     "null_check": {"equal_to": 0},
                 }
             },
-            outlets=[Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}")],
+            outlets=[
+                Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}"),
+                Asset(f"snowflake://{SNOWFLAKE_DB_NAME}.{SNOWFLAKE_SCHEMA_NAME}.sales")
+            ],
         )
 
         chain(
@@ -225,13 +226,11 @@ def load_to_snowflake():
         )
 
     _ingest_sales_data = ingest_sales_data()
-    _end = EmptyOperator(task_id="end")
 
     chain(
         _base_tables_ready,
         _ingest_sales_data,
-        additional_dq_checks(),
-        _end,
+        additional_dq_checks()
     )
 
 
