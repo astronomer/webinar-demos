@@ -25,16 +25,6 @@ def params_example():
             }
         )
 
-        _sql_file = SQLExecuteQueryOperator(
-            task_id="sql_file",
-            conn_id=SNOWFLAKE_CONN_ID,
-            show_return_value_in_logs=True,
-            sql="params_example.sql",
-            parameters={
-                "tea_type": "fruit"
-            }
-        )
-
         _params = SQLExecuteQueryOperator(
             task_id="params",
             conn_id=SNOWFLAKE_CONN_ID,
@@ -55,6 +45,16 @@ def params_example():
             },
             params={
                 "table": "ETL_DEMO.DEV.teas"
+            }
+        )
+
+        _sql_file = SQLExecuteQueryOperator(
+            task_id="sql_file",
+            conn_id=SNOWFLAKE_CONN_ID,
+            show_return_value_in_logs=True,
+            sql="params_example.sql",
+            parameters={
+                "tea_type": "fruit"
             }
         )
 
