@@ -163,7 +163,7 @@ def load_to_snowflake():
                     "check_statement": "TEA_TYPE IN ('Green', 'Black', 'Oolong', 'Floral', 'Herbal', 'Chai')"
                 },
                 "at_least_3_affordable_teas": {
-                    "check_statement": "COUNT(DISTINCT TEA_ID) >=3 ",
+                    "check_statement": "COUNT(DISTINCT TEA_ID) >= 3",
                     "partition_clause": "PRICE < 12",  # a WHERE statement without the WHERE keyword
                 },
             },
