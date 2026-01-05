@@ -9,3 +9,5 @@ airflow-webserver.pid
 webserver_config.py
 airflow.cfg
 airflow.db
+memray_flamegraph.html
+include/astrotrips.duckdb
