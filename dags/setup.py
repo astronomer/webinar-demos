@@ -26,4 +26,9 @@ def setup():
 
     chain(_cleanup, _schema, _fixtures)
 
-setup()
+setup_dag = setup()
+
+if __name__ == "__main__":
+    setup_dag.test(
+        conn_file_path="include/connections.yaml"
+    )

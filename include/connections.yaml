@@ -1,0 +1,3 @@
+duckdb_astrotrips:
+  conn_type: duckdb
+  host: include/astrotrips.duckdb

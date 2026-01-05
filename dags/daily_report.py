@@ -1,9 +1,16 @@
 from airflow.sdk import dag, task, chain
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from pendulum import datetime
+
+from include.utils import print_report_row
 
 _DUCKDB_CONN_ID = "duckdb_astrotrips"
 
-@dag(template_searchpath="/usr/local/airflow/include/sql")
+@dag(
+    schedule="@daily",
+    start_date=datetime(2026, 1, 1),
+    template_searchpath="/usr/local/airflow/include/sql"
+)
 def daily_report():
 
     _ingest_data = SQLExecuteQueryOperator(
@@ -56,31 +63,15 @@ def daily_report():
     def print_report(ti = None):
         rows = ti.xcom_pull(task_ids="get_report") or []
 
+        print("::group::Daily Planet Report")
+
         print("Planet | Passengers | Active | Done | Gross USD | Discount | Net USD")
         print("-" * 65)
 
-        for(
-            _,
-            planet,
-            passengers,
-            active,
-            completed,
-            gross,
-            discount,
-            net,
-            _,
-        ) in rows:
-            print(
-                f"{planet} | "
-                f"{passengers} | "
-                f"{active} | "
-                f"{completed} | "
-                f"{gross:,} | "
-                f"{discount:,} | "
-                f"{net:,}"
-            )
+        for row in rows:
+            print_report_row(row)
 
-        print()
+        print("::endgroup::")
 
     chain(
         _ingest_data,
@@ -93,4 +84,7 @@ def daily_report():
 daily_report_dag = daily_report()
 
 if __name__ == "__main__":
-    daily_report_dag.test()
+    daily_report_dag.test(
+        logical_date=datetime(2026, 1, 1),
+        conn_file_path="include/connections.yaml"
+    )
