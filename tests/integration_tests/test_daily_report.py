@@ -34,7 +34,7 @@ def test_daily_report_pipeline_uses_temp_duckdb(tmp_path):
     assert dag is not None
 
     logical_date = datetime(2026, 1, 1)
-    dag.test(logical_date=logical_date)
+    dag.test(logical_date=logical_date)  # run the full ETL pipeline
 
     duckdb_path = Path(_DUCKDB_FILE)
     assert duckdb_path.exists(), f"DuckDB file not found at {duckdb_path}"
