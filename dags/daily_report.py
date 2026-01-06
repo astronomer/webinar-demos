@@ -41,21 +41,21 @@ def daily_report():
         task_id="remove_existing_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="DELETE FROM daily_planet_report WHERE report_date = $reportDate::DATE",
-        parameters={ "reportDate": "{{ ds }}" }
+        parameters={ "reportDate": "{{ ds_nodash }}" }
     )
 
     _generate_report = SQLExecuteQueryOperator(
         task_id="generate_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="report.sql",
-        parameters={ "reportDate": "{{ ds }}" }
+        parameters={ "reportDate": "{{ ds_nodash }}" }
     )
 
     _get_report = SQLExecuteQueryOperator(
         task_id="get_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="SELECT * FROM daily_planet_report WHERE report_date = $reportDate::DATE",
-        parameters={ "reportDate": "{{ ds }}" },
+        parameters={ "reportDate": "{{ ds_nodash }}" },
         requires_result_fetch=True
     )
 
