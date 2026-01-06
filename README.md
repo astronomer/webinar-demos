@@ -25,3 +25,9 @@ AIRFLOW_CONN_DUCKDB_ASTROTRIPS='{
 ```
 
 > **Note:** Ensure you also update any other references to the local DuckDB file path, such as `include/connections.yaml` if applicable.
+
+## Run tests
+
+```sh
+astro dev pytest -a "--disable-warnings"
+```

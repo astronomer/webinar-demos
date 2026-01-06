@@ -4,10 +4,10 @@
 		"context": "..",
 		"dockerfile": "../Dockerfile"
 	},
-	"postCreateCommand": "ln -sfn ${containerWorkspaceFolder}/include /usr/local/airflow/include && airflow db migrate",
 	"remoteEnv": {
-		"AIRFLOW__CORE__DAGS_FOLDER": "${containerWorkspaceFolder}/dags"
+		"AIRFLOW_HOME": "${containerWorkspaceFolder}"
 	},
+	"postCreateCommand": "airflow db migrate",
 	"customizations": {
 		"vscode": {
 			"settings": {

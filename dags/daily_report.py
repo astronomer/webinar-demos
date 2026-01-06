@@ -1,5 +1,6 @@
-from airflow.sdk import dag, task, chain
+from airflow.configuration import AIRFLOW_HOME
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.sdk import dag, task, chain
 from pendulum import datetime
 
 from include.utils import print_report_row
@@ -9,7 +10,8 @@ _DUCKDB_CONN_ID = "duckdb_astrotrips"
 @dag(
     schedule="@daily",
     start_date=datetime(2026, 1, 1),
-    template_searchpath="/usr/local/airflow/include/sql"
+    tags=["astrotrips", "reporting"],
+    template_searchpath=f"{AIRFLOW_HOME}/include/sql"
 )
 def daily_report():
 
@@ -41,21 +43,21 @@ def daily_report():
         task_id="remove_existing_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="DELETE FROM daily_planet_report WHERE report_date = $reportDate::DATE",
-        parameters={ "reportDate": "{{ ds_nodash }}" }
+        parameters={ "reportDate": "{{ ds }}" }
     )
 
     _generate_report = SQLExecuteQueryOperator(
         task_id="generate_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="report.sql",
-        parameters={ "reportDate": "{{ ds_nodash }}" }
+        parameters={ "reportDate": "{{ ds }}" }
     )
 
     _get_report = SQLExecuteQueryOperator(
         task_id="get_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="SELECT * FROM daily_planet_report WHERE report_date = $reportDate::DATE",
-        parameters={ "reportDate": "{{ ds_nodash }}" },
+        parameters={ "reportDate": "{{ ds }}" },
         requires_result_fetch=True
     )
 

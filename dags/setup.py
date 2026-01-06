@@ -1,9 +1,13 @@
-from airflow.sdk import dag, chain
+from airflow.configuration import AIRFLOW_HOME
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.sdk import dag, chain
 
 _DUCKDB_CONN_ID = "duckdb_astrotrips"
 
-@dag(template_searchpath="/usr/local/airflow/include/sql")
+@dag(
+    tags=["astrotrips", "setup"],
+    template_searchpath=f"{AIRFLOW_HOME}/include/sql"
+)
 def setup():
 
     _cleanup = SQLExecuteQueryOperator(

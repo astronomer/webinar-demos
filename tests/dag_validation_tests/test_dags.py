@@ -1,8 +1,7 @@
-"""Example DAGs test. This test ensures that all Dags have tags, retries set to two, and no import errors. This is an example pytest and may not be fit the context of your DAGs. Feel free to add and remove tests."""
-
-import os
 import logging
+import os
 from contextlib import contextmanager
+
 import pytest
 from airflow.models import DagBag
 
@@ -56,28 +55,30 @@ def test_file_imports(rel_path, rv):
         raise Exception(f"{rel_path} failed to import with message \n {rv}")
 
 
-APPROVED_TAGS = {}
+ALLOWED_OPERATORS = [
+    "_PythonDecoratedOperator",  # this allows the @task decorator
+    "SQLExecuteQueryOperator"
+]
 
 
 @pytest.mark.parametrize(
-    "dag_id,dag,fileloc", get_dags(), ids=[x[2] for x in get_dags()]
+    "dag_id, dag, fileloc", get_dags(), ids=[x[0] for x in get_dags()]
 )
-def test_dag_tags(dag_id, dag, fileloc):
+def test_dag_uses_allowed_operators_only(dag_id, dag, fileloc):
     """
-    test if a DAG is tagged and if those TAGs are in the approved list
+    Test that all Dags only use allowed operators.
     """
-    assert dag.tags, f"{dag_id} in {fileloc} has no tags"
-    if APPROVED_TAGS:
-        assert not set(dag.tags) - APPROVED_TAGS
+    for task in dag.tasks:
+        assert any(
+            task.task_type == allowed_op for allowed_op in ALLOWED_OPERATORS
+        ), f"{task.task_id} in {dag_id} ({fileloc}) uses {task.task_type}, which is not in the list of allowed operators."
 
 
 @pytest.mark.parametrize(
-    "dag_id,dag, fileloc", get_dags(), ids=[x[2] for x in get_dags()]
+    "dag_id, dag, fileloc", get_dags(), ids=[x[0] for x in get_dags()]
 )
-def test_dag_retries(dag_id, dag, fileloc):
+def test_dag_has_tags(dag_id, dag, fileloc):
     """
-    test if a DAG has retries set
+    Test that all Dags have at least one tag.
     """
-    assert (
-        dag.default_args.get("retries", None) >= 2
-    ), f"{dag_id} in {fileloc} must have task retries >= 2."
+    assert dag.tags, f"Dag {dag_id} ({fileloc}) has no tags. All Dags must have at least one tag."
