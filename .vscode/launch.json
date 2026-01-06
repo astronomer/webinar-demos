@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug current Dag file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "AIRFLOW_CONN_DUCKDB_ASTROTRIPS": "{\"conn_type\": \"duckdb\", \"host\": \"include/astrotrips.duckdb\"}"
+            }
+        }
+    ]
+}

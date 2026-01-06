@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Memray current Dag file",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "set -u; mkdir -p \"${workspaceFolder}/profiles\"; OUT_BASENAME=\"$(basename \"${file}\" .py)\"; BIN=\"${workspaceFolder}/profiles/${OUT_BASENAME}.memray.bin\"; HTML=\"${workspaceFolder}/profiles/${OUT_BASENAME}.memray.html\"; python -m memray run -o \"$BIN\" \"${file}\"; python -m memray flamegraph \"$BIN\" -o \"$HTML\"; echo \"Memray flamegraph written to: $HTML\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}"
+                }
+            },
+            "presentation": {
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
