@@ -4,7 +4,7 @@ CREATE SEQUENCE IF NOT EXISTS payment_id_seq START 1;
 CREATE TABLE IF NOT EXISTS planets (
   planet_id       INTEGER PRIMARY KEY,
   planet_name     VARCHAR NOT NULL,
-  base_multiplier DOUBLE NOT NULL -- cost multiplier for trips to this planet (e.g. higher landing dificulty)
+  base_multiplier DOUBLE NOT NULL -- cost multiplier for trips to this planet (e.g. higher landing difficulty)
 );
 
 CREATE TABLE IF NOT EXISTS routes (

@@ -55,8 +55,8 @@ To run this code in a distributed setup or enable concurrent access, you can eas
 
 ```
 AIRFLOW_CONN_DUCKDB_ASTROTRIPS='{
-    "conn_type": "duckdb",
-    "host": "md:astrotrips?motherduck_token=<YOUR_MOTHERDUCK_TOKEN>"
+    "conn_type":"duckdb",
+    "host":"md:astrotrips?motherduck_token=<YOUR_MOTHERDUCK_TOKEN>"
 }'
 ```
 
