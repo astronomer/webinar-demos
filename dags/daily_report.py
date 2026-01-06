@@ -29,7 +29,7 @@ def daily_report():
         print(f"allocating {target_kb}k memory...")
 
         while allocated < target_kb:
-            blocks.append(b"x" * (chunk_kb * 1024))
+            blocks.append(b"x" * (chunk_kb * 1024 * 1024))
             allocated += chunk_kb
             print(f"allocated {allocated}k")
             time.sleep(sleep_s)
@@ -75,7 +75,7 @@ def daily_report():
 
     chain(
         _ingest_data,
-        consume_memory(target_kb=3*1024),
+        # consume_memory(target_kb=3*1024),
         _remove_existing_report,
         _generate_report,
         _get_report,
