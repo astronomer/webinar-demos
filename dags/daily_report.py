@@ -75,6 +75,7 @@ def daily_report():
 
     chain(
         _ingest_data,
+        consume_memory(target_kb=3*1024),
         _remove_existing_report,
         _generate_report,
         _get_report,
