@@ -2,6 +2,16 @@
 
 This is a companion project for the debugging best practices webinar, showcasing various common issues and how to work with Airflow in a local dev environment for proper debugging.
 
+## Development container
+
+This project comes with a [dev container definition](.devcontainer/devcontainer.json) to open and interact with the project in a container.
+
+A dev container allows you to use a container as a fully featured development environment. Instead of installing dependencies, libraries, and tools directly on your local machine, everything required to work on this codebase is defined once and runs inside the container. This isolates dependencies to the project, prevents conflicts with your local setup, and ensures that development, testing, and CI environments behave exactly the same way.
+
+This setup is built on the [Development Container Specification](https://containers.dev/), which provides a standard format for describing the environment without complex orchestration. It focuses on a simple, single-container configuration that works equally well for local development and remote environments. By utilizing reusable features and templates, this standard makes it easy to share and extend the environment, ensuring every contributor has the correct toolset from the moment they check out the code.
+
+Modern editors like VS Code and PyCharm can read this configuration to automatically build and attach to the dev container. The editor's interface remains local and responsive, while the shell, debugger, and runtime operate entirely inside the container. This separation also allows you to install editor extensions and plugins that are scoped strictly to the project, giving you a tailored workspace without cluttering or modifying your global editor configuration.
+
 ## Using MotherDuck (optional)
 
 This project is configured to use DuckDB with a local database file stored in `include/astrotrips.duckdb`. While this setup is sufficient for this scenario, it has specific limitations:
