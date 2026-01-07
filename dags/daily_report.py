@@ -43,21 +43,21 @@ def daily_report():
         task_id="remove_existing_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="DELETE FROM daily_planet_report WHERE report_date = $reportDate::DATE",
-        parameters={ "reportDate": "{{ ds }}" }
+        parameters={ "reportDate": "{{ ds_nodash }}" }
     )
 
     _generate_report = SQLExecuteQueryOperator(
         task_id="generate_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="report.sql",
-        parameters={ "reportDate": "{{ ds }}" }
+        parameters={ "reportDate": "{{ ds_nodash }}" }
     )
 
     _get_report = SQLExecuteQueryOperator(
         task_id="get_report",
         conn_id=_DUCKDB_CONN_ID,
         sql="SELECT * FROM daily_planet_report WHERE report_date = $reportDate::DATE",
-        parameters={ "reportDate": "{{ ds }}" },
+        parameters={ "reportDate": "{{ ds_nodash }}" },
         requires_result_fetch=True
     )
 
@@ -77,17 +77,17 @@ def daily_report():
 
     chain(
         _ingest_data,
-        # consume_memory(target_kb=5*1024),
+        consume_memory(target_kb=5*1024),
         _remove_existing_report,
         _generate_report,
         _get_report,
         print_report()
     )
 
-daily_report_dag = daily_report()
+# daily_report_dag = daily_report()
 
-if __name__ == "__main__":
-    daily_report_dag.test(
-        logical_date=datetime(2026, 1, 1),
-        conn_file_path="include/connections.yaml"
-    )
+# if __name__ == "__main__":
+#     daily_report_dag.test(
+#         logical_date=datetime(2026, 1, 1),
+#         conn_file_path="include/connections.yaml"
+#     )
