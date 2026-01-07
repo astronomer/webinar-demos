@@ -1,7 +1,7 @@
 from airflow.configuration import AIRFLOW_HOME
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.sdk import dag, task, chain
-from pendulum import datetime
+from pendulum import datetime, duration
 
 from include.utils import print_report_row
 
@@ -14,6 +14,15 @@ _DUCKDB_CONN_ID = "duckdb_astrotrips"
     template_searchpath=f"{AIRFLOW_HOME}/include/sql"
 )
 def daily_report():
+
+    @task(
+        retries=8,
+        retry_delay=duration(seconds=3)
+    )
+    def unstable_task():
+        import random
+        if random.random() < 0.5:
+            raise Exception("Delivery failed!")
 
     _ingest_data = SQLExecuteQueryOperator(
         task_id="ingest",
@@ -76,6 +85,7 @@ def daily_report():
         print("::endgroup::")
 
     chain(
+        unstable_task(),
         _ingest_data,
         consume_memory(target_kb=5*1024),
         _remove_existing_report,
