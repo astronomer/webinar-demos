@@ -8,7 +8,6 @@ from airflow.utils import db
 from pendulum import datetime
 
 _DUCKDB_FILE = "include/astrotrips.duckdb"
-_DUCKDB_CONN_ID = "duckdb_astrotrips"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -20,21 +19,16 @@ def setup_airflow_db():
     yield
 
 
-@pytest.fixture(autouse=True)
-def setup_test_connections(monkeypatch):
-    monkeypatch.setenv(
-        f"AIRFLOW_CONN_{_DUCKDB_CONN_ID.upper()}",
-        f'{{"conn_type": "duckdb", "host": {_DUCKDB_FILE}}}'
-    )
-
-
 def test_daily_report_pipeline_uses_temp_duckdb(tmp_path):
     dag_bag = DagBag(include_examples=False)
     dag = dag_bag.get_dag("daily_report")
     assert dag is not None
 
     logical_date = datetime(2026, 1, 1)
-    dag.test(logical_date=logical_date)  # run the full ETL pipeline
+    dag.test(
+        logical_date=logical_date,
+        conn_file_path="include/connections.yaml"
+    )  # run the full ETL pipeline
 
     duckdb_path = Path(_DUCKDB_FILE)
     assert duckdb_path.exists(), f"DuckDB file not found at {duckdb_path}"

@@ -7,7 +7,7 @@
 	"remoteEnv": {
 		"AIRFLOW_HOME": "${containerWorkspaceFolder}"
 	},
-	"postCreateCommand": "airflow db migrate",
+	"postCreateCommand": "rm -rf ${containerWorkspaceFolder}/airflow.{db,cfg} && airflow db migrate",
 	"customizations": {
 		"vscode": {
 			"settings": {

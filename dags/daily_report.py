@@ -1,6 +1,6 @@
 from airflow.configuration import AIRFLOW_HOME
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from airflow.sdk import dag, task, chain
+from airflow.sdk import task, chain
 from pendulum import datetime, duration
 
 from include.utils import print_report_row
@@ -11,18 +11,13 @@ _DUCKDB_CONN_ID = "duckdb_astrotrips"
     schedule="@daily",
     start_date=datetime(2026, 1, 1),
     tags=["astrotrips", "reporting"],
-    template_searchpath=f"{AIRFLOW_HOME}/include/sql"
+    template_searchpath=f"{AIRFLOW_HOME}/include/sql",
+    # default_args={
+    #     "retries": 2,
+    #     "retry_delay": duration(minutes=1),
+    # }
 )
 def daily_report():
-
-    @task(
-        retries=8,
-        retry_delay=duration(seconds=3)
-    )
-    def unstable_task():
-        import random
-        if random.random() < 0.5:
-            raise Exception("Delivery failed!")
 
     _ingest_data = SQLExecuteQueryOperator(
         task_id="ingest",
@@ -32,7 +27,7 @@ def daily_report():
     )
 
     @task
-    def consume_memory(target_kb: int = 800, chunk_kb: int = 50, sleep_s: float = 0.2):
+    def consume_memory(target_kb: int = 800, chunk_kb: int = 50, sleep_s: float = 0.1):
         import time
         blocks = []
         allocated = 0
@@ -40,13 +35,13 @@ def daily_report():
         print(f"allocating {target_kb}k memory...")
 
         while allocated < target_kb:
-            blocks.append(b"x" * (chunk_kb * 1024 * 1024))
+            blocks.append(b"x" * (chunk_kb * 1024))
             allocated += chunk_kb
             print(f"allocated {allocated}k")
             time.sleep(sleep_s)
 
-        print("done allocating, holding memory for 10s...")
-        time.sleep(10)
+        print("done allocating, holding memory for 3s...")
+        time.sleep(3)
 
     _remove_existing_report = SQLExecuteQueryOperator(
         task_id="remove_existing_report",
@@ -85,9 +80,8 @@ def daily_report():
         print("::endgroup::")
 
     chain(
-        unstable_task(),
         _ingest_data,
-        consume_memory(target_kb=5*1024),
+        # consume_memory(target_kb=5*1024),
         _remove_existing_report,
         _generate_report,
         _get_report,
