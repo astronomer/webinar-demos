@@ -8,8 +8,7 @@
             "program": "${file}",
             "cwd": "${workspaceFolder}",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}",
-                "AIRFLOW_CONN_DUCKDB_ASTROTRIPS": "{\"conn_type\": \"duckdb\", \"host\": \"include/astrotrips.duckdb\"}"
+                "PYTHONPATH": "${workspaceFolder}"
             }
         }
     ]

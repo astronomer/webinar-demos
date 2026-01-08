@@ -19,7 +19,7 @@ def setup_airflow_db():
     yield
 
 
-def test_daily_report_pipeline_uses_temp_duckdb(tmp_path):
+def test_daily_report():
     dag_bag = DagBag(include_examples=False)
     dag = dag_bag.get_dag("daily_report")
     assert dag is not None
