@@ -2,6 +2,12 @@
 
 This is a companion project for the debugging best practices webinar, showcasing various common issues and how to work with Airflow in a local dev environment for proper debugging.
 
+## Scenario
+
+To illustrate various debugging techniques, this project is using the AstroTrips scenario. AstroTrips is a fictional company selling space trips to various planets, with a basic database schema provided by a DuckDB.
+
+![AstroTrips](doc/AstroTrips.png)
+
 ## Prerequisites
 
 - Copy `.env.dist` to `.env`.
