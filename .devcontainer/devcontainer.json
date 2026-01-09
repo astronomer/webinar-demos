@@ -5,9 +5,10 @@
 		"dockerfile": "../Dockerfile"
 	},
 	"remoteEnv": {
-		"AIRFLOW_HOME": "${containerWorkspaceFolder}"
+		"AIRFLOW_HOME": "${containerWorkspaceFolder}",
+		"AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": "sqlite:////tmp/airflow.db"
 	},
-	"postCreateCommand": "rm -rf ${containerWorkspaceFolder}/airflow.{db,cfg} && airflow db migrate",
+	"postCreateCommand": "rm -rf /tmp/airflow.db && airflow db migrate",
 	"customizations": {
 		"vscode": {
 			"settings": {

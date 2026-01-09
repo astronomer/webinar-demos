@@ -6,9 +6,13 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
+            "subProcess": true,
             "cwd": "${workspaceFolder}",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
+                "PYTHONPATH": "${workspaceFolder}",
+                "AIRFLOW_HOME": "${workspaceFolder}",
+                "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": "sqlite:////tmp/airflow.db",
+                "AIRFLOW_CONN_DUCKDB_ASTROTRIPS": "{\"conn_type\": \"duckdb\", \"host\": \"include/astrotrips.duckdb\"}"
             }
         }
     ]
