@@ -8,6 +8,7 @@ from airflow.utils import db
 from pendulum import datetime
 
 _DUCKDB_FILE = "include/astrotrips.duckdb"
+_DUCKDB_CONN_ID = "duckdb_astrotrips"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -17,6 +18,14 @@ def setup_airflow_db():
     # initialize the DB schema and initially add Dags
     db.resetdb()
     yield
+
+
+@pytest.fixture(autouse=True)
+def setup_test_connections(monkeypatch):
+    monkeypatch.setenv(
+        f"AIRFLOW_CONN_{_DUCKDB_CONN_ID.upper()}",
+        f'{{"conn_type": "duckdb", "host": {_DUCKDB_FILE}}}'
+    )
 
 
 def test_daily_report():
