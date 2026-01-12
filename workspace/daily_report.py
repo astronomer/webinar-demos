@@ -1,7 +1,7 @@
 from airflow.configuration import AIRFLOW_HOME
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.sdk import task, chain
-from pendulum import datetime, duration
+from pendulum import datetime
 
 from include.utils import print_report_row
 
