@@ -1,0 +1,24 @@
+{
+	"name": "Astro Runtime Devcontainer",
+	"build": {
+		"context": "..",
+		"dockerfile": "../Dockerfile"
+	},
+	"remoteEnv": {
+		"AIRFLOW_HOME": "${containerWorkspaceFolder}",
+		"AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": "sqlite:////tmp/airflow.db"
+	},
+	"postCreateCommand": "rm -rf /tmp/airflow.db && airflow db migrate",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/local/bin/python"
+			},
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-vscode.live-server"
+			]
+		}
+	}
+}
