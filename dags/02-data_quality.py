@@ -29,14 +29,13 @@ from airflow.providers.common.sql.operators.sql import (
     SQLThresholdCheckOperator,
     SQLValueCheckOperator,
 )
+from airflow.providers.discord.notifications.discord import DiscordNotifier
 from airflow.sdk import chain, dag, task_group
 
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 
 
-@dag(
-    doc_md=__doc__
-)
+@dag(doc_md=__doc__)
 def data_quality():
 
     @task_group
@@ -98,7 +97,20 @@ def data_quality():
             [_check_no_orphaned_payments, _check_avg_payment],
         )
 
-    @task_group
+    @task_group(
+        default_args={
+            "retries": 0,
+            "on_failure_callback": DiscordNotifier(
+                discord_conn_id="discord_default",
+                text="""
+                Data quality checks failed for table: `{{ task.table }}` 😱!
+                ```
+                {{ exception }}
+                ```
+                """
+            ),
+        }
+    )
     def report_quality_checks():
 
         # Compares SUM(total_net_fare_usd) for today's report_date against the same
