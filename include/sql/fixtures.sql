@@ -20,7 +20,6 @@ INSERT INTO customers VALUES
 (1005, 'Zara Kim'),
 (1006, 'Omar Hassan');
 
--- Bookings (booking_id auto-assigned 1–12)
 -- Gross fare = passengers × base_fare_usd × base_multiplier
 INSERT INTO bookings (customer_id, route_id, booked_at, departure_date, return_date, passengers, promo_code) VALUES
 -- October

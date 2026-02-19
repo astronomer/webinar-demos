@@ -1,5 +1,26 @@
 # Stopping bad data before it breaks your Airflow pipelines
 
+## Setup
+
+Run the `setup` DAG to initialize the demo. It is safe to re-run at any time:
+it creates the tables if they don't exist yet (`IF NOT EXISTS`), truncates all
+data, and re-inserts the seed fixtures.
+
+### Hard reset (drop everything)
+
+If you need to remove the tables entirely, for example to apply a schema
+change, run this in Snowflake and then re-run the `setup` DAG:
+
+```sql
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS daily_planet_report;
+DROP TABLE IF EXISTS promo_codes;
+DROP TABLE IF EXISTS routes;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS planets;
+```
+
 ## Making checks fail
 
 ### `check_planet_count` (SQLValueCheckOperator)

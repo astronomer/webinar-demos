@@ -11,17 +11,17 @@ _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 )
 def setup():
 
-    _cleanup = SQLExecuteQueryOperator(
-        task_id="cleanup",
-        conn_id=_SNOWFLAKE_CONN_ID,
-        sql="cleanup.sql",
-        split_statements=True,
-    )
-
     _schema = SQLExecuteQueryOperator(
         task_id="schema",
         conn_id=_SNOWFLAKE_CONN_ID,
         sql="schema.sql",
+        split_statements=True,
+    )
+
+    _truncate = SQLExecuteQueryOperator(
+        task_id="truncate",
+        conn_id=_SNOWFLAKE_CONN_ID,
+        sql="truncate.sql",
         split_statements=True,
     )
 
@@ -32,7 +32,7 @@ def setup():
         split_statements=True,
     )
 
-    chain(_cleanup, _schema, _fixtures)
+    chain(_schema, _truncate, _fixtures)
 
 
 setup()
