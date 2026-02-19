@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AstroTrips Schema</title>
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;height:100vh;display:flex;flex-direction:column}
+
+.topbar{padding:18px 28px 0;flex-shrink:0}
+.topbar h1{font-size:18px;font-weight:700}
+.topbar p{font-size:12px;color:#9ca3af;margin-top:2px}
+
+.toolbar{display:flex;align-items:center;gap:8px;padding:12px 28px;border-bottom:1px solid #e5e7eb;flex-shrink:0;flex-wrap:wrap}
+.pill{padding:4px 13px;border-radius:14px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none}
+.pill:hover{background:#f3f4f6}
+.pill.active{color:#fff;border-color:transparent}
+.pill[data-g="all"].active{background:#111827}
+.pill[data-g="dimensions"].active{background:#2676FF}
+.pill[data-g="transaction"].active{background:#A067FB}
+.pill[data-g="reporting"].active{background:#19BA5A}
+.btn-reset{padding:4px 13px;border-radius:14px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;margin-left:6px}
+.btn-reset:hover{background:#f3f4f6}
+
+.legend{display:flex;gap:14px;margin-left:auto;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280}
+.leg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+.canvas-wrap{flex:1;overflow:auto;position:relative;background:#fff;
+  background-image:radial-gradient(circle,#e5e7eb 1px,transparent 1px);
+  background-size:24px 24px}
+
+#canvas{position:relative;min-width:100%;min-height:100%;zoom:1.1}
+
+#svg-layer{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
+
+.card{position:absolute;width:264px;background:#fff;border:2px solid #e5e7eb;border-radius:10px;
+      overflow:hidden;transition:border-color .2s,box-shadow .2s,opacity .2s;z-index:1}
+.card.selected{z-index:10}
+.card.faded{opacity:.13}
+.card.references-this{border-color:#E89428;box-shadow:0 0 0 2px #E8942830}
+.card.referenced-by{border-color:#19BA5A;box-shadow:0 0 0 2px #19BA5A30}
+
+.card-head{padding:9px 12px;display:flex;justify-content:space-between;align-items:center;
+           border-bottom:1px solid rgba(0,0,0,.06);cursor:grab;user-select:none}
+.card-head:active{cursor:grabbing}
+.card-head .tname{font-size:12px;font-weight:700}
+.card-head .tcount{font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,.6);font-weight:500}
+
+.cpk-note{padding:3px 12px;font-size:10px;font-weight:600;letter-spacing:.3px;border-bottom:1px solid rgba(0,0,0,.06)}
+
+.col-row{display:flex;align-items:center;gap:5px;padding:4px 12px;font-size:11px;height:26px;cursor:default}
+.col-row:hover{background:rgba(0,0,0,.025)}
+.badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;flex-shrink:0;width:20px;justify-content:center}
+.badge-pk{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+.badge-fk{background:#EDE9FE;color:#5B21B6;border:1px solid #C4B5FD}
+.badge-blank{width:20px;flex-shrink:0}
+.col-name{flex:1;color:#111827;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.col-type{color:#9ca3af;font-size:10px;flex-shrink:0}
+.col-ai{font-size:9px;color:#6b7280;background:#f3f4f6;border-radius:3px;padding:0 4px;flex-shrink:0}
+.col-fk-ref{font-size:9px;color:#7C3AED;flex-shrink:0;white-space:nowrap}
+
+/* Tooltip */
+#tt{position:fixed;z-index:9999;background:#1f2937;color:#f9fafb;border-radius:8px;
+    padding:10px 13px;font-size:12px;line-height:1.5;pointer-events:none;
+    display:none;min-width:160px;max-width:260px;
+    box-shadow:0 6px 24px rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06)}
+#tt.on{display:block}
+#tt .tt-name{font-size:13px;font-weight:700;margin-bottom:6px;color:#fff}
+#tt .tt-type{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;
+             border-radius:4px;background:#374151;color:#d1d5db;margin-bottom:6px}
+#tt .tt-row{font-size:11px;color:#9ca3af;margin-top:3px}
+#tt .tt-row span{color:#f3f4f6;font-weight:500}
+
+.formula{flex-shrink:0;padding:12px 28px;border-top:1px solid #e5e7eb;background:#fff;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.formula-label{font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.formula-item{font-size:12px;color:#374151;white-space:nowrap}
+
+.footer{text-align:center;padding:8px;font-size:11px;color:#d1d5db;flex-shrink:0;border-top:1px solid #f3f4f6}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>AstroTrips Schema Explorer</h1>
+  <p>Drag tables to rearrange &middot; click a table to highlight relationships</p>
+</div>
+
+<div class="toolbar">
+  <span style="font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:.5px;text-transform:uppercase;margin-right:2px">Show</span>
+  <button class="pill active" data-g="all">All</button>
+  <button class="pill" data-g="dimensions">Dimensions</button>
+  <button class="pill" data-g="transaction">Transaction</button>
+  <button class="pill" data-g="reporting">Reporting</button>
+  <button class="btn-reset" id="btn-reset">↺ Reset layout</button>
+  <div class="legend">
+    <span class="leg-item"><span class="leg-dot" style="background:#2676FF"></span>Dimensions</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#A067FB"></span>Transaction</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#19BA5A"></span>Reporting</span>
+    <span class="leg-item"><span class="badge badge-pk" style="width:auto">PK</span> Primary key</span>
+    <span class="leg-item"><span class="badge badge-fk" style="width:auto">FK</span> Foreign key</span>
+  </div>
+</div>
+
+<div id="tt"></div>
+<div class="canvas-wrap" id="canvas-wrap">
+  <div id="canvas">
+    <svg id="svg-layer">
+      <defs>
+        <marker id="arr-blue"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#2676FF"/></marker>
+        <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#A067FB"/></marker>
+        <marker id="arr-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#19BA5A"/></marker>
+      </defs>
+    </svg>
+  </div>
+</div>
+
+<div class="formula">
+  <span class="formula-label">Fare formula</span>
+  <span class="formula-item">amount_usd = passengers &times; base_fare_usd &times; base_multiplier &times; (1 &minus; discount_pct)</span>
+  <span style="color:#e5e7eb">|</span>
+  <span class="formula-item">&#127769; <strong>Moon</strong> 5k &times; 0.80 = <strong style="color:#2676FF">4 000/pax</strong></span>
+  <span class="formula-item">&#128308; <strong>Mars</strong> 25k &times; 1.20 = <strong style="color:#F03647">30 000/pax</strong></span>
+  <span class="formula-item">&#128994; <strong>Europa</strong> 40k &times; 1.50 = <strong style="color:#19BA5A">60 000/pax</strong></span>
+</div>
+<div class="footer">AstroTrips Schema Explorer &middot; Powered by Apache Airflow</div>
+
+<script>
+const GC  = { dimensions: '#2676FF', transaction: '#A067FB', reporting: '#19BA5A' };
+const GB  = { dimensions: '#EEF4FF', transaction: '#F5F0FF', reporting: '#EDFBF3' };
+const ARR = { dimensions: 'arr-blue', transaction: 'arr-purple', reporting: 'arr-green' };
+
+const SCHEMA = [
+  { name: 'planets', group: 'dimensions', columns: [
+    { name: 'planet_id',       type: 'INTEGER', pk: true },
+    { name: 'planet_name',     type: 'VARCHAR',  notNull: true },
+    { name: 'base_multiplier', type: 'FLOAT',    notNull: true },
+  ]},
+  { name: 'routes', group: 'dimensions', columns: [
+    { name: 'route_id',       type: 'INTEGER', pk: true },
+    { name: 'destination_id', type: 'INTEGER', notNull: true, fk: 'planets.planet_id' },
+    { name: 'base_fare_usd',  type: 'INTEGER', notNull: true },
+  ]},
+  { name: 'customers', group: 'dimensions', columns: [
+    { name: 'customer_id', type: 'INTEGER', pk: true },
+    { name: 'full_name',   type: 'VARCHAR',  notNull: true },
+  ]},
+  { name: 'promo_codes', group: 'dimensions', columns: [
+    { name: 'promo_code',   type: 'VARCHAR', pk: true },
+    { name: 'discount_pct', type: 'FLOAT',   notNull: true },
+  ]},
+  { name: 'bookings', group: 'transaction', columns: [
+    { name: 'booking_id',     type: 'INTEGER',   pk: true, autoincrement: true },
+    { name: 'customer_id',    type: 'INTEGER',   notNull: true, fk: 'customers.customer_id' },
+    { name: 'route_id',       type: 'INTEGER',   notNull: true, fk: 'routes.route_id' },
+    { name: 'booked_at',      type: 'TIMESTAMP', notNull: true },
+    { name: 'departure_date', type: 'DATE',      notNull: true },
+    { name: 'return_date',    type: 'DATE',      notNull: true },
+    { name: 'passengers',     type: 'INTEGER',   notNull: true },
+    { name: 'promo_code',     type: 'VARCHAR',   fk: 'promo_codes.promo_code' },
+  ]},
+  { name: 'payments', group: 'transaction', columns: [
+    { name: 'payment_id', type: 'INTEGER',   pk: true, autoincrement: true },
+    { name: 'booking_id', type: 'INTEGER',   notNull: true, fk: 'bookings.booking_id' },
+    { name: 'paid_at',    type: 'TIMESTAMP', notNull: true },
+    { name: 'amount_usd', type: 'INTEGER',   notNull: true },
+  ]},
+  { name: 'daily_planet_report', group: 'reporting', columns: [
+    { name: 'report_date',          type: 'DATE',    pk: true },
+    { name: 'planet_name',          type: 'VARCHAR', pk: true },
+    { name: 'total_passengers',     type: 'BIGINT',  notNull: true },
+    { name: 'active_trips',         type: 'BIGINT',  notNull: true },
+    { name: 'completed_trips',      type: 'BIGINT',  notNull: true },
+    { name: 'total_gross_fare_usd', type: 'BIGINT',  notNull: true },
+    { name: 'total_discounts_usd',  type: 'BIGINT',  notNull: true },
+    { name: 'total_net_fare_usd',   type: 'BIGINT',  notNull: true },
+    { name: 'total_paid_usd',       type: 'BIGINT',  notNull: true },
+  ]},
+];
+
+// FK edges: child → parent
+const RELATIONS = [
+  { from: 'routes',   fromCol: 'destination_id', to: 'planets',     toCol: 'planet_id'   },
+  { from: 'bookings', fromCol: 'customer_id',    to: 'customers',   toCol: 'customer_id' },
+  { from: 'bookings', fromCol: 'route_id',       to: 'routes',      toCol: 'route_id'    },
+  { from: 'bookings', fromCol: 'promo_code',     to: 'promo_codes', toCol: 'promo_code'  },
+  { from: 'payments', fromCol: 'booking_id',     to: 'bookings',    toCol: 'booking_id'  },
+];
+
+const CARD_W = 264;
+const ZOOM   = 1.1;   // must match the CSS zoom value on #canvas
+const HEAD_H = 38;
+const CPK_H  = 20;
+const ROW_H  = 26;
+const PAD_B  = 8;
+const MARGIN = 40;
+
+// Mutable positions — updated by dagre and drag
+const POS = {};
+
+function cardHeight(table) {
+  const cpk = table.columns.filter(c => c.pk).length > 1;
+  return HEAD_H + (cpk ? CPK_H : 0) + table.columns.length * ROW_H + PAD_B;
+}
+
+// Absolute y-centre of a column row on the canvas
+function colY(tableName, colName) {
+  const t   = SCHEMA.find(t => t.name === tableName);
+  const cpk = t.columns.filter(c => c.pk).length > 1;
+  const idx = t.columns.findIndex(c => c.name === colName);
+  return POS[tableName].y + HEAD_H + (cpk ? CPK_H : 0) + idx * ROW_H + ROW_H / 2;
+}
+
+// ── Dagre layout ─────────────────────────────────────────────────────────────
+
+function computeLayout() {
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({
+    rankdir:  'LR',   // dimension roots on the left, payments on the right
+    ranksep:  90,     // horizontal gap between ranks
+    nodesep:  40,     // vertical gap between nodes in the same rank
+    marginx:  MARGIN,
+    marginy:  MARGIN,
+  });
+  g.setDefaultEdgeLabel(() => ({}));
+
+  SCHEMA.forEach(t => {
+    g.setNode(t.name, { width: CARD_W, height: cardHeight(t) });
+  });
+
+  // Add edges parent → child so dimension tables end up on the left
+  RELATIONS.forEach(r => g.setEdge(r.to, r.from));
+
+  dagre.layout(g);
+
+  SCHEMA.forEach(t => {
+    const n = g.node(t.name);
+    POS[t.name] = { x: Math.round(n.x - n.width / 2), y: Math.round(n.y - n.height / 2) };
+  });
+
+  // Size the canvas to fit all cards
+  const maxX = Math.max(...SCHEMA.map(t => POS[t.name].x + CARD_W));
+  const maxY = Math.max(...SCHEMA.map(t => POS[t.name].y + cardHeight(t)));
+  const w = maxX + MARGIN;
+  const h = maxY + MARGIN;
+  const canvas = document.getElementById('canvas');
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  document.getElementById('svg-layer').setAttribute('viewBox', `0 0 ${w} ${h}`);
+  document.getElementById('svg-layer').style.width  = w + 'px';
+  document.getElementById('svg-layer').style.height = h + 'px';
+}
+
+// ── Relationship index ────────────────────────────────────────────────────────
+
+const REFS = {}, REFD = {};
+SCHEMA.forEach(t => { REFS[t.name] = []; REFD[t.name] = []; });
+RELATIONS.forEach(r => { REFS[r.from].push(r.to); REFD[r.to].push(r.from); });
+
+// ── Render cards ─────────────────────────────────────────────────────────────
+
+function renderCards() {
+  document.querySelectorAll('.card').forEach(c => c.remove());
+  const canvas = document.getElementById('canvas');
+
+  SCHEMA.forEach(table => {
+    const gc  = GC[table.group];
+    const gb  = GB[table.group];
+    const cpk = table.columns.filter(c => c.pk).length > 1;
+
+    let cols = '';
+    table.columns.forEach(c => {
+      const badge = c.pk ? '<span class="badge badge-pk">PK</span>'
+                  : c.fk ? '<span class="badge badge-fk">FK</span>'
+                  :         '<span class="badge-blank"></span>';
+      const ai  = c.autoincrement ? '<span class="col-ai">AUTO</span>' : '';
+      // Show only the table name in the card (→ table), full ref lives in the tooltip
+      const fkr = c.fk ? `<span class="col-fk-ref">→ ${c.fk.split('.')[0]}</span>` : '';
+      // Serialise column metadata for the tooltip (HTML-escape quotes)
+      const meta = JSON.stringify({
+        name: c.name, type: c.type,
+        pk: !!c.pk, fk: c.fk || null,
+        autoincrement: !!c.autoincrement, notNull: !!c.notNull,
+      }).replace(/"/g, '&quot;');
+      cols += `<div class="col-row" data-col="${meta}">${badge}
+               <span class="col-name">${c.name}</span>
+               <span class="col-type">${c.type}</span>${ai}${fkr}</div>`;
+    });
+
+    const cpkRow = cpk
+      ? `<div class="cpk-note" style="color:${gc};background:${gb};">PK: ${table.columns.filter(c=>c.pk).map(c=>c.name).join(' + ')}</div>`
+      : '';
+
+    const card = document.createElement('div');
+    card.className    = 'card';
+    card.dataset.name  = table.name;
+    card.dataset.group = table.group;
+    card.style.left   = POS[table.name].x + 'px';
+    card.style.top    = POS[table.name].y + 'px';
+    card.innerHTML    = `
+      <div class="card-head" style="background:${gb};border-left:4px solid ${gc};">
+        <span class="tname" style="color:${gc};">${table.name}</span>
+        <span class="tcount" style="color:${gc};">${table.columns.length} cols</span>
+      </div>${cpkRow}
+      <div class="col-list">${cols}</div>`;
+
+    addDrag(card, table.name);
+    card.addEventListener('click', () => { if (!wasDragged) handleClick(table.name); });
+    canvas.appendChild(card);
+  });
+}
+
+// ── Drag ─────────────────────────────────────────────────────────────────────
+
+let dragging = null, dragOX = 0, dragOY = 0, wasDragged = false;
+
+function addDrag(card, name) {
+  card.querySelector('.card-head').addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    const r = document.getElementById('canvas').getBoundingClientRect();
+    dragging   = name;
+    wasDragged = false;
+    // getBoundingClientRect returns visual (zoomed) coords → divide to get logical px
+    dragOX = (e.clientX - r.left) / ZOOM - POS[name].x;
+    dragOY = (e.clientY - r.top)  / ZOOM - POS[name].y;
+    e.preventDefault();
+  });
+}
+
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  wasDragged = true;
+  const r = document.getElementById('canvas').getBoundingClientRect();
+  POS[dragging].x = Math.max(0, (e.clientX - r.left) / ZOOM - dragOX);
+  POS[dragging].y = Math.max(0, (e.clientY - r.top)  / ZOOM - dragOY);
+  const card = document.querySelector(`.card[data-name="${dragging}"]`);
+  card.style.left = POS[dragging].x + 'px';
+  card.style.top  = POS[dragging].y + 'px';
+  drawLines(selected);
+});
+
+document.addEventListener('mouseup', () => { dragging = null; });
+
+// ── Draw lines ────────────────────────────────────────────────────────────────
+
+function isVisible(name) {
+  const c = document.querySelector(`.card[data-name="${name}"]`);
+  return c && c.style.display !== 'none';
+}
+
+function drawLines(highlighted) {
+  const svg = document.getElementById('svg-layer');
+  svg.querySelectorAll('path.fk-line').forEach(p => p.remove());
+
+  RELATIONS.forEach(rel => {
+    // Skip if either table is hidden by the group filter
+    if (!isVisible(rel.from) || !isVisible(rel.to)) return;
+
+    const fromT  = SCHEMA.find(t => t.name === rel.from);
+    const color  = GC[fromT.group];
+    const marker = ARR[fromT.group];
+
+    const fy = colY(rel.from, rel.fromCol);
+    const ty = colY(rel.to,   rel.toCol);
+    const dx = POS[rel.to].x - POS[rel.from].x;
+
+    let d;
+    if (Math.abs(dx) >= 100) {
+      // Horizontal bezier between left/right edges
+      const x1 = dx > 0 ? POS[rel.from].x + CARD_W : POS[rel.from].x;
+      const x2 = dx > 0 ? POS[rel.to].x             : POS[rel.to].x + CARD_W;
+      const cx = Math.abs(dx) * 0.45;
+      d = `M ${x1} ${fy} C ${x1 + (dx>0?cx:-cx)} ${fy} ${x2 + (dx>0?-cx:cx)} ${ty} ${x2} ${ty}`;
+    } else {
+      // Near-vertical: loop around the nearest side to avoid overlap
+      const goRight = POS[rel.from].x > 300;
+      const x1 = goRight ? POS[rel.from].x + CARD_W : POS[rel.from].x;
+      const x2 = goRight ? POS[rel.to].x   + CARD_W : POS[rel.to].x;
+      const lx = goRight ? x1 + 55 : x1 - 55;
+      d = `M ${x1} ${fy} C ${lx} ${fy} ${lx} ${ty} ${x2} ${ty}`;
+    }
+
+    const isActive = !highlighted || highlighted === rel.from || highlighted === rel.to;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('class',         'fk-line');
+    path.setAttribute('d',             d);
+    path.setAttribute('fill',          'none');
+    path.setAttribute('stroke',        color);
+    path.setAttribute('stroke-width',  isActive ? '2' : '1');
+    path.setAttribute('stroke-opacity',isActive ? '0.85' : '0.12');
+    path.setAttribute('marker-end',    `url(#${marker})`);
+    svg.appendChild(path);
+  });
+}
+
+// ── Selection ─────────────────────────────────────────────────────────────────
+
+let selected = null;
+
+function handleClick(name) {
+  selected = selected === name ? null : name;
+  applySelection();
+}
+
+function applySelection() {
+  document.querySelectorAll('.card').forEach(card => {
+    const n = card.dataset.name;
+    card.classList.remove('selected', 'faded', 'references-this', 'referenced-by');
+    if (!selected) return;
+    if (n === selected)                  card.classList.add('selected');
+    else if (REFD[selected].includes(n)) card.classList.add('references-this');
+    else if (REFS[selected].includes(n)) card.classList.add('referenced-by');
+    else                                 card.classList.add('faded');
+  });
+  drawLines(selected);
+}
+
+document.getElementById('canvas-wrap').addEventListener('click', e => {
+  if (e.target.id === 'canvas-wrap' || e.target.id === 'canvas') {
+    selected = null;
+    applySelection();
+  }
+});
+
+// ── Group filter ──────────────────────────────────────────────────────────────
+
+let activeGroup = 'all';
+
+document.querySelectorAll('.pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    activeGroup = pill.dataset.g;
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.display = (activeGroup === 'all' || card.dataset.group === activeGroup) ? '' : 'none';
+    });
+    selected = null;
+    applySelection(); // also redraws lines, which now skips hidden tables
+  });
+});
+
+// ── Reset layout ──────────────────────────────────────────────────────────────
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  // Restore all cards before re-layout (filter may have hidden some)
+  activeGroup = 'all';
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  document.querySelector('.pill[data-g="all"]').classList.add('active');
+
+  computeLayout();
+  renderCards();
+  selected = null;
+  drawLines(null);
+});
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+const tt = document.getElementById('tt');
+
+function showTooltip(col, e) {
+  const badges = [];
+  if (col.pk)            badges.push('<span style="color:#FCD34D">⬤ Primary Key</span>');
+  if (col.fk)            badges.push(`<span style="color:#C4B5FD">⬤ FK → ${col.fk}</span>`);
+  if (col.autoincrement) badges.push('<span style="color:#9ca3af">AUTO&shy;INCREMENT</span>');
+  if (col.notNull && !col.pk) badges.push('<span style="color:#9ca3af">NOT NULL</span>');
+
+  tt.innerHTML = `<div class="tt-name">${col.name}</div>
+    <div class="tt-type">${col.type}</div>
+    ${badges.map(b => `<div class="tt-row">${b}</div>`).join('')}`;
+  tt.classList.add('on');
+  placeTooltip(e);
+}
+
+function placeTooltip(e) {
+  const pad = 14;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  tt.style.left = '0'; tt.style.top = '0'; // reset so offsetWidth is accurate
+  const w = tt.offsetWidth, h = tt.offsetHeight;
+  if (x + w > window.innerWidth  - 8) x = e.clientX - w - pad;
+  if (y + h > window.innerHeight - 8) y = e.clientY - h - pad;
+  tt.style.left = x + 'px';
+  tt.style.top  = y + 'px';
+}
+
+document.getElementById('canvas').addEventListener('mouseover', e => {
+  const row = e.target.closest('.col-row');
+  if (row && row.dataset.col) showTooltip(JSON.parse(row.dataset.col), e);
+  else tt.classList.remove('on');
+});
+document.getElementById('canvas').addEventListener('mousemove', e => {
+  if (tt.classList.contains('on')) placeTooltip(e);
+});
+document.getElementById('canvas').addEventListener('mouseleave', () => {
+  tt.classList.remove('on');
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+computeLayout();
+renderCards();
+drawLines(null);
+</script>
+</body>
+</html>
