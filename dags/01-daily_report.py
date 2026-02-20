@@ -16,22 +16,19 @@ return date is still in the future are counted as active; past ones as completed
 import pendulum
 from airflow.configuration import AIRFLOW_HOME
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from airflow.sdk import Param, dag, chain
+from airflow.sdk import Param, dag, chain, Asset
 
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 
 
 @dag(
     schedule="@daily",
-    start_date=pendulum.datetime(2025, 10, 1),
-    catchup=False,
-    tags=["astrotrips", "daily-report"],
     template_searchpath=f"{AIRFLOW_HOME}/include/sql",
     params={
         "n_bookings": Param(5, type="integer", description="Number of new bookings to generate for this run")
     },
     default_args={"retries": 2, "retry_delay": pendulum.duration(seconds=30)},
-    doc_md=__doc__
+    doc_md=__doc__,
 )
 def daily_report():
 
@@ -46,6 +43,7 @@ def daily_report():
         task_id="build_report",
         conn_id=_SNOWFLAKE_CONN_ID,
         sql="report.sql",
+        outlets=[Asset("daily_planet_report")],
     )
 
     chain(_generate, _report)

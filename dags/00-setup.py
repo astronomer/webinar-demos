@@ -5,10 +5,7 @@ from airflow.sdk import dag, chain
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 
 
-@dag(
-    tags=["astrotrips", "setup"],
-    template_searchpath=f"{AIRFLOW_HOME}/include/sql",
-)
+@dag(template_searchpath=f"{AIRFLOW_HOME}/include/sql")
 def setup():
 
     _schema = SQLExecuteQueryOperator(

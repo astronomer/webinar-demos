@@ -30,12 +30,15 @@ from airflow.providers.common.sql.operators.sql import (
     SQLValueCheckOperator,
 )
 from airflow.providers.discord.notifications.discord import DiscordNotifier
-from airflow.sdk import chain, dag, task_group
+from airflow.sdk import chain, dag, task_group, Asset
 
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 
 
-@dag(doc_md=__doc__)
+@dag(
+    schedule=Asset("daily_planet_report"),
+    doc_md=__doc__,
+)
 def data_quality():
 
     @task_group
@@ -99,7 +102,6 @@ def data_quality():
 
     @task_group(
         default_args={
-            "retries": 0,
             "on_failure_callback": DiscordNotifier(
                 discord_conn_id="discord_default",
                 text="""
