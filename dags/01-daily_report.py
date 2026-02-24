@@ -43,7 +43,6 @@ def daily_report():
         task_id="build_report",
         conn_id=_SNOWFLAKE_CONN_ID,
         sql="report.sql",
-        outlets=[Asset("daily_planet_report")],
     )
 
     chain(_generate, _report)

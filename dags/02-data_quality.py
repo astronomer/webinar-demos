@@ -35,10 +35,7 @@ from airflow.sdk import chain, dag, task_group, Asset
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 
 
-@dag(
-    schedule=Asset("daily_planet_report"),
-    doc_md=__doc__,
-)
+@dag(doc_md=__doc__)
 def data_quality():
 
     @task_group
