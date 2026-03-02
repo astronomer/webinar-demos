@@ -12,15 +12,14 @@ We still fire notification, making this a good template for non-critical pipelin
 where you want to be alerted about data issues but not fail the whole run.
 """
 
-import pendulum
 from airflow.configuration import AIRFLOW_HOME
-from airflow.operators.empty import EmptyOperator
 from airflow.providers.common.sql.operators.sql import (
     SQLCheckOperator,
     SQLExecuteQueryOperator,
     SQLThresholdCheckOperator,
 )
 from airflow.providers.discord.notifications.discord import DiscordNotifier
+from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.sdk import Param, chain, dag, task_group
 
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
@@ -80,9 +79,9 @@ def daily_report_soft_dq():
         )
 
     # The only leaf task. trigger_rule="all_done" makes it run whether the
-    # gates above passed (success) or fired (failed). Because a DAG run is
+    # gates above passed (success) or fired (failed). Because a Dag run is
     # only marked failed when a LEAF task ends in failed/upstream_failed,
-    # the DAG stays green even when the DQ checks fail.
+    # the Dag stays green even when the DQ checks fail.
     _done = EmptyOperator(
         task_id="pipeline_complete",
         trigger_rule="all_done",

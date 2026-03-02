@@ -16,7 +16,7 @@ return date is still in the future are counted as active; past ones as completed
 import pendulum
 from airflow.configuration import AIRFLOW_HOME
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from airflow.sdk import Param, dag, chain, Asset
+from airflow.sdk import Param, dag, chain
 
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 

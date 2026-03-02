@@ -20,7 +20,6 @@ Operator coverage:
 - SQLTableCheckOperator     → report aggregates satisfy business rules
 """
 
-import pendulum
 from airflow.providers.common.sql.operators.sql import (
     SQLCheckOperator,
     SQLColumnCheckOperator,
@@ -30,7 +29,7 @@ from airflow.providers.common.sql.operators.sql import (
     SQLValueCheckOperator,
 )
 from airflow.providers.discord.notifications.discord import DiscordNotifier
-from airflow.sdk import chain, dag, task_group, Asset
+from airflow.sdk import chain, dag, task_group
 
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
 
@@ -50,11 +49,16 @@ def data_quality():
         )
 
         # Field-level constraints on bookings:
-        # booking_id must be non-null and unique; passengers must be between 1 and 10
+        # `booking_id` must be non-null and unique; `passengers` must be between 1 and 10
+        # Available checks: `null_check`, `unique_check`, `distinct_check`, `min`, `max`
+        # Available comparators: `equal_to`, `greater_than`, `geq_to`, `less_than`, `leq_to`
+        # Additional options: `tolerance` as fraction per check (e.g. 0.05 for 5% tolerance)
+        # Filter: `partition_clause` to apply to the check only to a subset of rows, can be set on operator and checks
         _check_booking_columns = SQLColumnCheckOperator(
             task_id="check_booking_columns",
             conn_id=_SNOWFLAKE_CONN_ID,
             table="bookings",
+            partition_clause="promo_code IS NOT NULL",
             column_mapping={
                 "booking_id": {
                     "null_check": {"equal_to": 0},
@@ -68,6 +72,7 @@ def data_quality():
         )
 
         # Relational integrity: every payment must reference an existing booking
+        # The check fails if any returned value evaluates to `False` in Python (e.g., 0, `None`, empty string)
         _check_no_orphaned_payments = SQLCheckOperator(
             task_id="check_no_orphaned_payments",
             conn_id=_SNOWFLAKE_CONN_ID,
@@ -82,6 +87,7 @@ def data_quality():
         # Average payment must sit within the plausible fare range:
         # lower bound = 1 pax × Moon fare (4 000 USD)
         # upper bound = 4 pax × Europa fare (240 000 USD), with margin
+        # Thresholds can also be SQL expressions
         _check_avg_payment = SQLThresholdCheckOperator(
             task_id="check_avg_payment_in_range",
             conn_id=_SNOWFLAKE_CONN_ID,
@@ -112,8 +118,8 @@ def data_quality():
     )
     def report_quality_checks():
 
-        # Compares SUM(total_net_fare_usd) for today's report_date against the same
-        # value from exactly 7 days ago using ratio_formula="max_over_min":
+        # Compares SUM(total_net_fare_usd) for execution date based report_date against the same
+        # value from exactly 7 days before using ratio_formula="max_over_min":
         #
         #   ratio = max(current, past) / min(current, past)
         #
@@ -126,6 +132,14 @@ def data_quality():
         # there is no data for the comparison date. The default ignore_zero=True would
         # silently pass that zero; setting it to False ensures a missing historical
         # snapshot is treated as a failure. Use backfill to populate missing dates.
+        #
+        # Ratio formulas:
+        #
+        # `max_over_min`: Takes the bigger number divided by the smaller number.
+        #  So if today is 1000 and last week was 500, the ratio is 1000/500 = 2.0.
+        #
+        # `relative_diff`: Takes the absolute difference divided by the reference (last week).
+        # So if today is 1000 and last week was 500, it's |1000-500| / 500 = 1.0 (= 100% change).
         _check_report_interval = SQLIntervalCheckOperator(
             task_id="check_report_revenue_vs_last_week",
             conn_id=_SNOWFLAKE_CONN_ID,
