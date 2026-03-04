@@ -16,7 +16,7 @@ Operator coverage:
 - SQLColumnCheckOperator    → booking_id is unique/non-null; passengers in [1, 10]
 - SQLCheckOperator          → no payments exist without a matching booking
 - SQLThresholdCheckOperator → average payment is between 4 000 and 200 000 USD
-- SQLIntervalCheckOperator  → daily report net revenue doesn't deviate > 2× vs last week
+- SQLIntervalCheckOperator  → daily report net revenue doesn't deviate > 2x vs last week
 - SQLTableCheckOperator     → report aggregates satisfy business rules
 """
 

@@ -3,10 +3,10 @@ Generates synthetic booking data and refreshes the daily planet report.
 
 **generate_bookings** inserts `n_bookings` bookings (+ matching payments) per run.
 Each booking i gets a `booked_at` timestamp of (ds - (100 + i) days), so with the
-default of 5 bookings they land 100–104 days before the execution date. Customers,
+default of 5 bookings they land 100-104 days before the execution date. Customers,
 routes, and promo codes (20% chance) are picked randomly; passengers cycle 1→2→3→4;
-departure is 3–60 days after booking, return is 3–399 days after departure, and
-payment is recorded 5–59 minutes after booking.
+departure is 3-60 days after booking, return is 3-399 days after departure, and
+payment is recorded 5-59 minutes after booking.
 
 **build_report** upserts per-planet aggregates for `ds` into `daily_planet_report`,
 covering all bookings made up to and including the execution date. Trips whose
