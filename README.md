@@ -2,6 +2,10 @@
 
 This repository contains the demo for the [From Apache Airflow® 2 to 3: How to plan your upgrade](https://www.astronomer.io/events/webinars/upgrade-airflow-2-to-3-video/) webinar.
 
+> [!TIP]
+> There is an [Astronomer Agent skill](https://github.com/astronomer/agents) for your AI to help you with upgrading your Airflow 2 projects to Airflow 3.
+> `npx skills add astronomer/agents`
+
 ## Repository Content
 
 ### Migration Examples (`dags/`)
