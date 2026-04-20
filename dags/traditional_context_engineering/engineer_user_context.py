@@ -1,4 +1,4 @@
-from airflow.providers.standard.operators.hitl import HITLOperator
+from airflow.providers.standard.operators.hitl import HITLEntryOperator
 from airflow.sdk import dag, task, Param, chain, Variable
 
 
@@ -7,11 +7,10 @@ from airflow.sdk import dag, task, Param, chain, Variable
 )
 def engineer_user_context():
 
-    _extract_user_favorite_food = HITLOperator(
+    _extract_user_favorite_food = HITLEntryOperator(
         task_id="extract_user_favorite_food",
         subject="What is your favorite food?",
         body="",
-        options=["Submit"],
         multiple=True,
         params={
             "Favorite food": Param(type="string", default="e.g. fondue, raclette, rösti, etc."),
