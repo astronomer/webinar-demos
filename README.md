@@ -1,6 +1,16 @@
 # Context engineering webinar demo
 
+Demo for the [AI Context Engineering with Apache Airflow®](https://www.astronomer.io/events/webinars/ai-context-engineering-with-airflow-video) webinar.
+
 ## Webinar Dags
+
+Traditional context engineering Dags:
+- [Engineer user context](dags/traditional_context_engineering/engineer_user_context.py)
+- [Inference DAG](dags/traditional_context_engineering/inference_dag.py)
+
+Context graph Dags:
+- [AI support ticket system](dags/context_graph/ai_support_ticket_system.py)
+- [Gathering decision trace](dags/context_graph/gathering_decision_trace.py)
 
 ## Slack HITL plugin
 
