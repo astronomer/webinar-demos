@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: HITL Slack Webhook Forwarder - receives webhooks and forwards to Astro
+
+Parameters:
+  AstroApiUrl:
+    Type: String
+    Description: "Astro deployment API URL (without /api/v2, e.g., https://org.astronomer.run/abc123)"
+  AstroApiToken:
+    Type: String
+    Description: "Astro deployment API token"
+    NoEcho: true
+  WebhookSecret:
+    Type: String
+    Description: "Shared secret for authenticating requests from Airflow"
+    NoEcho: true
+  SlackSigningSecret:
+    Type: String
+    Description: "Slack app signing secret for verifying requests from Slack"
+    NoEcho: true
+  SlackBotToken:
+    Type: String
+    Description: "Slack bot OAuth token (starts with xoxb-)"
+    NoEcho: true
+  SlackChannel:
+    Type: String
+    Description: "Slack channel ID to send HITL messages to"
+    Default: ""
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.12
+    MemorySize: 128
+    Environment:
+      Variables:
+        ASTRO_API_URL: !Ref AstroApiUrl
+        ASTRO_API_TOKEN: !Ref AstroApiToken
+        WEBHOOK_SECRET: !Ref WebhookSecret
+        SLACK_SIGNING_SECRET: !Ref SlackSigningSecret
+        SLACK_BOT_TOKEN: !Ref SlackBotToken
+        SLACK_CHANNEL: !Ref SlackChannel
+
+Resources:
+  WebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: webhook_handler/
+      Handler: app.lambda_handler
+      Architectures:
+        - x86_64
+      Events:
+        FromAirflow:
+          Type: Api
+          Properties:
+            Path: /from-airflow
+            Method: post
+        FromSlack:
+          Type: Api
+          Properties:
+            Path: /from-slack
+            Method: post
+        Ping:
+          Type: Api
+          Properties:
+            Path: /ping
+            Method: get
+
+Outputs:
+  WebhookApi:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  WebhookFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt WebhookFunction.Arn
+

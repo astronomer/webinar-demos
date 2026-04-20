@@ -1,6 +1,7 @@
-dags
-include
-plugins
 airflow-settings.yaml
 .env
 .DS_Store
+.dockerignore
+**__pycache__**
+.astro
+.venv
