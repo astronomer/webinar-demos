@@ -155,19 +155,6 @@ def ai_support_ticket_system():
 
 ---
 
-## AI Review Ratings
-
-| Criterion | Rating |
-|---|---|
-| Accuracy | {{ data['ai_as_a_judge_accuracy_rating'] }} |
-| Tone | {{ data['ai_as_a_judge_tone_rating'] }} |
-| Completeness | {{ data['ai_as_a_judge_completeness_rating'] }} |
-| Helpfulness | {{ data['ai_as_a_judge_helpfulness_rating'] }} |
-
-**Suggested Improvements:** {{ data['ai_as_a_judge_suggested_improvements'] | join('; ') }}
-
----
-
 ## Instructions
 
 | Action | Description |

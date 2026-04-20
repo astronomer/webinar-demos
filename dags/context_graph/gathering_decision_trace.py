@@ -96,12 +96,30 @@ def gathering_decision_trace():
         return hitl_details_list
 
     @task
-    def compile_decision_trace(dag_id: str, dag_run_id: str, hitl_decisions: list) -> str:
+    def query_task_outputs(dag_id: str, dag_run_id: str) -> dict:
+        from urllib.parse import quote
+        task_ids = ["generate_ai_response", "ai_as_a_judge", "format_approval_request"]
+        outputs = {}
+        for tid in task_ids:
+            try:
+                endpoint = f"/dags/{quote(dag_id, safe='')}/dagRuns/{quote(dag_run_id, safe='')}/taskInstances/{tid}/xcomEntries/return_value"
+                result = make_api_request(endpoint)
+                outputs[tid] = result.get("value")
+            except Exception as e:
+                print(f"Could not fetch XCom for {tid}: {e}")
+                outputs[tid] = None
+        return outputs
+
+    @task
+    def compile_decision_trace(dag_id: str, dag_run_id: str, hitl_decisions: list, task_outputs: dict) -> str:
         from include.custom_functions import save_as_markdown
 
         decision_trace = {
             "source_dag": dag_id,
             "dag_run_id": dag_run_id,
+            "ai_response": task_outputs.get("generate_ai_response"),
+            "ai_review": task_outputs.get("ai_as_a_judge"),
+            "formatted_request": task_outputs.get("format_approval_request"),
             "hitl_decisions": [
                 {
                     "task_id": hitl.get("task_id"),
@@ -126,8 +144,9 @@ def gathering_decision_trace():
     dag_id = "{{ params.dag_id }}"
     dag_run_id = get_latest_dag_run_id(dag_id=dag_id)
     hitl_decisions = query_decisions(dag_id=dag_id, dag_run_id=dag_run_id)
+    task_outputs = query_task_outputs(dag_id=dag_id, dag_run_id=dag_run_id)
 
-    compile_decision_trace(dag_id=dag_id, dag_run_id=dag_run_id, hitl_decisions=hitl_decisions)
+    compile_decision_trace(dag_id=dag_id, dag_run_id=dag_run_id, hitl_decisions=hitl_decisions, task_outputs=task_outputs)
 
 
 gathering_decision_trace()
