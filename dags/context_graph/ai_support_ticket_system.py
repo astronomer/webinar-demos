@@ -69,6 +69,7 @@ def ai_support_ticket_system():
         - Completeness: Is the response complete?
         - Helpfulness: Is the response helpful and does it include actionable steps for the customer to take?
         Provide a list of suggested improvements for the response.
+        Don't use placeholders like [Your Name] or [Customer Name].
         """,
         output_type=AIReviewedTicketResponse,
         agent_params={"tools": [read_all_decision_traces, check_the_roadmap]},
@@ -133,7 +134,9 @@ def ai_support_ticket_system():
 
 ## Ticket Details
 
-{{ data['ticket_info'] }}
+{{ data['summary'] }}
+
+{{ data['original_ticket'] }}
 
 ---
 
@@ -151,19 +154,25 @@ def ai_support_ticket_system():
 
 ## AI Response
 
-> {{ data['ai_response'] | replace('\\n', '\\n> ') }}
+> {{ data['ai_response'] | replace('\n', '\n> ') }}
 
 ---
 
-## Instructions
+## AI Judge Evaluation
 
-| Action | Description |
+| | |
 |---|---|
-| **Approve AI Response** | Send the AI response to the customer. Optionally add a review to the notes field. |
-| **Manual Response** | Write and send a manual response in the notes field. |
-| **Escalate to CRE** | Escalate to the CRE team. Add a reason for escalation to the notes field. |
+| **Accuracy** | {{ "%.1f" | format(data['ai_as_a_judge_accuracy_rating']) }} / 10 |
+| **Tone** | {{ "%.1f" | format(data['ai_as_a_judge_tone_rating']) }} / 10 |
+| **Completeness** | {{ "%.1f" | format(data['ai_as_a_judge_completeness_rating']) }} / 10 |
+| **Helpfulness** | {{ "%.1f" | format(data['ai_as_a_judge_helpfulness_rating']) }} / 10 |
 
-*Please review for accuracy, tone, and completeness.*""",
+**Suggested Improvements:**
+{% for improvement in data['ai_as_a_judge_suggested_improvements'] %}
+- {{ improvement }}
+{% endfor %}
+
+""",
         options=[
             "Approve AI Response",
             "Respond Manually",
