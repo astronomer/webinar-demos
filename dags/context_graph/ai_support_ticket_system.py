@@ -99,7 +99,7 @@ def ai_support_ticket_system():
         ai_response: dict, original_ticket: dict, ai_as_a_judge_response: dict
     ):
         return {
-            "ticket_info": f"**Ticket:** {original_ticket['ticket_id']}\n**Customer:** {original_ticket['customer']}\n**Subject:** {original_ticket['subject']}\n**Priority:** {original_ticket['priority']}",
+            "ticket_info": f"**Ticket:** {original_ticket['ticket_id']}\n**Customer:** {original_ticket['customer']}\n**Subject:** {original_ticket['subject']}\n**Priority:** {original_ticket['priority']}\n\n**Message:**\n{original_ticket['message']}",
             "summary": ai_response["summary"],
             "ai_response": ai_response["response"],
             "confidence": ai_response["confidence_score"],
@@ -134,9 +134,7 @@ def ai_support_ticket_system():
 
 ## Ticket Details
 
-{{ data['summary'] }}
-
-{{ data['original_ticket'] }}
+{{ data['ticket_info'] }}
 
 ---
 
@@ -154,25 +152,17 @@ def ai_support_ticket_system():
 
 ## AI Response
 
-> {{ data['ai_response'] | replace('\n', '\n> ') }}
+> {{ data['ai_response'] | replace('\\n', '\\n> ') }}
 
 ---
 
-## AI Judge Evaluation
+## AI Judge
 
-| | |
-|---|---|
-| **Accuracy** | {{ "%.1f" | format(data['ai_as_a_judge_accuracy_rating']) }} / 10 |
-| **Tone** | {{ "%.1f" | format(data['ai_as_a_judge_tone_rating']) }} / 10 |
-| **Completeness** | {{ "%.1f" | format(data['ai_as_a_judge_completeness_rating']) }} / 10 |
-| **Helpfulness** | {{ "%.1f" | format(data['ai_as_a_judge_helpfulness_rating']) }} / 10 |
+*Ratings (1-10):* Accuracy {{ "%.1f" | format(data['ai_as_a_judge_accuracy_rating']) }} | Tone {{ "%.1f" | format(data['ai_as_a_judge_tone_rating']) }} | Completeness {{ "%.1f" | format(data['ai_as_a_judge_completeness_rating']) }} | Helpfulness {{ "%.1f" | format(data['ai_as_a_judge_helpfulness_rating']) }}
 
-**Suggested Improvements:**
-{% for improvement in data['ai_as_a_judge_suggested_improvements'] %}
-- {{ improvement }}
-{% endfor %}
+*Improvements:* {{ data['ai_as_a_judge_suggested_improvements'] | join('; ') }}
 
-""",
+*Please review for accuracy, tone, and completeness.*""",
         options=[
             "Approve AI Response",
             "Respond Manually",
