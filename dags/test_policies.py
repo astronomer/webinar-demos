@@ -2,7 +2,7 @@ from airflow.sdk import dag, task
 
 
 @dag(
-    tags=["test_policies"]
+    tags=["test_policies", "test-change"]
 )
 def test_policies_dag():
     @task
