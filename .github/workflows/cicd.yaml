@@ -11,6 +11,7 @@ on:
       - main
       - staging
       - dev
+      - best-practices-for-running-apache-airflow-in-production
 
 jobs:
   test:
