@@ -1,0 +1,90 @@
+name: Airflow CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - dev
+  pull_request:
+    branches:
+      - main
+      - staging
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Astro CLI
+        run: |
+          curl -sSL install.astronomer.io | sudo bash -s
+
+      - name: Create test environment file
+        run: |
+          cat > .env <<'EOF'
+          AIRFLOW_CONN_PYDANTICAI_DEFAULT={"conn_type":"pydanticai","password":"placeholder-key-for-testing","extra":{"model":"openai:gpt-4o-mini"}}
+          EOF
+
+      - name: Run tests with coverage
+        id: pytest
+        run: |
+          astro dev pytest tests/ --args "--cov --cov-report=term" 2>&1 | tee pytest_output.txt
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(grep "TOTAL" pytest_output.txt | awk '{print $NF}' | sed 's/%//')
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
+
+  deploy-dev:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Astro Dev
+        uses: astronomer/deploy-action@v0.2
+        with:
+          deployment-id: ${{ vars.ASTRO_DEV_DEPLOYMENT_ID }}
+        env:
+          ASTRO_API_TOKEN: ${{ secrets.ASTRO_API_TOKEN }}
+
+  deploy-staging:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Astro Staging
+        uses: astronomer/deploy-action@v0.2
+        with:
+          deployment-id: ${{ vars.ASTRO_STAGING_DEPLOYMENT_ID }}
+        env:
+          ASTRO_API_TOKEN: ${{ secrets.ASTRO_API_TOKEN }}
+
+  deploy-prod:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Astro Production
+        uses: astronomer/deploy-action@v0.2
+        with:
+          deployment-id: ${{ vars.ASTRO_PROD_DEPLOYMENT_ID }}
+        env:
+          ASTRO_API_TOKEN: ${{ secrets.ASTRO_API_TOKEN }}

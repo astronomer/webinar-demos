@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_cluster_policies"
+version = "0.3.0"
+dependencies = ["apache-airflow==3.2.1"]
+requires-python = ">=3.11"
+description = "Airflow cluster policies"
+
+[project.entry-points.'airflow.policy']
+_ = 'my_cluster_policies.policy'
+

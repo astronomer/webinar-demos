@@ -1,0 +1,18 @@
+[run]
+source = include, dags
+omit = 
+    */tests/*
+    */nutrition_data.py
+    */__pycache__/*
+    */plugins/*
+    dags/test_*.py
+    dags/my_dev_dag.py
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+
+[html]
+directory = htmlcov
+
