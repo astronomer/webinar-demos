@@ -7,6 +7,3 @@ DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS planets;
 
 DROP TABLE IF EXISTS daily_planet_report;
-
-DROP SEQUENCE IF EXISTS payment_id_seq;
-DROP SEQUENCE IF EXISTS booking_id_seq;

@@ -11,12 +11,12 @@ INSERT INTO bookings (
 )
 WITH picked AS (
   SELECT
-    (SELECT customer_id FROM customers ORDER BY random() LIMIT 1) AS customer_id,
-    (SELECT route_id FROM routes ORDER BY random() LIMIT 1) AS route_id,
-    (
-      '{{ ds }}'::TIMESTAMP
-      - INTERVAL '{{ 100 + i }} day'
-      + CAST(floor(random() * 24 * 60) AS BIGINT) * INTERVAL 1 MINUTE
+    (SELECT customer_id FROM customers ORDER BY UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) LIMIT 1) AS customer_id,
+    (SELECT route_id FROM routes ORDER BY UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) LIMIT 1) AS route_id,
+    DATEADD(
+      minute,
+      CAST(FLOOR(UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) * 24 * 60) AS INTEGER),
+      DATEADD(day, -{{ 100 + i }}, '{{ ds }}'::TIMESTAMP)
     ) AS booked_at,
     {{ 1 + (i % 4) }} AS passengers
 ),
@@ -26,7 +26,11 @@ dated AS (
     route_id,
     booked_at,
     passengers,
-    (CAST(booked_at AS DATE) + (3 + CAST(floor(random() * 58) AS INTEGER))) AS departure_date
+    DATEADD(
+      day,
+      3 + CAST(FLOOR(UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) * 58) AS INTEGER),
+      CAST(booked_at AS DATE)
+    ) AS departure_date
   FROM picked
 )
 SELECT
@@ -34,12 +38,16 @@ SELECT
   d.route_id,
   d.booked_at,
   d.departure_date,
-  (d.departure_date + (3 + CAST(floor(random() * 397) AS INTEGER))) AS return_date,
+  DATEADD(
+    day,
+    3 + CAST(FLOOR(UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) * 397) AS INTEGER),
+    d.departure_date
+  ) AS return_date,
   d.passengers,
   CASE
-    WHEN random() < 0.20 -- 20% chance to apply a random promo code
+    WHEN UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) < 0.20
      AND (SELECT COUNT(*) FROM promo_codes) > 0
-    THEN (SELECT promo_code FROM promo_codes ORDER BY random() LIMIT 1)
+    THEN (SELECT promo_code FROM promo_codes ORDER BY UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) LIMIT 1)
     ELSE NULL
   END AS promo_code
 FROM dated d;
@@ -47,8 +55,11 @@ FROM dated d;
 INSERT INTO payments (booking_id, paid_at, amount_usd)
 SELECT
   b.booking_id,
-  b.booked_at + (5 + CAST(floor(random() * 55) AS BIGINT)) * INTERVAL 1 MINUTE AS paid_at,
-
+  DATEADD(
+    minute,
+    5 + CAST(FLOOR(UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) * 55) AS INTEGER),
+    b.booked_at
+  ) AS paid_at,
   CAST(ROUND(
     (b.passengers * r.base_fare_usd * p.base_multiplier)
     * (1 - COALESCE(pc.discount_pct, 0))
@@ -57,6 +68,6 @@ FROM bookings b
 JOIN routes r ON r.route_id = b.route_id
 JOIN planets p ON p.planet_id = r.destination_id
 LEFT JOIN promo_codes pc ON pc.promo_code = b.promo_code
-WHERE b.booking_id = currval('booking_id_seq');
+WHERE b.booking_id = (SELECT MAX(booking_id) FROM bookings);
 
 {% endfor %}

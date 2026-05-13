@@ -1,0 +1,13 @@
+snowflake_astrotrips:
+  conn_type: snowflake
+  login: <your-snowflake-user>
+  schema: <your-snowflake-schema>
+  extra:
+    account: <your-snowflake-account>
+    warehouse: <your-snowflake-warehouse>
+    database: <your-snowflake-database>
+    role: <your-snowflake-role>
+    authenticator: snowflake
+    session_parameters: null
+    application: AIRFLOW
+    private_key_content: <your-snowflake-private-key>

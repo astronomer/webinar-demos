@@ -10,4 +10,4 @@ webserver_config.py
 airflow.cfg
 airflow.db
 profiles/
-include/astrotrips.duckdb
+include/connections.yaml
