@@ -7,3 +7,5 @@ DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS planets;
 
 DROP TABLE IF EXISTS daily_planet_report;
+DROP TABLE IF EXISTS customer_lifetime_stats;
+DROP TABLE IF EXISTS route_performance;

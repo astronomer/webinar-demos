@@ -53,3 +53,27 @@ CREATE TABLE IF NOT EXISTS daily_planet_report (
 
   PRIMARY KEY (report_date, planet_name)
 );
+
+CREATE TABLE IF NOT EXISTS customer_lifetime_stats (
+  customer_id          INTEGER PRIMARY KEY,
+  full_name            VARCHAR NOT NULL,
+
+  total_bookings       INTEGER NOT NULL,
+  total_passengers     INTEGER NOT NULL,
+  total_paid_usd       INTEGER NOT NULL,
+
+  first_booking_date   DATE,
+  last_booking_date    DATE
+);
+
+CREATE TABLE IF NOT EXISTS route_performance (
+  report_date          DATE NOT NULL,
+  route_id             INTEGER NOT NULL,
+  planet_name          VARCHAR NOT NULL,
+
+  total_bookings       INTEGER NOT NULL,
+  total_passengers     INTEGER NOT NULL,
+  total_revenue_usd    INTEGER NOT NULL,
+
+  PRIMARY KEY (report_date, route_id)
+);

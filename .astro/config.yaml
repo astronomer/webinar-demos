@@ -1,2 +1,7 @@
+instances:
+- auth: null
+  name: webinar-demos
+  source: manual
+  url: http://localhost:18545
 project:
-    name: webinar-demos
+  name: webinar-demos

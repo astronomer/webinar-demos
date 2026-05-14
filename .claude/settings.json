@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(af --help)",
+      "Bash(uv tool *)",
+      "Bash(af instance *)",
+      "Bash(lsof -nP -iTCP -sTCP:LISTEN)"
+    ]
+  }
+}

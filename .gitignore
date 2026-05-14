@@ -11,3 +11,6 @@ airflow.cfg
 airflow.db
 profiles/
 include/connections.yaml
+.astro/standalone/
+.astro/*.local.yaml
+.claude/settings.local.json
