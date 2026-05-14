@@ -17,7 +17,8 @@
 			"extensions": [
 				"ms-python.python",
 				"ms-python.vscode-pylance",
-				"ms-vscode.live-server"
+				"ms-vscode.live-server",
+				"anthropic.claude-code"
 			]
 		}
 	}
