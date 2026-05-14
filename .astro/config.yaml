@@ -1,7 +1,7 @@
 instances:
 - auth: null
-  name: webinar-demos
-  source: manual
-  url: http://localhost:18545
+  name: localhost:8080
+  source: local
+  url: http://localhost:8080
 project:
   name: webinar-demos
