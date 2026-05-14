@@ -1,12 +1,14 @@
+{% set report_date = ds | default(dag_run.start_date.strftime("%Y-%m-%d"), true) %}
+
 MERGE INTO daily_planet_report AS target
 USING (
     WITH booking_facts AS (
         SELECT
-            '{{ ds }}'::DATE AS report_date,
+            '{{ report_date }}'::DATE AS report_date,
             b.booking_id,
             p.planet_name,
             b.passengers,
-            IFF(b.return_date < '{{ ds }}'::DATE, 'completed', 'active') AS state,
+            IFF(b.return_date < '{{ report_date }}'::DATE, 'completed', 'active') AS state,
             CAST(ROUND(b.passengers * r.base_fare_usd * p.base_multiplier) AS INTEGER) AS gross_fare_usd,
             CAST(ROUND(
                 (b.passengers * r.base_fare_usd * p.base_multiplier)

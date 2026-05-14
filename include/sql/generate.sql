@@ -1,3 +1,5 @@
+{% set report_date = ds | default(dag_run.start_date.strftime("%Y-%m-%d"), true) %}
+
 {% for i in range(params.n_bookings) %}
 
 INSERT INTO bookings (
@@ -16,7 +18,7 @@ WITH picked AS (
     DATEADD(
       minute,
       CAST(FLOOR(UNIFORM(0::FLOAT, 1::FLOAT, RANDOM()) * 24 * 60) AS INTEGER),
-      DATEADD(day, -{{ 100 + i }}, '{{ ds }}'::TIMESTAMP)
+      DATEADD(day, -{{ 100 + i }}, '{{ report_date }}'::TIMESTAMP)
     ) AS booked_at,
     {{ 1 + (i % 4) }} AS passengers
 ),
