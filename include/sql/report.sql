@@ -24,7 +24,7 @@ USING (
         JOIN payments pay ON pay.booking_id = b.booking_id
         JOIN routes r ON r.route_id = b.route_id
         JOIN planets p ON p.planet_id = r.destination_id
-        WHERE CAST(b.booked_at AS DATE) <= '{{ ds }}'::DATE
+        WHERE CAST(b.booked_at AS DATE) <= '{{ report_date }}'::DATE
     )
     SELECT
         report_date,
