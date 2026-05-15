@@ -14,3 +14,6 @@ include/connections.yaml
 .astro/standalone/
 .astro/*.local.yaml
 .claude/settings.local.json
+.claude/hook-activity.log
+.claude/dag-changelog.md
+.astro/warehouse.md

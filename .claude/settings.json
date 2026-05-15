@@ -4,7 +4,40 @@
       "Bash(af --help)",
       "Bash(uv tool *)",
       "Bash(af instance *)",
-      "Bash(lsof -nP -iTCP -sTCP:LISTEN)"
+      "Bash(lsof -nP -iTCP -sTCP:LISTEN)",
+      "Bash(git restore *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ts=$(date '+%Y-%m-%d %H:%M:%S'); file=$(jq -r '.tool_input.file_path'); echo \"[$ts] PostToolUse Edit|Write on $file\" >> .claude/hook-activity.log"
+          },
+          {
+            "type": "command",
+            "command": "ts=$(date '+%Y-%m-%d %H:%M:%S'); file=$(jq -r '.tool_input.file_path'); case \"$file\" in *dags/*.py) output=$(astro dev parse 2>&1); if [ $? -eq 0 ]; then echo \"[$ts] ✅ parse $file\" >> .claude/hook-activity.log; jq -n --arg msg \"✅ DAG parse passed: $file\" '{decision: \"block\", reason: $msg}'; else echo \"[$ts] ❌ parse $file\" >> .claude/hook-activity.log; echo \"$output\" >> .claude/hook-activity.log; jq -n --arg msg \"❌ DAG parse failed: $file\\n\\n$output\" '{decision: \"block\", reason: $msg}'; fi ;; esac"
+          },
+          {
+            "type": "command",
+            "command": "file=$(jq -r '.tool_input.file_path'); case \"$file\" in *dags/*.py) echo \"✅ Auto-tested DAG: $file\" >> .claude/dag-changelog.md ;; esac"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command'); if echo \"$cmd\" | grep -qE '(rm -rf|DROP TABLE|DROP DATABASE)'; then echo 'BLOCKED: Dangerous command detected' >&2; exit 2; fi"
+          }
+        ]
+      }
     ]
   }
 }
