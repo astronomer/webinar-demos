@@ -7,8 +7,8 @@ Companion project for the _Intro to Airflow: From basics to agentic_ webinar. It
 ## Stack
 
 - Astro Runtime 3.2 (Airflow 3)
-- Snowflake for the AstroTrips data, PydanticAI connection for the agent demo, PokeAPI as a public HTTP example
-- Providers: `common-sql`, `snowflake`, `http`, `common-ai`
+- Snowflake for the AstroTrips data, a PydanticAI connection (OpenAI `gpt-5-mini`) for the LLM demo, PokeAPI kept around as a public HTTP example
+- Providers: `common-sql`, `snowflake`, `http`, `common-ai[openai]`
 
 ## Getting started
 
@@ -24,12 +24,11 @@ Each Dag is one building block from the talk, going from the basics to an agenti
 
 | Dag | What it shows | Slide topic |
 | --- | --- | --- |
-| `demo1` | `@task.bash` and `@task`, dependency inference, XCom | Define tasks, Dependencies |
-| `demo2` | `HttpOperator` wired into a `@task` via `.output` | HttpOperator, XCom |
-| `demo3` | Asset-aware scheduling: a producer materializes `Asset("data")`, a consumer runs on it | Scheduling |
-| `demo4` | Data quality with `SQLValueCheckOperator` and `SQLColumnCheckOperator` grouped in a task group, feeding a query task | SQL check operators |
-| `demo5` | `@task.agent` with a `SQLToolset`, an LLM analyst that queries Snowflake and returns a report | Airflow for AI |
-| `demo6` | Built live during the webinar (read planets, print the result) | Let's build |
+| `demo1` | `@task.bash` and `@task`, dependency inference, XCom, and retries via `default_args` (the task fails on purpose until its third try) | Define tasks, Dependencies, Retries |
+| `demo2` | Asset-aware scheduling: a producer materializes `Asset("data")`, a consumer runs on it | Scheduling |
+| `demo3` | Data quality with `SQLValueCheckOperator` and `SQLColumnCheckOperator`, chained ahead of a `SQLExecuteQueryOperator` reporting query | SQL check operators |
+| `demo4` | `@task.llm` backed by the PydanticAI connection: an LLM that drafts a reply to a webinar review | Airflow for AI |
+| `demo5` | Built live during the webinar (read planets, print the result) | Let's build |
 
 ## Resources
 
