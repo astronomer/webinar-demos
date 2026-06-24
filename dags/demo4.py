@@ -3,41 +3,33 @@ from airflow.providers.common.sql.operators.sql import (
     SQLColumnCheckOperator,
     SQLValueCheckOperator,
 )
-from airflow.sdk import chain, dag, task_group
+from airflow.sdk import chain, dag
 
 @dag
 def demo4():
 
-    @task_group
-    def source_data_checks():
+    _check_planet_count = SQLValueCheckOperator(
+        task_id="check_planet_count",
+        conn_id="snowflake_astrotrips",
+        sql="SELECT COUNT(*) FROM planets",
+        pass_value=3,
+    )
 
-        _check_planet_count = SQLValueCheckOperator(
-            task_id="check_planet_count",
-            conn_id="snowflake_astrotrips",
-            sql="SELECT COUNT(*) FROM planets",
-            pass_value=3,
-        )
-
-        _check_booking_columns = SQLColumnCheckOperator(
-            task_id="check_booking_columns",
-            conn_id="snowflake_astrotrips",
-            table="bookings",
-            column_mapping={
-                "booking_id": {
-                    "null_check": {"equal_to": 0},
-                    "unique_check": {"equal_to": 0},
-                },
-                "passengers": {
-                    "min": {"geq_to": 1},
-                    "max": {"leq_to": 10},
-                },
+    _check_booking_columns = SQLColumnCheckOperator(
+        task_id="check_booking_columns",
+        conn_id="snowflake_astrotrips",
+        table="bookings",
+        column_mapping={
+            "booking_id": {
+                "null_check": {"equal_to": 0},
+                "unique_check": {"equal_to": 0},
             },
-        )
-
-        chain(
-            _check_planet_count,
-            _check_booking_columns,
-        )
+            "passengers": {
+                "min": {"geq_to": 1},
+                "max": {"leq_to": 10},
+            },
+        },
+    )
 
     _bookings_per_planet = SQLExecuteQueryOperator(
         task_id="get_bookings_per_planet",
@@ -51,6 +43,10 @@ def demo4():
         ),
     )
 
-    chain(source_data_checks(), _bookings_per_planet)
+    chain(
+        _check_planet_count,
+        _check_booking_columns,
+        _bookings_per_planet
+    )
 
 demo4()
