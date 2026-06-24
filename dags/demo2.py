@@ -1,23 +1,25 @@
-from airflow.sdk import dag, task
-from airflow.providers.http.operators.http import HttpOperator
+from airflow.sdk import dag, task, Asset
 
-@dag
-def demo2():
+@dag(schedule="@daily")  # same as "0 0 * * *"
+def demo2_producer():
 
-    get_ditto = HttpOperator(
-        task_id="get_ditto",
-        http_conn_id="pokeapi",
-        method="GET",
-        endpoint="api/v2/pokemon/ditto",
-        log_response=True,
-    )
+   @task(outlets=[Asset("data")])
+   def materialize_asset():
+       return 1
 
-    @task
-    def print_ditto(response: str):
-        import json
-        data = json.loads(response)
-        print(f"Name: {data['name']}, base experience: {data['base_experience']}")
+   materialize_asset()
 
-    print_ditto(get_ditto.output)
+demo2_producer()
 
-demo2()
+# ---
+
+@dag(schedule=Asset("data"))
+def demo2_consumer():
+
+   @task
+   def some_task():
+       print("Hi webinar!")
+
+   some_task()
+
+demo2_consumer()
