@@ -1,6 +1,6 @@
 from airflow.models import TaskInstance
 from pendulum import duration
-from airflow.sdk import dag, task, get_current_context
+from airflow.sdk import dag, task
 
 @dag(
     default_args={"retries": 3, "retry_delay": duration(seconds=2)}
