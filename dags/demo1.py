@@ -12,7 +12,7 @@ def demo1():
        return "date +%Y-%m-%d"
 
    @task
-   def log_dt(dt_value, ti: TaskInstance | None =None):
+   def log_dt(dt_value, ti: TaskInstance | None = None):
        try_number = ti.try_number # type: ignore
        if try_number < 3:
            raise RuntimeError("Simulated failure")
