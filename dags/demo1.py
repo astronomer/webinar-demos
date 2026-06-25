@@ -1,3 +1,4 @@
+from airflow.models import TaskInstance
 from pendulum import duration
 from airflow.sdk import dag, task, get_current_context
 
@@ -11,11 +12,10 @@ def demo1():
        return "date +%Y-%m-%d"
 
    @task
-   def log_dt(dt_value):
-       context = get_current_context()
-       try_number = context["ti"].try_number # pyright: ignore[reportTypedDictNotRequiredAccess]
+   def log_dt(dt_value, ti: TaskInstance | None =None):
+       try_number = ti.try_number # type: ignore
        if try_number < 3:
-           raise RuntimeError(f"Simulated failure")
+           raise RuntimeError("Simulated failure")
        print(f"Date received: {dt_value}")
 
    dt = get_dt()
