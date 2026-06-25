@@ -13,7 +13,7 @@ def demo1():
    @task
    def log_dt(dt_value):
        context = get_current_context()
-       try_number = context["ti"].try_number
+       try_number = context["ti"].try_number # pyright: ignore[reportTypedDictNotRequiredAccess]
        if try_number < 3:
            raise RuntimeError(f"Simulated failure")
        print(f"Date received: {dt_value}")
