@@ -1,4 +1,7 @@
 # Astro Runtime includes the following pre-installed providers packages: https://www.astronomer.io/docs/astro/runtime-image-architecture#provider-packages
-apache-airflow-providers-common-ai==0.6.0
-apache-airflow-providers-common-sql==2.0.2
+apache-airflow-providers-common-ai[openai,sql]==0.6.0
+apache-airflow-providers-common-sql[datafusion]==2.0.2
 apache-airflow-providers-snowflake==6.14.0
+
+# Token Console cost estimates use Pydantic's genai-prices dataset (offline).
+genai-prices

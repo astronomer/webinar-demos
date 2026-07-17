@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Token Console</title>
+  <style>
+    :root {
+      --ink: #f2f0ff; --muted: #b3a9e6; --line: rgba(150,132,230,.30);
+      --panel: rgba(20,13,38,.72); --cyan: #4fe6d4; --amber: #ffb454; --magenta: #ff5c8a;
+      --mono: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: #08060f; color: var(--ink); font: 14px/1.55 var(--mono);
+      -webkit-font-smoothing: antialiased; }
+    #bg { position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; image-rendering: pixelated; }
+    /* veil: keeps the top (header) dark & readable, lets the dither show lower down */
+    #veil { position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background: linear-gradient(180deg, #08060f 0%, rgba(8,6,15,.92) 22%, rgba(8,6,15,.55) 52%, rgba(8,6,15,.35) 100%); }
+    #scan { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px); opacity: .35; }
+
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 30px 24px 48px; }
+    header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    h1 { font-size: 22px; margin: 0; letter-spacing: .12em; text-transform: uppercase; color: #fff;
+      text-shadow: 0 0 16px rgba(79,230,212,.45); }
+    .sub { color: var(--muted); font-size: 12px; margin-top: 6px; letter-spacing: .02em; }
+    button { font: 600 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+      color: #04211a; background: var(--cyan); border: 0; border-radius: 4px; padding: 10px 16px;
+      cursor: pointer; box-shadow: 0 0 16px rgba(79,230,212,.45); }
+    button:disabled { opacity: .55; }
+
+    .legend { display: flex; gap: 20px; color: var(--muted); font-size: 11px; margin: 18px 0 22px;
+      text-transform: uppercase; letter-spacing: .08em; flex-wrap: wrap; align-items: center; }
+    .dot { display: inline-block; width: 20px; height: 10px; border-radius: 2px; vertical-align: middle;
+      margin-right: 7px; }
+    .dot.in { background: var(--cyan); box-shadow: 0 0 8px rgba(79,230,212,.6); }
+    .dot.out { background: var(--amber); box-shadow: 0 0 8px rgba(255,180,84,.55); }
+    .legend a { color: var(--cyan); text-decoration: none; border-bottom: 1px dotted rgba(79,230,212,.55); }
+    .legend a:hover { border-bottom-style: solid; text-shadow: 0 0 8px rgba(79,230,212,.5); }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+      padding: 14px 16px; backdrop-filter: blur(4px); overflow: hidden; }
+    .card .k { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; }
+    .card .v { font-size: 26px; font-weight: 700; margin-top: 6px; color: #fff; }
+    .card.cost .v { color: var(--cyan); text-shadow: 0 0 14px rgba(79,230,212,.5); }
+
+    .run { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px;
+      margin-bottom: 14px; backdrop-filter: blur(4px); }
+    .run h3 { margin: 0 0 3px; font-size: 14px; letter-spacing: .03em; color: #fff; }
+    .run h3 .state { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; padding: 2px 8px;
+      border-radius: 3px; margin-left: 10px; border: 1px solid var(--line); color: var(--muted); }
+    .run h3 .state.success { color: var(--cyan); border-color: rgba(79,230,212,.5); }
+    .run h3 .state.failed { color: var(--magenta); border-color: rgba(255,92,138,.5); }
+    .run .meta { color: var(--muted); font-size: 11px; margin-bottom: 14px; word-break: break-all; opacity: .8; }
+    .task { margin: 12px 0; }
+    .task .row { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; margin-bottom: 5px; }
+    .task .tid { color: var(--ink); }
+    .task .tid small { color: var(--muted); }
+    .task .amt { color: var(--muted); white-space: nowrap; }
+    .task .amt b { color: #fff; }
+    .bar { display: flex; height: 15px; border-radius: 3px; overflow: hidden;
+      background: rgba(150,132,230,.10); border: 1px solid var(--line); }
+    .seg { height: 100%; }
+    .seg.in  { background: var(--cyan);  box-shadow: 0 0 12px rgba(79,230,212,.5); }
+    .seg.out { background: var(--amber); box-shadow: 0 0 12px rgba(255,180,84,.45); }
+    .empty, .error { background: var(--panel); border: 1px dashed var(--line); border-radius: 8px;
+      padding: 26px; text-align: center; color: var(--muted); backdrop-filter: blur(4px); }
+    .error { color: var(--magenta); border-color: rgba(255,92,138,.5); }
+    code { background: rgba(150,132,230,.16); padding: 1px 6px; border-radius: 4px; color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div id="veil"></div>
+  <div id="scan"></div>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Token Console</h1>
+        <div class="sub">LLM token usage &amp; estimated cost</div>
+      </div>
+      <button id="refresh">Refresh</button>
+    </header>
+
+    <div class="legend">
+      <span><span class="dot in"></span>input tokens</span>
+      <span><span class="dot out"></span>output tokens</span>
+      <span>cost // via <a href="https://github.com/pydantic/genai-prices" target="_blank" rel="noopener">pydantic genai-prices</a></span>
+    </div>
+
+    <div id="cards" class="cards"></div>
+    <div id="runs"></div>
+  </div>
+
+  <script>
+    // ---- subtle ordered (Bayer 4x4) dithered texture; darkest at top ---------
+    const BAYER = [0,8,2,10, 12,4,14,6, 3,11,1,9, 15,7,13,5];
+    function renderDither() {
+      const c = document.getElementById("bg"), ctx = c.getContext("2d");
+      const cell = 3;
+      const w = Math.max(1, Math.ceil(innerWidth / cell)), h = Math.max(1, Math.ceil(innerHeight / cell));
+      c.width = w; c.height = h; c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px";
+      const img = ctx.createImageData(w, h), d = img.data;
+      const A = [8, 6, 15], B = [26, 15, 46], C = [30, 92, 96]; // near-black, deep purple, dim teal
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        // brightness grows toward the bottom-right, stays near 0 at the top (header)
+        let t = (y / h) * 0.75 + (x / w) * 0.12;
+        t = Math.max(0, Math.min(1, t));
+        const b = BAYER[(y % 4) * 4 + (x % 4)] / 16;
+        let col = A;
+        if (t > b) col = (t > 0.82 && b < (t - 0.82) * 2.2) ? C : B; // rare, dim teal sparkle low down
+        const i = (y * w + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+    let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(renderDither, 120); });
+    renderDither();
+
+    // ---- data ---------------------------------------------------------------
+    const fmt = (n) => (n ?? 0).toLocaleString();
+    const usd = (n) => "$" + (n ?? 0).toFixed(4);
+
+    function cards(t) {
+      const items = [
+        ["Est. cost", usd(t.cost_usd), "cost"],
+        ["Total tokens", fmt(t.total_tokens), ""],
+        ["Input", fmt(t.input_tokens), ""],
+        ["Output", fmt(t.output_tokens), ""],
+        ["Runs tracked", fmt(t.runs), ""],
+      ];
+      document.getElementById("cards").innerHTML = items
+        .map(([k, v, cls]) => `<div class="card ${cls}"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+        .join("");
+    }
+
+    function renderRuns(runs) {
+      const el = document.getElementById("runs");
+      if (!runs.length) {
+        el.innerHTML = `<div class="empty">No LLM token usage found yet. Trigger
+          <code>ask_astrotrips</code>, <code>agent_investigation</code>, or
+          <code>retry_policy_demo</code>, then refresh.</div>`;
+        return;
+      }
+      let max = 1;
+      for (const r of runs) for (const t of r.tasks) max = Math.max(max, t.total_tokens);
+      el.innerHTML = runs.slice().reverse().map((r) => `
+        <div class="run">
+          <h3>${r.dag_id}<span class="state ${r.state}">${r.state || "?"}</span></h3>
+          <div class="meta">${r.run_id} · ${r.start_date}</div>
+          ${r.tasks.map((t) => {
+            const wIn = (t.input_tokens / max) * 100, wOut = (t.output_tokens / max) * 100;
+            const tools = t.tool_calls ? ` · ${t.tool_calls} tool calls` : "";
+            return `<div class="task">
+              <div class="row">
+                <span class="tid">${t.task_id} <small>${t.model || ""}${tools}</small></span>
+                <span class="amt"><b>${fmt(t.total_tokens)}</b> tok · <b>${usd(t.cost_usd)}</b></span>
+              </div>
+              <div class="bar">
+                <div class="seg in" style="width:${wIn}%"></div>
+                <div class="seg out" style="width:${wOut}%"></div>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>`).join("");
+    }
+
+    async function load() {
+      const btn = document.getElementById("refresh");
+      btn.disabled = true; btn.textContent = "Loading…";
+      try {
+        const res = await fetch("api/usage");
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
+        const data = await res.json();
+        cards(data.totals); renderRuns(data.runs);
+      } catch (e) {
+        document.getElementById("runs").innerHTML = `<div class="error">Could not load usage: ${e.message}</div>`;
+      } finally {
+        btn.disabled = false; btn.textContent = "Refresh";
+      }
+    }
+    document.getElementById("refresh").addEventListener("click", load);
+    load();
+  </script>
+</body>
+</html>

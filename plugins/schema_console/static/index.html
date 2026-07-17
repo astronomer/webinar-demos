@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema</title>
+  <style>
+    :root {
+      --ink: #f2f0ff; --muted: #b3a9e6; --line: rgba(150,132,230,.30);
+      --panel: rgba(20,13,38,.80); --cyan: #4fe6d4; --amber: #ffb454; --magenta: #ff5c8a;
+      --mono: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: #08060f; color: var(--ink); font: 14px/1.55 var(--mono); -webkit-font-smoothing: antialiased; }
+    #bg { position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; image-rendering: pixelated; }
+    #veil { position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background: linear-gradient(180deg, #08060f 0%, rgba(8,6,15,.92) 22%, rgba(8,6,15,.6) 55%, rgba(8,6,15,.4) 100%); }
+    #scan { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px); opacity: .35; }
+
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 30px 24px 40px; }
+    header h1 { font-size: 22px; margin: 0; letter-spacing: .12em; text-transform: uppercase; color: #fff;
+      text-shadow: 0 0 16px rgba(79,230,212,.45); }
+    .sub { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .legend { display: flex; gap: 20px; color: var(--muted); font-size: 11px; margin: 16px 0 14px;
+      text-transform: uppercase; letter-spacing: .07em; flex-wrap: wrap; align-items: center; }
+    .badge { font-size: 9px; letter-spacing: .08em; padding: 1px 6px; border-radius: 3px; }
+    .badge.pk { background: rgba(79,230,212,.18); color: var(--cyan); border: 1px solid rgba(79,230,212,.45); }
+    .badge.fk { background: rgba(255,180,84,.15); color: var(--amber); border: 1px solid rgba(255,180,84,.45); }
+
+    /* pan/zoom stage */
+    .stage { position: relative; height: 74vh; min-height: 440px; overflow: hidden; cursor: grab;
+      border: 1px solid var(--line); border-radius: 10px; background: rgba(12,8,24,.35);
+      user-select: none; touch-action: none; }
+    .stage:active { cursor: grabbing; }
+    .toolbar { position: absolute; top: 12px; right: 12px; z-index: 5; display: flex; gap: 6px; align-items: center; }
+    .toolbar button { width: 30px; height: 30px; font: 600 15px/1 var(--mono); color: #04211a; background: var(--cyan);
+      border: 0; border-radius: 6px; cursor: pointer; box-shadow: 0 0 12px rgba(79,230,212,.4); }
+    .toolbar .fit { width: auto; padding: 0 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .hint { position: absolute; bottom: 12px; left: 14px; z-index: 5; color: var(--muted); font-size: 11px;
+      letter-spacing: .04em; opacity: .8; }
+
+    .diagram { position: absolute; top: 0; left: 0; width: 1120px; height: 900px; transform-origin: 0 0; }
+    #edges { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    #edges path { fill: none; stroke: var(--cyan); stroke-width: 1.6; opacity: .7;
+      filter: drop-shadow(0 0 3px rgba(79,230,212,.5)); }
+    .tbl { position: absolute; z-index: 1; width: 210px; background: var(--panel); border: 1px solid var(--line);
+      border-radius: 8px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+    .tbl.hub { border-color: rgba(79,230,212,.55); box-shadow: 0 0 22px rgba(79,230,212,.22); }
+    .tbl h4 { margin: 0; padding: 8px 12px; font-size: 13px; letter-spacing: .04em; color: #04211a; background: var(--cyan); }
+    .tbl.agg h4 { background: var(--amber); color: #241400; }
+    .tbl h4 .tag { float: right; font-size: 9px; letter-spacing: .06em; opacity: .8; text-transform: uppercase; }
+    .tbl ul { list-style: none; margin: 0; padding: 5px 0; }
+    .tbl li { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 3px 12px; font-size: 12px; color: var(--muted); }
+    .tbl li.key .name { color: #fff; }
+
+    .foot { color: var(--muted); font-size: 11px; margin-top: 12px; opacity: .85; }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div id="veil"></div>
+  <div id="scan"></div>
+  <div class="wrap">
+    <header>
+      <h1>Schema</h1>
+      <div class="sub">AstroTrips warehouse</div>
+    </header>
+    <div class="legend">
+      <span><span class="badge pk">PK</span> primary key</span>
+      <span><span class="badge fk">FK</span> foreign key</span>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="toolbar">
+        <button id="zout" title="Zoom out">&minus;</button>
+        <button id="zin" title="Zoom in">+</button>
+        <button class="fit" id="fit" title="Fit to view">Fit</button>
+      </div>
+      <div class="hint">drag to pan · scroll to zoom</div>
+      <div class="diagram" id="diagram"><svg id="edges"></svg></div>
+    </div>
+  </div>
+
+  <script>
+    // ---- shared dithered background (darkest at top) -----------------------
+    const BAYER = [0,8,2,10, 12,4,14,6, 3,11,1,9, 15,7,13,5];
+    function renderDither() {
+      const c = document.getElementById("bg"), ctx = c.getContext("2d");
+      const cell = 3, w = Math.max(1, Math.ceil(innerWidth / cell)), h = Math.max(1, Math.ceil(innerHeight / cell));
+      c.width = w; c.height = h; c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px";
+      const img = ctx.createImageData(w, h), d = img.data;
+      const A = [8, 6, 15], B = [26, 15, 46], C = [30, 92, 96];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        let t = (y / h) * 0.75 + (x / w) * 0.12; t = Math.max(0, Math.min(1, t));
+        const b = BAYER[(y % 4) * 4 + (x % 4)] / 16;
+        let col = A;
+        if (t > b) col = (t > 0.82 && b < (t - 0.82) * 2.2) ? C : B;
+        const i = (y * w + x) * 4; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    // ---- schema (mirrors include/sql/schema.sql) ---------------------------
+    const DIAG_W = 1120, DIAG_H = 900;
+    const T = {
+      planets:   { x: 40,  y: 60,  cols: [["planet_id","pk"],["planet_name"],["base_multiplier"]] },
+      routes:    { x: 320, y: 40,  cols: [["route_id","pk"],["destination_id","fk"],["base_fare_usd"]] },
+      customers: { x: 320, y: 250, cols: [["customer_id","pk"],["full_name"]] },
+      promo_codes:{x: 320, y: 430, cols: [["promo_code","pk"],["discount_pct"]] },
+      bookings:  { x: 600, y: 200, hub: true, cols: [["booking_id","pk"],["customer_id","fk"],["route_id","fk"],
+                    ["booked_at"],["departure_date"],["return_date"],["passengers"],["promo_code","fk"]] },
+      payments:  { x: 880, y: 80,  cols: [["payment_id","pk"],["booking_id","fk"],["paid_at"],["amount_usd"]] },
+      cancellations: { x: 880, y: 320, cols: [["cancellation_id","pk"],["booking_id","fk"],["cancelled_at"],
+                    ["reason_code"],["refund_amount_usd"]] },
+      daily_planet_report: { x: 880, y: 560, agg: true, cols: [["report_date","pk"],["planet_name","pk"],
+                    ["total_passengers"],["active_trips"],["completed_trips"],["cancelled_trips"],
+                    ["total_gross_fare_usd"],["total_discounts_usd"],["total_net_fare_usd"],
+                    ["total_paid_usd"],["total_refunds_usd"]] },
+    };
+    const EDGES = [
+      ["routes","destination_id","planets","planet_id"],
+      ["bookings","customer_id","customers","customer_id"],
+      ["bookings","route_id","routes","route_id"],
+      ["bookings","promo_code","promo_codes","promo_code"],
+      ["payments","booking_id","bookings","booking_id"],
+      ["cancellations","booking_id","bookings","booking_id"],
+    ];
+
+    function renderTables() {
+      let html = "";
+      for (const [name, t] of Object.entries(T)) {
+        const cls = "tbl" + (t.hub ? " hub" : "") + (t.agg ? " agg" : "");
+        const tag = t.agg ? '<span class="tag">aggregate</span>' : "";
+        const rows = t.cols.map(([n, k]) => `
+          <li class="${k ? "key" : ""}" id="col-${name}-${n}">
+            <span class="name">${n}</span>
+            ${k === "pk" ? '<span class="badge pk">PK</span>' : k === "fk" ? '<span class="badge fk">FK</span>' : ""}
+          </li>`).join("");
+        html += `<div class="${cls}" id="tbl-${name}" style="left:${t.x}px;top:${t.y}px">
+          <h4>${name}${tag}</h4><ul>${rows}</ul></div>`;
+      }
+      document.getElementById("diagram").insertAdjacentHTML("beforeend", html);
+    }
+
+    // edges are computed once in the diagram's own (untransformed) coordinate
+    // space; the CSS transform on .diagram scales/pans them along with the cards.
+    function drawEdges() {
+      const dia = document.getElementById("diagram"), D = dia.getBoundingClientRect();
+      const rel = (r) => ({ l: r.left - D.left, r: r.right - D.left, cx: (r.left + r.right) / 2 - D.left,
+                            cy: (r.top + r.bottom) / 2 - D.top });
+      let paths = "";
+      for (const [ft, fc, tt, tpk] of EDGES) {
+        const sCard = rel(document.getElementById("tbl-" + ft).getBoundingClientRect());
+        const tCard = rel(document.getElementById("tbl-" + tt).getBoundingClientRect());
+        const sRow = rel(document.getElementById(`col-${ft}-${fc}`).getBoundingClientRect());
+        const tRow = rel(document.getElementById(`col-${tt}-${tpk}`).getBoundingClientRect());
+        const rightward = tCard.cx > sCard.cx;
+        const sx = rightward ? sCard.r : sCard.l, sy = sRow.cy;
+        const tx = rightward ? tCard.l : tCard.r, ty = tRow.cy;
+        const dx = Math.max(45, Math.abs(tx - sx) * 0.45) * (rightward ? 1 : -1);
+        paths += `<path d="M${sx},${sy} C${sx + dx},${sy} ${tx - dx},${ty} ${tx},${ty}" marker-end="url(#a)"/>`;
+        paths += `<circle cx="${sx}" cy="${sy}" r="2.6" fill="var(--amber)"/>`;
+      }
+      const svg = document.getElementById("edges");
+      svg.setAttribute("viewBox", `0 0 ${DIAG_W} ${DIAG_H}`);
+      svg.innerHTML = `<defs><marker id="a" markerWidth="9" markerHeight="9" refX="6.5" refY="3"
+        orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="var(--cyan)"/></marker></defs>` + paths;
+    }
+
+    // ---- pan / zoom --------------------------------------------------------
+    const stage = document.getElementById("stage"), dia = document.getElementById("diagram");
+    let scale = 1, tx = 0, ty = 0;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const apply = () => { dia.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`; };
+
+    function fit() {
+      const vw = stage.clientWidth, vh = stage.clientHeight;
+      scale = clamp(Math.min((vw - 40) / DIAG_W, (vh - 40) / DIAG_H), 0.3, 1);
+      tx = Math.max(20, (vw - DIAG_W * scale) / 2);
+      ty = 20; apply();
+    }
+    function zoomAround(mx, my, factor) {
+      const ns = clamp(scale * factor, 0.3, 2.6);
+      tx = mx - (mx - tx) * (ns / scale);
+      ty = my - (my - ty) * (ns / scale);
+      scale = ns; apply();
+    }
+
+    stage.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const r = stage.getBoundingClientRect();
+      zoomAround(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.12 : 1 / 1.12);
+    }, { passive: false });
+
+    let dragging = false, lx = 0, ly = 0;
+    stage.addEventListener("pointerdown", (e) => {
+      dragging = true; lx = e.clientX; ly = e.clientY; stage.setPointerCapture(e.pointerId);
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!dragging) return; tx += e.clientX - lx; ty += e.clientY - ly; lx = e.clientX; ly = e.clientY; apply();
+    });
+    const endDrag = () => { dragging = false; };
+    stage.addEventListener("pointerup", endDrag);
+    stage.addEventListener("pointercancel", endDrag);
+
+    const center = () => [stage.clientWidth / 2, stage.clientHeight / 2];
+    document.getElementById("zin").onclick = () => zoomAround(...center(), 1.2);
+    document.getElementById("zout").onclick = () => zoomAround(...center(), 1 / 1.2);
+    document.getElementById("fit").onclick = fit;
+
+    // ---- boot --------------------------------------------------------------
+    renderDither();
+    renderTables();
+    drawEdges();   // measured at identity transform, before fit()
+    fit();
+    let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(renderDither, 120); });
+  </script>
+</body>
+</html>
