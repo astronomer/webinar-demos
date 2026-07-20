@@ -49,7 +49,7 @@ def ask_astrotrips():
 
     @task.llm(
         llm_conn_id=_LLM_CONN_ID,
-        output_type=QuerySpec,
+        output_type=QuerySpec,  # model instance will be pushed to XCom
         usage_limits=_USAGE_LIMITS,
         system_prompt=(
             "You are an analytics intake assistant for AstroTrips, an interplanetary "
@@ -72,8 +72,7 @@ def ask_astrotrips():
         llm_conn_id=_LLM_CONN_ID,
         db_conn_id=_SNOWFLAKE_CONN_ID,
         table_names=_TABLES,
-        validate_sql=True,
-        dialect="snowflake",
+        validate_sql=True,  # via AST parsing
         require_approval=True,
         allow_modifications=True,
         approval_timeout=timedelta(hours=1),

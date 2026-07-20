@@ -46,7 +46,7 @@ def agent_investigation():
     @task.agent(
         llm_conn_id=_LLM_CONN_ID,
         output_type=Finding,
-        durable=True,
+        durable=True,  # on retry, cached steps are replayed instead of re-executing, requires `[common.ai] durable_cache_path` to be set
         enable_tool_logging=True,
         usage_limits=UsageLimits(request_limit=20, input_tokens_limit=60_000, output_tokens_limit=8_000),
         toolsets=[
