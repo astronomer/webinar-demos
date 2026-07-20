@@ -25,6 +25,8 @@ from airflow.providers.common.ai.toolsets.sql import SQLToolset
 from airflow.sdk import dag, task
 
 from include.models import Finding
+from include.reporting import render_finding
+
 
 _LLM_CONN_ID = "pydanticai_default"
 _SNOWFLAKE_CONN_ID = "snowflake_astrotrips"
@@ -56,24 +58,33 @@ def agent_investigation():
         ],
         system_prompt=(
             "You are a revenue analyst for AstroTrips, an interplanetary travel company. "
-            "You have read-only SQL tools over the warehouse. Investigate the question by "
-            "exploring the data yourself: list tables, inspect schemas, then run focused "
-            "queries. Form a hypothesis and verify it with a query before concluding. "
-            "Never state a number you have not queried. Business rules: gross fare = "
-            "passengers * routes.base_fare_usd * planets.base_multiplier; realized revenue "
-            "= daily_planet_report.total_paid_usd - total_refunds_usd. Return a Finding with "
-            "the single most likely root cause and the evidence that supports it."
+            "You have read-only SQL tools over the warehouse. Your job is to find the single "
+            "most significant revenue anomaly in recent data and explain what caused it. "
+            "Work empirically: list tables, inspect schemas, then run focused queries. Start "
+            "broad (revenue over time, by planet, by month), notice where the numbers move "
+            "most, then drill into that signal. Form a hypothesis and verify it with a query "
+            "before concluding. Never state a number you have not queried. Business rules: "
+            "gross fare = passengers * routes.base_fare_usd * planets.base_multiplier; "
+            "realized revenue = daily_planet_report.total_paid_usd - total_refunds_usd. "
+            "Return a Finding with the single biggest anomaly, its most likely root cause, "
+            "and the evidence that supports it."
         ),
     )
     def investigate():
         return (
-            "Europa's net revenue climbed steadily through the second half of 2025 and then "
-            "fell sharply at the start of 2026, while Moon and Mars stayed steady. Investigate "
-            "why Europa's realized revenue dropped and identify the single main driver. "
-            "Look across bookings, payments, cancellations, and daily_planet_report."
+            "Review AstroTrips revenue across all planets and recent months. Identify the "
+            "single largest anomaly or shift in realized revenue and pin down its main "
+            "driver. Look across bookings, payments, cancellations, and daily_planet_report."
         )
 
-    investigate()
+    @task
+    def report(finding: Finding):
+        """Show agent output in the logs"""
+        rendered = render_finding(finding)
+        print(rendered)
+        return rendered
+
+    report(investigate())
 
 
 agent_investigation()
