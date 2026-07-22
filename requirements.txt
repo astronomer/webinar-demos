@@ -3,5 +3,12 @@ apache-airflow-providers-common-ai[openai,sql]==0.6.0
 apache-airflow-providers-common-sql[datafusion]==2.0.2
 apache-airflow-providers-snowflake==6.14.0
 
-# Token Console cost estimates use Pydantic's genai-prices dataset (offline).
-genai-prices
+# Token Console cost estimates use Pydantic's genai-prices dataset (offline)
+genai-prices==0.0.71
+
+# The common-ai extras pull these in transitively and they move fast, so pinning them for compatibility
+pydantic-ai-slim==2.12.0
+pydantic==2.13.4
+openai==2.46.0
+sqlglot==30.12.0
+datafusion==51.0.0
