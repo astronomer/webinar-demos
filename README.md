@@ -58,6 +58,40 @@ Three tasks raise representative errors. `LLMRetryPolicy` asks an LLM to classif
 4. **Run the demos:** trigger `ask_astrotrips` (approve the SQL when it pauses), then `agent_investigation`, then `retry_policy_demo`.
 5. **Watch the cost:** open the **Token** page in the left nav.
 
+## Optional: OpenTelemetry traces
+
+The Common AI provider can emit GenAI spans (agent run, model calls, tool calls, token
+counts) through Airflow's existing OTel exporter. It is **config only**: no code changes,
+no new dependencies, and `requirements.txt` is untouched, so the version freeze holds.
+`make` wraps the whole thing.
+
+```bash
+make otel-tui      # terminal 1: OTLP viewer, shows the raw gen_ai.* attributes
+make start-traces  # terminal 2: Airflow, shipping spans to it
+# trigger agent_investigation, watch the spans arrive
+astro dev restart  # back to the plain demo path, tracing off
+```
+
+Tracing lives entirely in the `--env` file that `make start-traces` passes to the CLI: it
+merges `.env.traces` (flags, committed, no secrets) over `.env` (secrets, git-ignored) into
+a throwaway `.env.traces.generated`. `.env` is never modified, and any plain `astro dev`
+command uses it, so ordinary usage is unaffected. `make clean` removes the copy.
+
+What you get: the provider reuses the `TracerProvider` that core tracing installs in the
+task-runner process, so GenAI spans nest under the `worker.<task_id>` span and inherit
+`airflow.dag_id`, `run_id` and `try_number`. Token usage lands on the spans as
+`gen_ai.aggregated_usage.*` (agent run) and `gen_ai.usage.*` (per model call).
+
+Three things worth knowing:
+
+- `.env.traces` sets `AIRFLOW__COMMON_AI__CAPTURE_CONTENT=True`, which is what makes the
+  trace readable. It exports prompt and completion text unredacted; Airflow secret masking
+  does not apply to span attributes. Fine for this fictional warehouse, not for real data.
+- `agent_investigation` produces the good waterfall. `ask_astrotrips` splits into separate
+  traces at the approval pause, because the task process exits and flushes there.
+- `make start-traces` restarts, which runs a build. With `requirements.txt` unchanged that
+  is a layer-cache hit, so the pinned versions are untouched.
+
 ## Demo flow
 
 **1. Seed the warehouse.** Trigger `setup` once. Mention the planted story: Europa revenue climbs through late 2025, then collapses at the new year.

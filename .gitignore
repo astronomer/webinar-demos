@@ -1,5 +1,6 @@
 airflow-settings.yaml
 .env
+.env.traces.generated
 .DS_Store
 __pycache__/
 
