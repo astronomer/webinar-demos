@@ -1,0 +1,4 @@
+# Astro Runtime includes the following pre-installed providers packages: https://www.astronomer.io/docs/astro/runtime-image-architecture#provider-packages
+apache-airflow-providers-apache-spark==6.3.2
+pyspark==4.0.2  # full dist for spark-submit (supersedes slim pyspark-client); 4.0.x matches the 4.0.0 cluster
+apache-airflow-providers-common-ai[openai]==0.8.0

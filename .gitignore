@@ -1,6 +1,13 @@
-dags
-include
-plugins
-airflow-settings.yaml
 .env
+airflow_settings.yaml
+__pycache__/
 .DS_Store
+.venv
+include/go_bundle/bin/
+include/java_bundle/
+include/java_sdk/build/
+include/java_sdk/.gradle/
+dev
+.astro/config.local.lock
+.astro/config.local.yaml 
+.astro/config.lock

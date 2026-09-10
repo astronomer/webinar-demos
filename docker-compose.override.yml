@@ -1,0 +1,180 @@
+services:
+  spark-master:
+    image: apache/spark:4.0.0
+    container_name: webinar_demos_spark_master
+    restart: unless-stopped
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+      - SPARK_MASTER_OPTS=-Dspark.master.rest.enabled=true -Dspark.master.rest.port=6066
+    ports:
+      - "8081:8080"  # Spark Master Web UI
+      - "7077:7077"  # Spark Master Port
+      - "6066:6066"  # Spark Standalone REST submission API (cluster-mode submit + driver status)
+      - "10000:10000"  # Thrift Server Port
+    volumes:
+      - spark_data:/opt/spark/data
+    networks:
+      - airflow
+    command: |
+      bash -c "
+        /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master --port 7077 --webui-port 8080 &
+        sleep 10
+        /opt/spark/sbin/start-thriftserver.sh --master spark://spark-master:7077 --total-executor-cores 1 --hiveconf hive.server2.thrift.port=10000 --hiveconf hive.server2.thrift.bind.host=0.0.0.0 &
+        wait
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  spark-worker:
+    image: apache/spark:4.0.0
+    container_name: webinar_demos_spark_worker
+    restart: unless-stopped
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=6g
+      - SPARK_WORKER_CORES=6
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+    ports:
+      - "8082:8081"  # Spark Worker Web UI
+    volumes:
+      - spark_data:/opt/spark/data
+    networks:
+      - airflow
+    command: |
+      bash -c "
+        /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --host spark-worker --port 8081 --webui-port 8081 spark://spark-master:7077
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  spark-connect:
+    image: apache/spark:4.0.0
+    container_name: webinar_demos_spark_connect
+    restart: unless-stopped
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_USER=spark
+    ports:
+      - "15002:15002"  # Spark Connect gRPC
+    networks:
+      - airflow
+    command: |
+      bash -c "
+        /opt/spark/sbin/start-connect-server.sh \
+          --packages org.apache.spark:spark-connect_2.13:4.0.0 \
+          --master spark://spark-master:7077 \
+          --total-executor-cores 1 \
+          --conf spark.connect.grpc.binding.host=0.0.0.0 \
+          --conf spark.connect.grpc.binding.port=15002
+      "
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/15002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  # kafka:
+  #   image: confluentinc/cp-kafka
+  #   ports:
+  #     - "9092:9092"
+  #     - "19092:19092"
+  #   environment:
+  #     # KRaft mode configuration
+  #     KAFKA_PROCESS_ROLES: broker,controller
+  #     KAFKA_NODE_ID: 1
+  #     KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+  #     KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+  #     # Listener configuration
+  #     KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:29093,DOCKER_HACK://kafka:19092
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,DOCKER_HACK://kafka:19092
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,DOCKER_HACK:PLAINTEXT
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+  #     # Topic and replication settings
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+  #     # Cluster and log settings
+  #     KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+  #     CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+  #   volumes:
+  #     - /tmp/kraft-combined-logs:/tmp/kraft-combined-logs
+  #   command: >
+  #     sh -c "
+  #     kafka-storage format -t $${CLUSTER_ID} -c /etc/kafka/kafka.properties --ignore-formatted || true &&
+  #     /etc/confluent/docker/run &
+  #     sleep 30 &&
+  #     kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic my_topic || true &&
+  #     wait
+  #     "
+  #   networks:
+  #     - airflow
+  #   healthcheck:
+  #     test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+
+  ssh-target:
+    image: lscr.io/linuxserver/openssh-server
+    container_name: webinar_demos_ssh_target
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - PASSWORD_ACCESS=true
+      - USER_NAME=airflow
+      - USER_PASSWORD=airflow
+      - SUDO_ACCESS=false
+    ports:
+      - "2222:2222"  # sshd (test from host: ssh -p 2222 airflow@localhost)
+    networks:
+      - airflow
+
+  scheduler:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - airflow
+
+  triggerer:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - airflow
+
+volumes:
+  postgres_data:
+    driver: local
+  spark_data:
+    driver: local
+
+networks:
+  airflow:
+    external: false 
