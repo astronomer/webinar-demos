@@ -1,0 +1,51 @@
+# Connections for the ETL/ELT demo. Loaded automatically by `astro dev start`.
+# The passwords are local demo values. None of them is a word that appears in logs on purpose:
+# Airflow masks connection passwords in every log line, so a password like "orders" would turn
+# every "orders" in the task logs into "***".
+
+airflow:
+  connections:
+    # The landing bucket with the store files, and the bucket for the XCom backend (v3+).
+    - conn_id: minio
+      conn_type: aws
+      conn_login: minio-admin
+      conn_password: minio-demo-2026
+      conn_extra:
+        endpoint_url: http://minio:9000
+        region_name: us-east-1
+
+    # The warehouse, written by every pipeline version.
+    - conn_id: warehouse
+      conn_type: postgres
+      conn_host: warehouse
+      conn_schema: warehouse
+      conn_login: etl
+      conn_password: wh-demo-2026
+      conn_port: 5432
+
+    # v5: a read-only role that can only SELECT from daily_revenue (and rev_x, for the
+    # optional cryptic-columns comparison).
+    - conn_id: warehouse_agent
+      conn_type: postgres
+      conn_host: warehouse
+      conn_schema: warehouse
+      conn_login: agent_reader
+      conn_password: agent-demo-2026
+      conn_port: 5432
+
+    # The fake exchange-rate API (fake_api/server.py).
+    - conn_id: exchange_rates_api
+      conn_type: http
+      conn_host: fake-api
+      conn_schema: http
+      conn_port: 8000
+
+    # v5: the LLM. No API key here: pydantic-ai reads OPENAI_API_KEY from the environment.
+    # To use another provider, change the model (for example "anthropic:<model>") and pass that
+    # provider's key through docker-compose.override.yml.
+    - conn_id: llm
+      conn_type: pydanticai
+      conn_extra:
+        model: openai:gpt-5-mini
+  pools: []
+  variables: []

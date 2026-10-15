@@ -1,0 +1,7 @@
+# Pinned so the demo behaves on webinar day exactly as it did in rehearsal.
+apache-airflow-providers-amazon[s3fs]==9.37.0
+apache-airflow-providers-common-ai[openai,sql]==0.10.0
+apache-airflow-providers-http==6.2.0
+apache-airflow-providers-postgres==7.1.0
+# Airflow stores pandas DataFrames returned by tasks (v1 to v3) as Parquet.
+pyarrow==26.0.0

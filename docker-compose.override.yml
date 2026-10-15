@@ -1,0 +1,85 @@
+# Extra services for the ETL/ELT demo.
+# Astro CLI merges this file into its own compose file; "airflow" is the network it creates.
+
+services:
+  # Tasks run inside the scheduler (LocalExecutor). The LLM key for v5 is passed through from
+  # your shell, so it is never written to a file in this project.
+  scheduler:
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+
+  # Object storage: the "landing" bucket with the store files, and the "xcom" bucket used by
+  # the XCom backend from v3 on.
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio-admin
+      MINIO_ROOT_PASSWORD: minio-demo-2026
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    networks:
+      - airflow
+
+  # One-shot: creates the two buckets, then exits. The store files are written by
+  # ./demo.sh reset, which needs Airflow's Python environment.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mc alias set local http://minio:9000 minio-admin minio-demo-2026 &&
+        mc mb --ignore-existing local/landing local/xcom
+    restart: "no"
+    networks:
+      - airflow
+
+  # The warehouse. warehouse/init.sql creates the tables, 13 days of history and the agent's
+  # read-only role on the first start; ./demo.sh reset runs it again.
+  warehouse:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: etl
+      POSTGRES_PASSWORD: wh-demo-2026
+      POSTGRES_DB: warehouse
+    ports:
+      - "5436:5432"
+    volumes:
+      - warehouse_data:/var/lib/postgresql/data
+      # A folder, not the single file: Docker Desktop can keep serving a stale copy of a
+      # single-file mount after the file is edited.
+      - ./warehouse:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U etl -d warehouse"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    networks:
+      - airflow
+
+  # Fake exchange-rate API. ./demo.sh api-mode switches it between ok, flaky (429) and
+  # bad-key (403).
+  fake-api:
+    image: python:3.12-slim
+    command: ["python", "-u", "/app/server.py"]
+    volumes:
+      - ./fake_api:/app:ro
+    ports:
+      - "127.0.0.1:8090:8000"
+    networks:
+      - airflow
+
+volumes:
+  minio_data:
+  warehouse_data:
