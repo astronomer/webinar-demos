@@ -1,7 +1,7 @@
 # ETL/ELT demo (Airflow 3.3)
 
 Astro project for the "ETL/ELT in 2026" webinar. One orders pipeline grows in five steps, each
-adding one Airflow feature. The talk itself is in [`../talk/outline.md`](../talk/outline.md).
+adding one Airflow feature.
 
 Stack: Astro Runtime 3.3-8 (Airflow 3.3.2), MinIO for object storage, Postgres as the warehouse,
 a fake exchange-rate API, and an OpenAI model for the agent in v5.
