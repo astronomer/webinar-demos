@@ -1,0 +1,17 @@
+services:
+  ssh-target:
+    image: lscr.io/linuxserver/openssh-server:10.3_p1-r1-ls239
+    container_name: house_4_red_ssh_target
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - PASSWORD_ACCESS=true
+      - USER_NAME=airflow
+      - USER_PASSWORD=airflow
+      - SUDO_ACCESS=false
+    volumes:
+      - ./include/house_4_red/remote/send_invoices.sh:/opt/jobs/send_invoices.sh:ro
+    networks:
+      - airflow

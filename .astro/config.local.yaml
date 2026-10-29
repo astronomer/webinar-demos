@@ -1,0 +1,9 @@
+current-instance: sandbox-spooky-debugging
+instances:
+- auth:
+    kind: basic
+    password: admin
+    username: admin
+  name: local
+  source: manual
+  url: http://localhost:8080
