@@ -1,0 +1,6 @@
+api-server:
+    port: "8082"
+postgres:
+    port: "5437"
+project:
+    name: event-driven-demo

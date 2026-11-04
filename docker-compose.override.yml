@@ -1,0 +1,70 @@
+# Extra services for the event-driven scheduling demo.
+# Astro CLI merges this file into its own compose file; "airflow" is the network it creates.
+
+services:
+  # First and second demo: single-node Kafka (KRaft, no ZooKeeper).
+  kafka:
+    image: apache/kafka:3.9.0
+    hostname: kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_HEAP_OPTS: -Xmx384m -Xms384m
+    networks:
+      - airflow
+
+  # One-shot: creates the topics once the broker answers. Without them the Kafka triggers subscribe
+  # to a topic that does not exist yet and fail with UNKNOWN_TOPIC_OR_PART in a loop.
+  # orders: order events (paid, refunded). orders_dlq: the second demo's dead-letter topic for bad messages.
+  kafka-init:
+    image: apache/kafka:3.9.0
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in $$(seq 1 30); do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists \
+            --topic orders --partitions 1 --replication-factor 1 &&
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists \
+            --topic orders_dlq --partitions 1 --replication-factor 1 && exit 0
+          sleep 2
+        done
+        echo "kafka did not become ready" >&2
+        exit 1
+    restart: "no"
+    networks:
+      - airflow
+
+  # Third demo: the shop database with the returns table the custom triggers poll.
+  # The password must not be a word that appears in logs: Airflow masks connection passwords
+  # everywhere, so a password of "shop" would turn every "shop" in a log line into "***".
+  shop-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: pg-demo-2026
+      POSTGRES_DB: shop
+    ports:
+      - "5438:5432"
+    volumes:
+      - ./shop_db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop -d shop"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    networks:
+      - airflow

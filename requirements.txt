@@ -1,0 +1,5 @@
+# Pinned so the demo behaves the same on webinar day as in the rehearsal.
+# apache-kafka 2.1.0 is the first release with KafkaSharedStreamTrigger (needs Airflow 3.3+).
+apache-airflow-providers-apache-kafka==2.1.0
+apache-airflow-providers-common-messaging==2.1.2
+apache-airflow-providers-postgres==7.1.1

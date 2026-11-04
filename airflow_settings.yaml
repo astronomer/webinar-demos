@@ -1,0 +1,25 @@
+# Connections for the event-driven scheduling demo. Loaded automatically by `astro dev start`.
+
+airflow:
+  connections:
+    # First and second demo: the Kafka triggers read this through KafkaConsumerHook. The extra is passed
+    # straight to the confluent-kafka consumer. The shared-stream trigger (demo2) refuses to start
+    # unless enable.auto.commit is "false": it commits offsets itself, once events are stored.
+    - conn_id: kafka_default
+      conn_type: kafka
+      conn_extra:
+        bootstrap.servers: kafka:9092
+        group.id: airflow-watchers
+        auto.offset.reset: earliest
+        enable.auto.commit: "false"
+
+    # Third demo: the returns table, polled by the custom triggers in include/triggers/returns.py.
+    - conn_id: shop_db
+      conn_type: postgres
+      conn_host: shop-db
+      conn_schema: shop
+      conn_login: shop
+      conn_password: pg-demo-2026
+      conn_port: 5432
+  pools: []
+  variables: []

@@ -1,6 +1,19 @@
-dags
-include
-plugins
-airflow-settings.yaml
-.env
+.git
 .DS_Store
+__pycache__/
+astro
+.venv
+.astro/standalone/
+.astro/worktrees/
+airflow-webserver.pid
+webserver_config.py
+airflow.cfg
+airflow.db
+.astro/*.local.yml
+.astro/*.local.yaml
+
+**/.astro/dbt_metadata.json
+**/.astro/manifest.slim.json
+
+# Written by ./demo.sh (when the last events were sent)
+.last-sent
